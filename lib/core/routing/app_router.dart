@@ -10,7 +10,7 @@ import '../../features/auth/pages/get_code_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/phone_login_page.dart';
 import '../../features/auth/pages/splash_page.dart';
-import '../../features/home/pages/home_page.dart';
+import '../../features/home/pages/home_shell_screen.dart';
 
 /// 登录流程所有路由(未登录态允许停留的页面)。
 const _loginFlowRoutes = {
@@ -84,7 +84,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home',
         name: 'home',
-        builder: (context, state) => const HomePage(),
+        builder: (context, state) => const HomeShellScreen(),
       ),
     ],
   );
