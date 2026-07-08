@@ -10,7 +10,10 @@ import '../../features/auth/pages/get_code_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/phone_login_page.dart';
 import '../../features/auth/pages/splash_page.dart';
+import '../../features/home/pages/body_data_page.dart';
+import '../../features/home/pages/goal_setting_page.dart';
 import '../../features/home/pages/home_shell_screen.dart';
+import '../../features/home/pages/placeholder_page.dart';
 
 /// 登录流程所有路由(未登录态允许停留的页面)。
 const _loginFlowRoutes = {
@@ -40,7 +43,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
       final inLoginFlow = _loginFlowRoutes.contains(location);
       // 已登录且仍在登录流程(含 splash)→ 去首页。
-      if (isLoggedIn && inLoginFlow) return '/home';
+      if (isLoggedIn && inLoginFlow) return '/home-shell';
       // 未登录且不在登录流程 → 去登录入口。
       if (!isLoggedIn && !inLoginFlow) return '/login';
       return null;
@@ -82,9 +85,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FindPasswordPage(),
       ),
       GoRoute(
-        path: '/home',
-        name: 'home',
+        path: '/home-shell',
+        name: 'home-shell',
         builder: (context, state) => const HomeShellScreen(),
+      ),
+      GoRoute(
+        path: '/goal-setting',
+        name: 'goal-setting',
+        builder: (context, state) => const GoalSettingPage(),
+      ),
+      GoRoute(
+        path: '/body-data',
+        name: 'body-data',
+        builder: (context, state) => const BodyDataPage(),
+      ),
+      GoRoute(
+        path: '/placeholder',
+        name: 'placeholder',
+        builder: (context, state) =>
+            const PlaceholderPage(targetName: 'Placeholder'),
       ),
     ],
   );

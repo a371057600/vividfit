@@ -7,7 +7,7 @@ import '../notifiers/auth_providers.dart';
 /// 开屏页(用 go_router 的 splash 路由实现,1:1 复刻旧 AnimatedSplashScreen 视觉)。
 ///
 /// 保留原效果:红色底 + 全屏启动图(简中 start_page.jpg / 其它 start_image_en.jpg)
-/// + 1000ms 淡入淡出,结束后按登录态跳 /home 或 /login。
+/// + 1000ms 淡入淡出,结束后按登录态跳 /home-shell 或 /login。
 class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
@@ -43,7 +43,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
     _navigated = true;
     final isLoggedIn = ref.read(authNotifierProvider).isAuthenticated;
     if (mounted) {
-      context.go(isLoggedIn ? '/home' : '/login');
+      context.go(isLoggedIn ? '/home-shell' : '/login');
     }
   }
 
