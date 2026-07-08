@@ -15,4 +15,29 @@ class StorageKeys {
   static const String countryCode = 'countryCode';
   static const String localInChinese = 'localInChinese';
   static const String isSimpleChinese = 'isSimpleChinese';
+  static const String username = 'userName';
+  static const String userBirthday = 'UserBirthday';
+  static const String userSex = 'userSex'; // true=男
+  static const String userWeight = 'userWeight';
+  static const String userHeight = 'userHeight';
+  static const String phoneNumber = 'phoneNumber';
+  static const String emailAddress = 'emailAddress';
+  static const String goalK = 'GoalKcal';
+  static const String goalD = 'GoalDuring';
+  static const String goalS = 'GoalStrength';
+  static const String goalBmi = 'goalBmi';
+  static const String firstSettingIndex = 'firstSettingIndex';
+  static const String secondSettingIndex = 'secondSettingIndex';
+  static const String isReached = 'isReached'; // 今日是否打卡
+  static const String ishasReport = 'ishasReport'; // 是否有 AI 报告
+  static const String aiReport = 'aiReport';
+  static const String myRank = 'myRank';
+  static const String tokenDateTime = 'TokenDateTime';
+  static const String selectedCharacterIndex = 'selectedCharacterIndex';
+  static const String tricycliDuring = 'tricycliDuring';
+  static const String tricycliSportStrength = 'tricycliSportStrength';
+  static const String tricyclicalorie = 'tricyclicalorie';
+  static const String allowGetPermission = 'AllowGetPermission';
+  static const String allowAskPermission = 'AllowAskPermission';
+  static const String permissionDateTime = 'PermissionDateTime';
 }

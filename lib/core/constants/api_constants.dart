@@ -51,6 +51,25 @@ class ApiConstants {
   /// 刷新 token(后续模块用,此处先声明)
   static const String refreshTokenUrl = '$baseUrl/api/public/refreshToken';
 
+  /// 获取运动统计(主页三环数据)
+  static const String getStatisticsUrl = '$baseUrl/api/user/statistics';
+
+  /// 获取打卡日历(签到检测)
+  static const String getStatisticsCalendarUrl =
+      '$baseUrl/api/user/statisticsCalendar';
+
+  /// 获取历史运动数据
+  static const String historySportDataUrl = '$baseUrl/api/user/historyData';
+
+  /// 推荐列表(首页 banner)
+  static const String recommendListUrl = '$baseUrl/api/public/recommendList';
+
+  /// 获取徽章总数
+  static const String getMedalTotalCountUrl = '$baseUrl/api/user/medalTotalCount';
+
+  /// 版本检测
+  static const String versionUpdate = '$baseUrl/api/public/version';
+
   /// 请求头 key
   static const String headerAppPass = 'app_pass';
   static const String headerAccessToken = 'access_token';
