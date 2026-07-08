@@ -33,7 +33,7 @@ class PlaceholderPage extends StatelessWidget {
           child: InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onTap: () => context.go('/home-shell'),
+            onTap: () => context.pop(),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [

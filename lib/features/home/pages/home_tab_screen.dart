@@ -140,7 +140,7 @@ class HomeTabScreen extends ConsumerWidget {
                 ),
                 Spacer(),
                 InkWell(
-                  onTap: () => context.go('/placeholder'),
+                  onTap: () => context.push('/placeholder'),
                   child: _buildStepBar(ref),
                 ),
               ],
@@ -390,7 +390,7 @@ class HomeTabScreen extends ConsumerWidget {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      onTap: () => context.go('/placeholder'),
+      onTap: () => context.push('/placeholder'),
       child: SizedBox(
         width: 130.w,
         child: Column(
@@ -449,7 +449,7 @@ class HomeTabScreen extends ConsumerWidget {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      onTap: () => context.go('/placeholder'),
+      onTap: () => context.push('/placeholder'),
       child: SizedBox(
         width: 130.w,
         child: Column(
@@ -683,7 +683,7 @@ class HomeTabScreen extends ConsumerWidget {
       child: InkWell(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        onTap: () => context.go('/placeholder'),
+        onTap: () => context.push('/placeholder'),
         child: Container(
           padding: EdgeInsets.all(20).r,
           width: MediaQuery.of(context).size.width / 2 - 40.r,
