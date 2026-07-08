@@ -91,6 +91,40 @@ class ApiService {
     }
   }
 
+  /// 带 access_token 的 GET(用于需要登录的接口)。
+  Future<Map<String, dynamic>> authedGet(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final token = _storage.accessToken;
+    final resp = await _dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: Options(headers: {
+        ApiConstants.headerAppPass: ApiConstants.appPass,
+        if (token != null) ApiConstants.headerAccessToken: token,
+      }),
+    );
+    return resp.data as Map<String, dynamic>;
+  }
+
+  /// 带 access_token 的 PUT。
+  Future<Map<String, dynamic>> authedPut(
+    String path, {
+    dynamic data,
+  }) async {
+    final token = _storage.accessToken;
+    final resp = await _dio.put(
+      path,
+      data: data,
+      options: Options(headers: {
+        ApiConstants.headerAppPass: ApiConstants.appPass,
+        if (token != null) ApiConstants.headerAccessToken: token,
+      }),
+    );
+    return resp.data as Map<String, dynamic>;
+  }
+
   /// 把 dio 返回的 dynamic 统一转成 `Map<String, dynamic>`。
   /// 兼容 Map / JSON 字符串 / 空内容三种情况。
   Map<String, dynamic> _asMap(dynamic raw) {

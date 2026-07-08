@@ -58,6 +58,61 @@ class StorageService {
   Future<void> setCountryCode(String value) =>
       _prefs.setString(StorageKeys.countryCode, value);
 
+  // ---- 主页模块 ----
+  String? get username => _prefs.getString(StorageKeys.username);
+  Future<void> setUsername(String v) => _prefs.setString(StorageKeys.username, v);
+
+  int get userHeight => _prefs.getInt(StorageKeys.userHeight) ?? 160;
+  Future<void> setUserHeight(int v) => _prefs.setInt(StorageKeys.userHeight, v);
+
+  int get userWeight => _prefs.getInt(StorageKeys.userWeight) ?? 50;
+  Future<void> setUserWeight(int v) => _prefs.setInt(StorageKeys.userWeight, v);
+
+  bool get userSex => _prefs.getBool(StorageKeys.userSex) ?? true;
+  Future<void> setUserSex(bool v) => _prefs.setBool(StorageKeys.userSex, v);
+
+  String get userBirthday => _prefs.getString(StorageKeys.userBirthday) ?? '1991-01-01';
+  Future<void> setUserBirthday(String v) =>
+      _prefs.setString(StorageKeys.userBirthday, v);
+
+  int get goalKcal => _prefs.getInt(StorageKeys.goalK) ?? 100;
+  Future<void> setGoalKcal(int v) => _prefs.setInt(StorageKeys.goalK, v);
+
+  int get goalDuring => _prefs.getInt(StorageKeys.goalD) ?? 50;
+  Future<void> setGoalDuring(int v) => _prefs.setInt(StorageKeys.goalD, v);
+
+  double get goalStrength => _prefs.getDouble(StorageKeys.goalS) ?? 5.0;
+  Future<void> setGoalStrength(double v) => _prefs.setDouble(StorageKeys.goalS, v);
+
+  int get selectedCharacterIndex =>
+      _prefs.getInt(StorageKeys.selectedCharacterIndex) ?? 0;
+  Future<void> setSelectedCharacterIndex(int v) =>
+      _prefs.setInt(StorageKeys.selectedCharacterIndex, v);
+
+  bool? get isReached => _prefs.getBool(StorageKeys.isReached);
+  Future<void> setIsReached(bool v) => _prefs.setBool(StorageKeys.isReached, v);
+
+  bool? get ishasReport => _prefs.getBool(StorageKeys.ishasReport);
+  Future<void> setIshasReport(bool v) => _prefs.setBool(StorageKeys.ishasReport, v);
+
+  bool get hasAiReport => _prefs.containsKey(StorageKeys.aiReport);
+  Future<void> removeAiReport() => _prefs.remove(StorageKeys.aiReport);
+
+  String? get myRank => _prefs.getString(StorageKeys.myRank);
+  Future<void> setMyRank(String v) => _prefs.setString(StorageKeys.myRank, v);
+
+  String? get tokenDateTime => _prefs.getString(StorageKeys.tokenDateTime);
+  Future<void> setTokenDateTime(String v) =>
+      _prefs.setString(StorageKeys.tokenDateTime, v);
+
+  int? get firstSettingIndex => _prefs.getInt(StorageKeys.firstSettingIndex);
+  Future<void> setFirstSettingIndex(int v) =>
+      _prefs.setInt(StorageKeys.firstSettingIndex, v);
+
+  int? get secondSettingIndex => _prefs.getInt(StorageKeys.secondSettingIndex);
+  Future<void> setSecondSettingIndex(int v) =>
+      _prefs.setInt(StorageKeys.secondSettingIndex, v);
+
   /// 清除所有登录相关数据(登出时调用)
   Future<void> clearAuth() async {
     await _prefs.remove(StorageKeys.accessToken);
