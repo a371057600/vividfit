@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'new_main_data.freezed.dart';
 part 'new_main_data.g.dart';
 
-/// 主页三环 + BMI 数据(1:1 迁移自旧 NewMainData)。
+/// 主页三环 + BMI 数据(1:1 迁移自旧 FitMainData)。
 ///
 /// 字段语义对应旧项目:
 /// - triCycleDuration ↔ tricycliDuring
@@ -13,8 +13,8 @@ part 'new_main_data.g.dart';
 /// - goalStrength ↔ goalSportStrength
 /// - goalCalorie ↔ goalCalorie
 @freezed
-class NewMainData with _$NewMainData {
-  const factory NewMainData({
+class FitMainData with _$FitMainData {
+  const factory FitMainData({
     @Default(1) int animationIndex2,
     @Default('') String recordDate,
     @Default(0) int triCycleCalorie,
@@ -29,8 +29,8 @@ class NewMainData with _$NewMainData {
     @Default(160) int bodyHeight,
     @Default(true) bool isLoading,
     @Default(true) bool isLoading2,
-  }) = _NewMainData;
+  }) = _FitMainData;
 
-  factory NewMainData.fromJson(Map<String, dynamic> json) =>
-      _$NewMainDataFromJson(json);
+  factory FitMainData.fromJson(Map<String, dynamic> json) =>
+      _$FitMainDataFromJson(json);
 }

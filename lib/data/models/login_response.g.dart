@@ -28,7 +28,7 @@ _$LoginDataImpl _$$LoginDataImplFromJson(Map<String, dynamic> json) =>
       userInfo:
           json['userInfo'] == null
               ? null
-              : UserInfo.fromJson(json['userInfo'] as Map<String, dynamic>),
+              : FitUserInfo.fromJson(json['userInfo'] as Map<String, dynamic>),
       token: json['token'] as String?,
     );
 

@@ -26,7 +26,7 @@ void main() {
     test('userInfoJson 读写', () async {
       final service = await StorageService.create();
       expect(service.userInfoJson, isNull);
-      await service.setUserInfoJson('{"id":1}');
+      await service.setFitUserInfoJson('{"id":1}');
       expect(service.userInfoJson, '{"id":1}');
     });
 
@@ -48,7 +48,7 @@ void main() {
       final service = await StorageService.create();
       await service.setAccessToken('t');
       await service.setUserId(1);
-      await service.setUserInfoJson('{}');
+      await service.setFitUserInfoJson('{}');
       await service.setHasPassword(true);
       await service.setHeadImageHash('h');
 

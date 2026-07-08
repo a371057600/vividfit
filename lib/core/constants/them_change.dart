@@ -5,8 +5,8 @@ import 'app_fonts.dart';
 
 /// 主题/颜色/字体/字号常量(1:1 迁移自旧项目 util/them_change_tool.dart)。
 ///
-/// 保留原全部静态字段,登录模块及后续模块按原方式引用 ThemChange.xxx。
-class ThemChange {
+/// 保留原全部静态字段,登录模块及后续模块按原方式引用 FitTheme.xxx。
+class FitTheme {
   static Color backgroundColor = const Color(0xFFF5F5F5);
   static Color secondbackGround = const Color.fromARGB(255, 255, 255, 255);
   static Color backgroundColorOld = const Color.fromARGB(255, 0, 0, 0);

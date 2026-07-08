@@ -15,12 +15,12 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-UserInfo _$UserInfoFromJson(Map<String, dynamic> json) {
-  return _UserInfo.fromJson(json);
+FitUserInfo _$FitUserInfoFromJson(Map<String, dynamic> json) {
+  return _FitUserInfo.fromJson(json);
 }
 
 /// @nodoc
-mixin _$UserInfo {
+mixin _$FitUserInfo {
   int? get id => throw _privateConstructorUsedError;
   String? get nickName => throw _privateConstructorUsedError;
   bool? get sex => throw _privateConstructorUsedError; // true = 男
@@ -35,20 +35,22 @@ mixin _$UserInfo {
   bool? get disabled => throw _privateConstructorUsedError;
   bool? get hasPsw => throw _privateConstructorUsedError;
 
-  /// Serializes this UserInfo to a JSON map.
+  /// Serializes this FitUserInfo to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of UserInfo
+  /// Create a copy of FitUserInfo
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $UserInfoCopyWith<UserInfo> get copyWith =>
+  $FitUserInfoCopyWith<FitUserInfo> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $UserInfoCopyWith<$Res> {
-  factory $UserInfoCopyWith(UserInfo value, $Res Function(UserInfo) then) =
-      _$UserInfoCopyWithImpl<$Res, UserInfo>;
+abstract class $FitUserInfoCopyWith<$Res> {
+  factory $FitUserInfoCopyWith(
+    FitUserInfo value,
+    $Res Function(FitUserInfo) then,
+  ) = _$FitUserInfoCopyWithImpl<$Res, FitUserInfo>;
   @useResult
   $Res call({
     int? id,
@@ -68,16 +70,16 @@ abstract class $UserInfoCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
-    implements $UserInfoCopyWith<$Res> {
-  _$UserInfoCopyWithImpl(this._value, this._then);
+class _$FitUserInfoCopyWithImpl<$Res, $Val extends FitUserInfo>
+    implements $FitUserInfoCopyWith<$Res> {
+  _$FitUserInfoCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of UserInfo
+  /// Create a copy of FitUserInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -170,12 +172,12 @@ class _$UserInfoCopyWithImpl<$Res, $Val extends UserInfo>
 }
 
 /// @nodoc
-abstract class _$$UserInfoImplCopyWith<$Res>
-    implements $UserInfoCopyWith<$Res> {
-  factory _$$UserInfoImplCopyWith(
-    _$UserInfoImpl value,
-    $Res Function(_$UserInfoImpl) then,
-  ) = __$$UserInfoImplCopyWithImpl<$Res>;
+abstract class _$$FitUserInfoImplCopyWith<$Res>
+    implements $FitUserInfoCopyWith<$Res> {
+  factory _$$FitUserInfoImplCopyWith(
+    _$FitUserInfoImpl value,
+    $Res Function(_$FitUserInfoImpl) then,
+  ) = __$$FitUserInfoImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
@@ -196,15 +198,15 @@ abstract class _$$UserInfoImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$UserInfoImplCopyWithImpl<$Res>
-    extends _$UserInfoCopyWithImpl<$Res, _$UserInfoImpl>
-    implements _$$UserInfoImplCopyWith<$Res> {
-  __$$UserInfoImplCopyWithImpl(
-    _$UserInfoImpl _value,
-    $Res Function(_$UserInfoImpl) _then,
+class __$$FitUserInfoImplCopyWithImpl<$Res>
+    extends _$FitUserInfoCopyWithImpl<$Res, _$FitUserInfoImpl>
+    implements _$$FitUserInfoImplCopyWith<$Res> {
+  __$$FitUserInfoImplCopyWithImpl(
+    _$FitUserInfoImpl _value,
+    $Res Function(_$FitUserInfoImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of UserInfo
+  /// Create a copy of FitUserInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -224,7 +226,7 @@ class __$$UserInfoImplCopyWithImpl<$Res>
     Object? hasPsw = freezed,
   }) {
     return _then(
-      _$UserInfoImpl(
+      _$FitUserInfoImpl(
         id:
             freezed == id
                 ? _value.id
@@ -297,8 +299,8 @@ class __$$UserInfoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$UserInfoImpl implements _UserInfo {
-  const _$UserInfoImpl({
+class _$FitUserInfoImpl implements _FitUserInfo {
+  const _$FitUserInfoImpl({
     this.id,
     this.nickName,
     this.sex,
@@ -314,8 +316,8 @@ class _$UserInfoImpl implements _UserInfo {
     this.hasPsw,
   });
 
-  factory _$UserInfoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$UserInfoImplFromJson(json);
+  factory _$FitUserInfoImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FitUserInfoImplFromJson(json);
 
   @override
   final int? id;
@@ -347,14 +349,14 @@ class _$UserInfoImpl implements _UserInfo {
 
   @override
   String toString() {
-    return 'UserInfo(id: $id, nickName: $nickName, sex: $sex, birthday: $birthday, height: $height, weight: $weight, headImage: $headImage, mailAddress: $mailAddress, phoneNumber: $phoneNumber, phoneArea: $phoneArea, createTime: $createTime, disabled: $disabled, hasPsw: $hasPsw)';
+    return 'FitUserInfo(id: $id, nickName: $nickName, sex: $sex, birthday: $birthday, height: $height, weight: $weight, headImage: $headImage, mailAddress: $mailAddress, phoneNumber: $phoneNumber, phoneArea: $phoneArea, createTime: $createTime, disabled: $disabled, hasPsw: $hasPsw)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$UserInfoImpl &&
+            other is _$FitUserInfoImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.nickName, nickName) ||
                 other.nickName == nickName) &&
@@ -397,22 +399,22 @@ class _$UserInfoImpl implements _UserInfo {
     hasPsw,
   );
 
-  /// Create a copy of UserInfo
+  /// Create a copy of FitUserInfo
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$UserInfoImplCopyWith<_$UserInfoImpl> get copyWith =>
-      __$$UserInfoImplCopyWithImpl<_$UserInfoImpl>(this, _$identity);
+  _$$FitUserInfoImplCopyWith<_$FitUserInfoImpl> get copyWith =>
+      __$$FitUserInfoImplCopyWithImpl<_$FitUserInfoImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserInfoImplToJson(this);
+    return _$$FitUserInfoImplToJson(this);
   }
 }
 
-abstract class _UserInfo implements UserInfo {
-  const factory _UserInfo({
+abstract class _FitUserInfo implements FitUserInfo {
+  const factory _FitUserInfo({
     final int? id,
     final String? nickName,
     final bool? sex,
@@ -426,10 +428,10 @@ abstract class _UserInfo implements UserInfo {
     final String? createTime,
     final bool? disabled,
     final bool? hasPsw,
-  }) = _$UserInfoImpl;
+  }) = _$FitUserInfoImpl;
 
-  factory _UserInfo.fromJson(Map<String, dynamic> json) =
-      _$UserInfoImpl.fromJson;
+  factory _FitUserInfo.fromJson(Map<String, dynamic> json) =
+      _$FitUserInfoImpl.fromJson;
 
   @override
   int? get id;
@@ -458,10 +460,10 @@ abstract class _UserInfo implements UserInfo {
   @override
   bool? get hasPsw;
 
-  /// Create a copy of UserInfo
+  /// Create a copy of FitUserInfo
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$UserInfoImplCopyWith<_$UserInfoImpl> get copyWith =>
+  _$$FitUserInfoImplCopyWith<_$FitUserInfoImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

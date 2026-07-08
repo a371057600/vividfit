@@ -20,17 +20,17 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     storage = await StorageService.create();
     repo = _MockHomeRepository();
-    registerFallbackValue(const NewMainData());
-    registerFallbackValue(const StatisticsData());
+    registerFallbackValue(const FitMainData());
+    registerFallbackValue(const FitStatsData());
     // HomeNotifier 构造时会异步调用 integrateStatistics,默认返回 base 不变。
     when(() => repo.integrateStatistics(any(), any()))
-        .thenAnswer((inv) => inv.positionalArguments[1] as NewMainData);
+        .thenAnswer((inv) => inv.positionalArguments[1] as FitMainData);
   });
 
   group('HomeNotifier', () {
     test('初始状态:currentIndex=0,isLoading=false 后变 false', () {
       when(() => repo.getSportStatistics())
-          .thenAnswer((_) async => const StatisticsData(code: '200'));
+          .thenAnswer((_) async => const FitStatsData(code: '200'));
       when(() => repo.getStatisticsCalendar())
           .thenAnswer((_) async => false);
       final notifier = HomeNotifier(repo, storage);
@@ -39,7 +39,7 @@ void main() {
 
     test('changePage 切换 tab', () {
       when(() => repo.getSportStatistics())
-          .thenAnswer((_) async => const StatisticsData(code: '200'));
+          .thenAnswer((_) async => const FitStatsData(code: '200'));
       when(() => repo.getStatisticsCalendar())
           .thenAnswer((_) async => false);
       final notifier = HomeNotifier(repo, storage);
@@ -49,7 +49,7 @@ void main() {
 
     test('bmiIndex 返回正确档位', () {
       when(() => repo.getSportStatistics())
-          .thenAnswer((_) async => const StatisticsData(code: '200'));
+          .thenAnswer((_) async => const FitStatsData(code: '200'));
       when(() => repo.getStatisticsCalendar())
           .thenAnswer((_) async => false);
       final notifier = HomeNotifier(repo, storage);
@@ -59,7 +59,7 @@ void main() {
 
     test('mainDataShow 时长格式化', () {
       when(() => repo.getSportStatistics())
-          .thenAnswer((_) async => const StatisticsData(code: '200'));
+          .thenAnswer((_) async => const FitStatsData(code: '200'));
       when(() => repo.getStatisticsCalendar())
           .thenAnswer((_) async => false);
       final notifier = HomeNotifier(repo, storage);
@@ -70,8 +70,8 @@ void main() {
     test('integrateStatistics 累加卡路里/时长/次数', () {
       // 使用真实 HomeRepository 验证纯计算逻辑(integrateStatistics 不触网)。
       final realRepo = HomeRepository(ApiService(storage), storage);
-      final base = const NewMainData(bodyWeight: 70);
-      final stats = const StatisticsData(
+      final base = const FitMainData(bodyWeight: 70);
+      final stats = const FitStatsData(
         code: '200',
         data: [
           StatisticsItem(calorie: 100, duringTime: 600, sportCount: 2),

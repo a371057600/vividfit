@@ -23,7 +23,7 @@ class PhoneLoginPage extends ConsumerWidget {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -38,22 +38,22 @@ class PhoneLoginPage extends ConsumerWidget {
               children: <Widget>[
                 IntlPhoneField(
                   dropdownTextStyle:
-                      TextStyle(color: ThemChange.backgroundColor),
-                  style: TextStyle(color: ThemChange.backgroundColor),
+                      TextStyle(color: FitTheme.backgroundColor),
+                  style: TextStyle(color: FitTheme.backgroundColor),
                   decoration: InputDecoration(
                     hintText: l10n.enterPhoneNumber,
                     hintStyle: const TextStyle(color: Colors.grey),
                     labelStyle:
-                        TextStyle(color: ThemChange.backgroundColor),
+                        TextStyle(color: FitTheme.backgroundColor),
                     counterStyle:
-                        TextStyle(color: ThemChange.backgroundColor),
+                        TextStyle(color: FitTheme.backgroundColor),
                     focusedBorder: UnderlineInputBorder(
                       borderSide:
-                          BorderSide(color: ThemChange.backgroundColor),
+                          BorderSide(color: FitTheme.backgroundColor),
                     ),
                     border: UnderlineInputBorder(
                       borderSide: BorderSide(
-                        color: ThemChange.backgroundColor,
+                        color: FitTheme.backgroundColor,
                         width: 1,
                       ),
                     ),
@@ -89,7 +89,7 @@ class PhoneLoginPage extends ConsumerWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemChange.buttonColor,
+                    backgroundColor: FitTheme.buttonColor,
                   ),
                   child: Container(
                     width: width * 0.8,

@@ -12,7 +12,7 @@ class HomeState with _$HomeState {
     @Default(0) int currentIndex,
 
     /// 主页三环 + BMI 数据
-    @Default(NewMainData()) NewMainData mainData,
+    @Default(FitMainData()) FitMainData mainData,
 
     /// 用户昵称(主页标题用)
     @Default('UserName') String nickName,

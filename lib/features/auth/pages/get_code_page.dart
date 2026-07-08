@@ -27,7 +27,7 @@ class GetCodePage extends ConsumerWidget {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -48,11 +48,11 @@ class GetCodePage extends ConsumerWidget {
                     height: 45,
                     textStyle: TextStyle(
                       fontSize: 22,
-                      color: ThemChange.backgroundColor,
+                      color: FitTheme.backgroundColor,
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: ThemChange.backgroundColor),
+                      border: Border.all(color: FitTheme.backgroundColor),
                     ),
                   ),
                   onCompleted: (String pin) {
@@ -74,7 +74,7 @@ class GetCodePage extends ConsumerWidget {
                         228,
                         227,
                       ),
-                      backgroundColor: ThemChange.buttonColor,
+                      backgroundColor: FitTheme.buttonColor,
                     ),
                     onPressed: reGetCode
                         ? () {
@@ -86,7 +86,7 @@ class GetCodePage extends ConsumerWidget {
                     child: Text(
                       reGetCode ? l10n.reGet : countdown.toString(),
                       style: TextStyle(
-                        color: ThemChange.textButtonColor,
+                        color: FitTheme.textButtonColor,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),

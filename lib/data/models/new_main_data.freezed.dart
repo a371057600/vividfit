@@ -15,12 +15,12 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-NewMainData _$NewMainDataFromJson(Map<String, dynamic> json) {
-  return _NewMainData.fromJson(json);
+FitMainData _$FitMainDataFromJson(Map<String, dynamic> json) {
+  return _FitMainData.fromJson(json);
 }
 
 /// @nodoc
-mixin _$NewMainData {
+mixin _$FitMainData {
   int get animationIndex2 => throw _privateConstructorUsedError;
   String get recordDate => throw _privateConstructorUsedError;
   int get triCycleCalorie => throw _privateConstructorUsedError;
@@ -36,22 +36,22 @@ mixin _$NewMainData {
   bool get isLoading => throw _privateConstructorUsedError;
   bool get isLoading2 => throw _privateConstructorUsedError;
 
-  /// Serializes this NewMainData to a JSON map.
+  /// Serializes this FitMainData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of NewMainData
+  /// Create a copy of FitMainData
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $NewMainDataCopyWith<NewMainData> get copyWith =>
+  $FitMainDataCopyWith<FitMainData> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $NewMainDataCopyWith<$Res> {
-  factory $NewMainDataCopyWith(
-    NewMainData value,
-    $Res Function(NewMainData) then,
-  ) = _$NewMainDataCopyWithImpl<$Res, NewMainData>;
+abstract class $FitMainDataCopyWith<$Res> {
+  factory $FitMainDataCopyWith(
+    FitMainData value,
+    $Res Function(FitMainData) then,
+  ) = _$FitMainDataCopyWithImpl<$Res, FitMainData>;
   @useResult
   $Res call({
     int animationIndex2,
@@ -72,16 +72,16 @@ abstract class $NewMainDataCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$NewMainDataCopyWithImpl<$Res, $Val extends NewMainData>
-    implements $NewMainDataCopyWith<$Res> {
-  _$NewMainDataCopyWithImpl(this._value, this._then);
+class _$FitMainDataCopyWithImpl<$Res, $Val extends FitMainData>
+    implements $FitMainDataCopyWith<$Res> {
+  _$FitMainDataCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of NewMainData
+  /// Create a copy of FitMainData
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -180,12 +180,12 @@ class _$NewMainDataCopyWithImpl<$Res, $Val extends NewMainData>
 }
 
 /// @nodoc
-abstract class _$$NewMainDataImplCopyWith<$Res>
-    implements $NewMainDataCopyWith<$Res> {
-  factory _$$NewMainDataImplCopyWith(
-    _$NewMainDataImpl value,
-    $Res Function(_$NewMainDataImpl) then,
-  ) = __$$NewMainDataImplCopyWithImpl<$Res>;
+abstract class _$$FitMainDataImplCopyWith<$Res>
+    implements $FitMainDataCopyWith<$Res> {
+  factory _$$FitMainDataImplCopyWith(
+    _$FitMainDataImpl value,
+    $Res Function(_$FitMainDataImpl) then,
+  ) = __$$FitMainDataImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
@@ -207,15 +207,15 @@ abstract class _$$NewMainDataImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$NewMainDataImplCopyWithImpl<$Res>
-    extends _$NewMainDataCopyWithImpl<$Res, _$NewMainDataImpl>
-    implements _$$NewMainDataImplCopyWith<$Res> {
-  __$$NewMainDataImplCopyWithImpl(
-    _$NewMainDataImpl _value,
-    $Res Function(_$NewMainDataImpl) _then,
+class __$$FitMainDataImplCopyWithImpl<$Res>
+    extends _$FitMainDataCopyWithImpl<$Res, _$FitMainDataImpl>
+    implements _$$FitMainDataImplCopyWith<$Res> {
+  __$$FitMainDataImplCopyWithImpl(
+    _$FitMainDataImpl _value,
+    $Res Function(_$FitMainDataImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of NewMainData
+  /// Create a copy of FitMainData
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -236,7 +236,7 @@ class __$$NewMainDataImplCopyWithImpl<$Res>
     Object? isLoading2 = null,
   }) {
     return _then(
-      _$NewMainDataImpl(
+      _$FitMainDataImpl(
         animationIndex2:
             null == animationIndex2
                 ? _value.animationIndex2
@@ -314,8 +314,8 @@ class __$$NewMainDataImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$NewMainDataImpl implements _NewMainData {
-  const _$NewMainDataImpl({
+class _$FitMainDataImpl implements _FitMainData {
+  const _$FitMainDataImpl({
     this.animationIndex2 = 1,
     this.recordDate = '',
     this.triCycleCalorie = 0,
@@ -332,8 +332,8 @@ class _$NewMainDataImpl implements _NewMainData {
     this.isLoading2 = true,
   });
 
-  factory _$NewMainDataImpl.fromJson(Map<String, dynamic> json) =>
-      _$$NewMainDataImplFromJson(json);
+  factory _$FitMainDataImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FitMainDataImplFromJson(json);
 
   @override
   @JsonKey()
@@ -380,14 +380,14 @@ class _$NewMainDataImpl implements _NewMainData {
 
   @override
   String toString() {
-    return 'NewMainData(animationIndex2: $animationIndex2, recordDate: $recordDate, triCycleCalorie: $triCycleCalorie, goalCalorie: $goalCalorie, triCycleDuration: $triCycleDuration, goalDuration: $goalDuration, triCycleStrength: $triCycleStrength, goalStrength: $goalStrength, todayCount: $todayCount, bodyWeight: $bodyWeight, bodyBmi: $bodyBmi, bodyHeight: $bodyHeight, isLoading: $isLoading, isLoading2: $isLoading2)';
+    return 'FitMainData(animationIndex2: $animationIndex2, recordDate: $recordDate, triCycleCalorie: $triCycleCalorie, goalCalorie: $goalCalorie, triCycleDuration: $triCycleDuration, goalDuration: $goalDuration, triCycleStrength: $triCycleStrength, goalStrength: $goalStrength, todayCount: $todayCount, bodyWeight: $bodyWeight, bodyBmi: $bodyBmi, bodyHeight: $bodyHeight, isLoading: $isLoading, isLoading2: $isLoading2)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$NewMainDataImpl &&
+            other is _$FitMainDataImpl &&
             (identical(other.animationIndex2, animationIndex2) ||
                 other.animationIndex2 == animationIndex2) &&
             (identical(other.recordDate, recordDate) ||
@@ -437,22 +437,22 @@ class _$NewMainDataImpl implements _NewMainData {
     isLoading2,
   );
 
-  /// Create a copy of NewMainData
+  /// Create a copy of FitMainData
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$NewMainDataImplCopyWith<_$NewMainDataImpl> get copyWith =>
-      __$$NewMainDataImplCopyWithImpl<_$NewMainDataImpl>(this, _$identity);
+  _$$FitMainDataImplCopyWith<_$FitMainDataImpl> get copyWith =>
+      __$$FitMainDataImplCopyWithImpl<_$FitMainDataImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NewMainDataImplToJson(this);
+    return _$$FitMainDataImplToJson(this);
   }
 }
 
-abstract class _NewMainData implements NewMainData {
-  const factory _NewMainData({
+abstract class _FitMainData implements FitMainData {
+  const factory _FitMainData({
     final int animationIndex2,
     final String recordDate,
     final int triCycleCalorie,
@@ -467,10 +467,10 @@ abstract class _NewMainData implements NewMainData {
     final int bodyHeight,
     final bool isLoading,
     final bool isLoading2,
-  }) = _$NewMainDataImpl;
+  }) = _$FitMainDataImpl;
 
-  factory _NewMainData.fromJson(Map<String, dynamic> json) =
-      _$NewMainDataImpl.fromJson;
+  factory _FitMainData.fromJson(Map<String, dynamic> json) =
+      _$FitMainDataImpl.fromJson;
 
   @override
   int get animationIndex2;
@@ -501,10 +501,10 @@ abstract class _NewMainData implements NewMainData {
   @override
   bool get isLoading2;
 
-  /// Create a copy of NewMainData
+  /// Create a copy of FitMainData
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$NewMainDataImplCopyWith<_$NewMainDataImpl> get copyWith =>
+  _$$FitMainDataImplCopyWith<_$FitMainDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

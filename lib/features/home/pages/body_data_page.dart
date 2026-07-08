@@ -6,14 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
+import '../../../l10n/app_localizations.dart';
 import '../notifiers/body_data_notifier.dart';
 
 /// 身体数据页(1:1 复刻旧 NewBodyDataScreen)。
-///
-/// UI 结构:
-/// - AppBar:返回按钮(点击保存并返回)+ "Body Data"
-/// - 黑色卡片容器,内含 4 行(Gender/Birthday/Height/Weight)+ 分割线
-/// - 每行点击弹出底部选择器:性别 Radio / 生日 CupertinoDatePicker / 身高 CupertinoPicker / 体重 CupertinoPicker
 class BodyDataPage extends ConsumerWidget {
   const BodyDataPage({super.key});
 
@@ -26,6 +22,7 @@ class BodyDataPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(bodyDataNotifierProvider);
     final notifier = ref.read(bodyDataNotifierProvider.notifier);
     return SafeArea(
@@ -33,7 +30,7 @@ class BodyDataPage extends ConsumerWidget {
         canPop: false,
         child: Scaffold(
           appBar: AppBar(
-            backgroundColor: ThemChange.backgroundColor,
+            backgroundColor: FitTheme.backgroundColor,
             shadowColor: Colors.transparent,
             elevation: 0,
             scrolledUnderElevation: 0,
@@ -56,11 +53,11 @@ class BodyDataPage extends ConsumerWidget {
                       padding: EdgeInsets.only(bottom: 10).r,
                       height: 100.r,
                       child: Icon(Icons.arrow_back_ios,
-                          color: ThemChange.textColor, size: 40.r),
+                          color: FitTheme.textColor, size: 40.r),
                     ),
-                    Text('Body Data',
+                    Text(l10n.bodyData,
                         style: TextStyle(
-                          color: ThemChange.textColor,
+                          color: FitTheme.textColor,
                           fontSize: 40.sp,
                           fontFamily: AppFonts.hofontmedium,
                         )),
@@ -71,7 +68,7 @@ class BodyDataPage extends ConsumerWidget {
             leadingWidth: MediaQuery.of(context).size.width,
             centerTitle: false,
           ),
-          backgroundColor: ThemChange.backgroundColor,
+          backgroundColor: FitTheme.backgroundColor,
           body: Stack(
             children: [
               Container(
@@ -81,37 +78,18 @@ class BodyDataPage extends ConsumerWidget {
                 width: MediaQuery.of(context).size.width,
                 child: Column(
                   children: [
-                    _buildSingleTextWidget(
-                      context,
-                      ref,
-                      'Gender',
-                      state.sexValue ? 'Male' : 'Female',
-                      () => _sexPickerBottom(context, ref),
-                    ),
+                    _dataRow(context, l10n.gender,
+                        state.sexValue ? l10n.male : l10n.female,
+                        () => _sexPickerBottom(context, ref, l10n)),
                     _divider,
-                    _buildSingleTextWidget(
-                      context,
-                      ref,
-                      'Birthday',
-                      state.birthday,
-                      () => _datePickerBottomWidget(context, ref),
-                    ),
+                    _dataRow(context, l10n.birthday, state.birthday,
+                        () => _datePickerBottom(context, ref, l10n)),
                     _divider,
-                    _buildSingleTextWidget(
-                      context,
-                      ref,
-                      'Height',
-                      '${state.bodyHeight} cm',
-                      () => _heightPickerBottomSheet(context, ref),
-                    ),
+                    _dataRow(context, l10n.height, '${state.bodyHeight} cm',
+                        () => _heightPickerBottom(context, ref, l10n)),
                     _divider,
-                    _buildSingleTextWidget(
-                      context,
-                      ref,
-                      'Weight',
-                      '${state.bodyWeight} kg',
-                      () => _weightPickerBottomSheet(context, ref),
-                    ),
+                    _dataRow(context, l10n.weight, '${state.bodyWeight} kg',
+                        () => _weightPickerBottom(context, ref, l10n)),
                   ],
                 ),
               ),
@@ -122,14 +100,7 @@ class BodyDataPage extends ConsumerWidget {
     );
   }
 
-  /// 单行数据项:左标题 + 右值 + 箭头,点击触发回调。
-  Widget _buildSingleTextWidget(
-    BuildContext context,
-    WidgetRef ref,
-    String leftTitle,
-    String rightTitle,
-    VoidCallback onTap,
-  ) {
+  Widget _dataRow(BuildContext context, String leftTitle, String rightTitle, VoidCallback onTap) {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -140,14 +111,14 @@ class BodyDataPage extends ConsumerWidget {
           children: [
             Text(leftTitle,
                 style: TextStyle(
-                  color: ThemChange.textColor,
+                  color: FitTheme.textColor,
                   fontSize: 15,
                   fontWeight: FontWeight.normal,
                 )),
             const Spacer(),
             Text(rightTitle,
                 style: TextStyle(
-                  color: ThemChange.textColor,
+                  color: FitTheme.textColor,
                   fontSize: 15,
                   fontWeight: FontWeight.normal,
                 )),
@@ -162,9 +133,8 @@ class BodyDataPage extends ConsumerWidget {
     );
   }
 
-  // ---- 性别选择底部弹窗 ----
-  // 旧项目行为:选中某项后立即关闭弹窗。
-  void _sexPickerBottom(BuildContext context, WidgetRef ref) {
+  // ---- 性别选择底部弹窗(选中后立即关闭)----
+  void _sexPickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final notifier = ref.read(bodyDataNotifierProvider.notifier);
     final currentSex = ref.read(bodyDataNotifierProvider).sexValue;
     void select(bool male, BuildContext ctx) {
@@ -174,7 +144,7 @@ class BodyDataPage extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       elevation: 0,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
@@ -192,18 +162,15 @@ class BodyDataPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Gender Selection',
+              Text(l10n.genderSelection,
                   style: TextStyle(
-                    color: ThemChange.textColor,
+                    color: FitTheme.textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   )),
-              _sexRadioRow('Male', true, currentSex, () => select(true, ctx)),
-              const Divider(
-                height: 9,
-                color: Color.fromARGB(47, 132, 129, 129),
-              ),
-              _sexRadioRow('Female', false, currentSex, () => select(false, ctx)),
+              _sexRadioRow(l10n.male, true, currentSex, () => select(true, ctx)),
+              const Divider(height: 9, color: Color.fromARGB(47, 132, 129, 129)),
+              _sexRadioRow(l10n.female, false, currentSex, () => select(false, ctx)),
               Expanded(
                 child: Container(
                   alignment: Alignment.bottomCenter,
@@ -211,8 +178,8 @@ class BodyDataPage extends ConsumerWidget {
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () => Navigator.pop(ctx),
-                    child: Text('Cancel',
-                        style: TextStyle(color: ThemChange.buttonColor)),
+                    child: Text(l10n.cancel,
+                        style: TextStyle(color: FitTheme.buttonColor)),
                   ),
                 ),
               ),
@@ -223,8 +190,7 @@ class BodyDataPage extends ConsumerWidget {
     );
   }
 
-  Widget _sexRadioRow(
-      String label, bool isMale, bool currentSex, VoidCallback onTap) {
+  Widget _sexRadioRow(String label, bool isMale, bool currentSex, VoidCallback onTap) {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -234,14 +200,13 @@ class BodyDataPage extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label,
-                style: TextStyle(color: ThemChange.textColor, fontSize: 15)),
+            Text(label, style: TextStyle(color: FitTheme.textColor, fontSize: 15)),
             SizedBox(
               height: 20,
               width: 20,
               child: Radio<double>(
                 groupValue: currentSex ? 0 : 1,
-                activeColor: ThemChange.buttonColor,
+                activeColor: FitTheme.buttonColor,
                 value: isMale ? 0 : 1,
                 onChanged: (_) => onTap(),
               ),
@@ -253,12 +218,12 @@ class BodyDataPage extends ConsumerWidget {
   }
 
   // ---- 生日选择底部弹窗 ----
-  void _datePickerBottomWidget(BuildContext context, WidgetRef ref) {
+  void _datePickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final notifier = ref.read(bodyDataNotifierProvider.notifier);
     final state = ref.read(bodyDataNotifierProvider);
     showModalBottomSheet(
       context: context,
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       elevation: 0,
       builder: (ctx) {
         return Container(
@@ -271,9 +236,9 @@ class BodyDataPage extends ConsumerWidget {
           height: 300,
           child: Column(
             children: [
-              Text('Date Selection',
+              Text(l10n.dateSelection,
                   style: TextStyle(
-                    color: ThemChange.textColor,
+                    color: FitTheme.textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   )),
@@ -287,7 +252,7 @@ class BodyDataPage extends ConsumerWidget {
                     ),
                   ),
                   child: CupertinoDatePicker(
-                    backgroundColor: ThemChange.backgroundColor,
+                    backgroundColor: FitTheme.backgroundColor,
                     initialDateTime: DateTime(
                       int.tryParse(state.bodyAgeYear) ?? 1991,
                       int.tryParse(state.bodyAgeMonth) ?? 1,
@@ -304,13 +269,13 @@ class BodyDataPage extends ConsumerWidget {
                   ),
                 ),
               ),
-              _confirmButtonGroup(
+              _btnGroup(l10n,
                 onCancel: () => Navigator.pop(ctx),
                 onConfirm: () {
                   final err = notifier.compareDate();
                   if (err != null) {
                     ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(content: Text(err), duration: const Duration(seconds: 2)));
+                        SnackBar(content: Text(l10n.selectDateBeforeToday), duration: const Duration(seconds: 2)));
                   } else {
                     Navigator.pop(ctx);
                   }
@@ -324,12 +289,12 @@ class BodyDataPage extends ConsumerWidget {
   }
 
   // ---- 身高选择底部弹窗(100~240 cm)----
-  void _heightPickerBottomSheet(BuildContext context, WidgetRef ref) {
+  void _heightPickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final notifier = ref.read(bodyDataNotifierProvider.notifier);
     final initial = ref.read(bodyDataNotifierProvider).heightPosition;
     showModalBottomSheet(
       context: context,
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       elevation: 0,
       builder: (ctx) {
         int position = initial;
@@ -343,34 +308,26 @@ class BodyDataPage extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              Text('Height',
+              Text(l10n.heightLabel,
                   style: TextStyle(
-                    color: ThemChange.textColor,
+                    color: FitTheme.textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   )),
               const SizedBox(height: 20),
               Expanded(
                 child: CupertinoPicker(
-                  squeeze: 1.3,
-                  itemExtent: 40,
-                  looping: false,
-                  magnification: 1,
-                  diameterRatio: 0.9,
-                  offAxisFraction: 0.3,
-                  scrollController:
-                      FixedExtentScrollController(initialItem: initial),
+                  squeeze: 1.3, itemExtent: 40, looping: false,
+                  magnification: 1, diameterRatio: 0.9, offAxisFraction: 0.3,
+                  scrollController: FixedExtentScrollController(initialItem: initial),
                   onSelectedItemChanged: (p) => position = p,
                   children: [
                     for (int i = 100; i <= 240; i++)
-                      Center(
-                        child: Text('$i cm',
-                            style: TextStyle(color: ThemChange.textColor)),
-                      ),
+                      Center(child: Text('$i cm', style: TextStyle(color: FitTheme.textColor))),
                   ],
                 ),
               ),
-              _confirmButtonGroup(
+              _btnGroup(l10n,
                 onCancel: () {
                   notifier.resetHeightPosition();
                   Navigator.pop(ctx);
@@ -389,12 +346,12 @@ class BodyDataPage extends ConsumerWidget {
   }
 
   // ---- 体重选择底部弹窗(40~200 kg)----
-  void _weightPickerBottomSheet(BuildContext context, WidgetRef ref) {
+  void _weightPickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     final notifier = ref.read(bodyDataNotifierProvider.notifier);
     final initial = ref.read(bodyDataNotifierProvider).weightPosition;
     showModalBottomSheet(
       context: context,
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       elevation: 0,
       builder: (ctx) {
         int position = initial;
@@ -408,34 +365,26 @@ class BodyDataPage extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              Text('Weight',
+              Text(l10n.weightLabel,
                   style: TextStyle(
-                    color: ThemChange.textColor,
+                    color: FitTheme.textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   )),
               const SizedBox(height: 20),
               Expanded(
                 child: CupertinoPicker(
-                  squeeze: 1.3,
-                  itemExtent: 40,
-                  looping: false,
-                  magnification: 1,
-                  diameterRatio: 0.9,
-                  offAxisFraction: 0.3,
-                  scrollController:
-                      FixedExtentScrollController(initialItem: initial),
+                  squeeze: 1.3, itemExtent: 40, looping: false,
+                  magnification: 1, diameterRatio: 0.9, offAxisFraction: 0.3,
+                  scrollController: FixedExtentScrollController(initialItem: initial),
                   onSelectedItemChanged: (p) => position = p,
                   children: [
                     for (int i = 40; i <= 200; i++)
-                      Center(
-                        child: Text('$i kg',
-                            style: TextStyle(color: ThemChange.textColor)),
-                      ),
+                      Center(child: Text('$i kg', style: TextStyle(color: FitTheme.textColor))),
                   ],
                 ),
               ),
-              _confirmButtonGroup(
+              _btnGroup(l10n,
                 onCancel: () => Navigator.pop(ctx),
                 onConfirm: () {
                   notifier.setWeightPosition(position);
@@ -450,11 +399,7 @@ class BodyDataPage extends ConsumerWidget {
     );
   }
 
-  /// 底部弹窗通用的"取消 / 确认"按钮组(对应旧 _comfirBottonGroupWidget*)。
-  Widget _confirmButtonGroup({
-    required VoidCallback onCancel,
-    required VoidCallback onConfirm,
-  }) {
+  Widget _btnGroup(AppLocalizations l10n, {required VoidCallback onCancel, required VoidCallback onConfirm}) {
     return SizedBox(
       height: 60,
       child: Row(
@@ -465,8 +410,8 @@ class BodyDataPage extends ConsumerWidget {
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
             onTap: onCancel,
-            child: Text('Cancel',
-                style: TextStyle(fontSize: 16, color: ThemChange.buttonColor)),
+            child: Text(l10n.cancel,
+                style: TextStyle(fontSize: 16, color: FitTheme.buttonColor)),
           ),
           const SizedBox(width: 50),
           Container(color: Colors.grey, width: 0.3, height: 30),
@@ -475,8 +420,8 @@ class BodyDataPage extends ConsumerWidget {
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
             onTap: onConfirm,
-            child: Text('Confirm',
-                style: TextStyle(fontSize: 16, color: ThemChange.buttonColor)),
+            child: Text(l10n.confirm,
+                style: TextStyle(fontSize: 16, color: FitTheme.buttonColor)),
           ),
         ],
       ),

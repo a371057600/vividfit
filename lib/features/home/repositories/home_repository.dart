@@ -15,8 +15,8 @@ class HomeRepository {
   bool get isCnServer => _storage.languageNum == 0;
 
   /// 获取运动统计(主页三环数据)。对应旧 getsportStatistics。
-  Future<StatisticsData> getSportStatistics() async {
-    if (_storage.userId == null) return const StatisticsData();
+  Future<FitStatsData> getSportStatistics() async {
+    if (_storage.userId == null) return const FitStatsData();
     final res = await _api.authedGet(
       ApiConstants.getStatisticsUrl,
       queryParameters: {
@@ -25,7 +25,7 @@ class HomeRepository {
         'userId': _storage.userId,
       },
     );
-    return StatisticsData.fromJson(res);
+    return FitStatsData.fromJson(res);
   }
 
   /// 打卡日历检测。对应旧 getStatisticsCalendar。
@@ -53,8 +53,8 @@ class HomeRepository {
     return reached;
   }
 
-  /// 整合统计数据 → NewMainData(对应旧 integratedData)。
-  NewMainData integrateStatistics(StatisticsData stats, NewMainData base) {
+  /// 整合统计数据 → FitMainData(对应旧 integratedData)。
+  FitMainData integrateStatistics(FitStatsData stats, FitMainData base) {
     final totalCalorie = stats.data.fold<int>(
         0, (p, e) => p + (e.calorie));
     final totalDuring = stats.data.fold<int>(

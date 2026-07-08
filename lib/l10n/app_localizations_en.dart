@@ -97,4 +97,301 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get itSeemsNoInternet => 'It seems that there is no internet';
+
+  @override
+  String get fitMonster => 'Fit Monster';
+
+  @override
+  String get madeFitnessFunSlogan => 'Made fitness fun';
+
+  @override
+  String get health => 'Health';
+
+  @override
+  String get sport => 'Sport';
+
+  @override
+  String get device => 'Device';
+
+  @override
+  String get me => 'Me';
+
+  @override
+  String get course => 'Course';
+
+  @override
+  String get timeMin => 'Time/Min';
+
+  @override
+  String get met => 'MET';
+
+  @override
+  String get kcal => 'Kcal';
+
+  @override
+  String get calorieConsumptionToday => 'The calorie consumption today is ';
+
+  @override
+  String get exerciseRecord => 'Exercise Record';
+
+  @override
+  String get bodyData => 'Body Data';
+
+  @override
+  String get bodyMassIndex => 'Body Mass Index';
+
+  @override
+  String get burnRank => 'Burn Rank';
+
+  @override
+  String get ranks => 'Ranks';
+
+  @override
+  String get todaysBurn => 'Today\'s Burn';
+
+  @override
+  String get kcalCons => 'Kcal cons';
+
+  @override
+  String get checkInTask => 'Check-in Task';
+
+  @override
+  String get dailyTask => 'Daily Task';
+
+  @override
+  String get aiPt => 'AI PT';
+
+  @override
+  String get fitnessGoals => 'Fitness Goals';
+
+  @override
+  String get onlineStore => 'Online Store';
+
+  @override
+  String get sportsGoal => 'Sports Goal';
+
+  @override
+  String get sportsReport => 'Sports Report';
+
+  @override
+  String get deviceManual => 'Device Manual';
+
+  @override
+  String get onlineManual => 'Online Manual';
+
+  @override
+  String get underWeight => 'Under Weight';
+
+  @override
+  String get normalWeight => 'Normal Weight';
+
+  @override
+  String get overWeight => 'Over Weight';
+
+  @override
+  String get obesity => 'Obesity';
+
+  @override
+  String get bodyMassIndexColon => 'Body Mass Index:';
+
+  @override
+  String get physicalFitnessAssessment => 'Physical fitness assessment:';
+
+  @override
+  String get bmiLowWeight => 'Low body weight, may pose health risks such as malnutrition';
+
+  @override
+  String get bmiNormalRange => 'Normal range, indicating good physical condition';
+
+  @override
+  String get bmiOverweight => 'Overweight, pay attention to diet and exercise';
+
+  @override
+  String get bmiObese => 'Obese body type, with risk of chronic diseases';
+
+  @override
+  String get courses => 'Courses';
+
+  @override
+  String get daily => 'Daily';
+
+  @override
+  String get fitnessAi => 'Fitness AI';
+
+  @override
+  String get medal => 'Medal';
+
+  @override
+  String get game => 'Game';
+
+  @override
+  String get spinBike => 'Spin    Bike';
+
+  @override
+  String get treadmillMachine => 'Treadmill Machine';
+
+  @override
+  String get ellipticalMachine => 'Elliptical Machine';
+
+  @override
+  String get rowingMachine => 'Rowing Machine';
+
+  @override
+  String get strengthStation => 'Strength Station';
+
+  @override
+  String get times => 'Times';
+
+  @override
+  String get bmi => 'BMI';
+
+  @override
+  String get rankUnit => '';
+
+  @override
+  String get achieved => 'Achieved';
+
+  @override
+  String get unachieved => 'Unachieved';
+
+  @override
+  String get customized => 'Customized';
+
+  @override
+  String get unsatisfactory => 'Unsatisfactory';
+
+  @override
+  String get goalSetting => 'Goal Setting';
+
+  @override
+  String get annualSportsReview => 'Annual Sports Review';
+
+  @override
+  String get manualDownload => 'Manual Download';
+
+  @override
+  String get jdShopping => 'JD Selection';
+
+  @override
+  String get reasonableGoalSetting => 'Set suitable goals';
+
+  @override
+  String get annualSportsSummary => 'Annual Sports Summary';
+
+  @override
+  String get sportsGoalSetting => 'Sports Goal Setting';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get loading => 'Loading....';
+
+  @override
+  String get gender => 'Gender';
+
+  @override
+  String get birthday => 'Birthday';
+
+  @override
+  String get height => 'Height';
+
+  @override
+  String get weight => 'Weight';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get genderSelection => 'Gender Selection';
+
+  @override
+  String get dateSelection => 'Date Selection';
+
+  @override
+  String get heightLabel => 'Height';
+
+  @override
+  String get weightLabel => 'Weight';
+
+  @override
+  String get selectDateBeforeToday => 'Please select date before today';
+
+  @override
+  String get aerobic => 'Aerobic';
+
+  @override
+  String get anaerobic => 'Anaerobic';
+
+  @override
+  String get rehab => 'Rehab';
+
+  @override
+  String get basic => 'Basic';
+
+  @override
+  String get moderate => 'Moderate';
+
+  @override
+  String get hiit => 'HIIT';
+
+  @override
+  String get strength => 'Strength';
+
+  @override
+  String get shaping => 'Shaping';
+
+  @override
+  String get power => 'Power';
+
+  @override
+  String get stage1 => 'Stage 1';
+
+  @override
+  String get stage2 => 'Stage 2';
+
+  @override
+  String get stage3 => 'Stage 3';
+
+  @override
+  String get aerobicContent => 'Oxygen-based endurance exercises: running, swimming, cycling, aerobics, ball games';
+
+  @override
+  String get anaerobicContent => 'High-intensity strength training: weightlifting, resistance training, push-ups, squats, sprints, planks';
+
+  @override
+  String get rehabContent => 'Recovery exercises: phased training for injuries, cardiac rehab under medical supervision';
+
+  @override
+  String get basicArea => 'Seniors/Pregnant/Rehab';
+
+  @override
+  String get moderateArea => 'General fitness/Weight loss';
+
+  @override
+  String get hiitArea => 'Advanced fitness/Busy schedules';
+
+  @override
+  String get strengthArea => 'Builds strength & bone density';
+
+  @override
+  String get shapingArea => 'Shapes muscles & posture';
+
+  @override
+  String get powerArea => 'Explosive power training: sprints, box jumps';
+
+  @override
+  String get stage1Area => 'Prevents muscle atrophy, maintains mobility';
+
+  @override
+  String get stage2Area => 'Strengthens joints & stability';
+
+  @override
+  String get stage3Area => 'Restores daily functions';
 }

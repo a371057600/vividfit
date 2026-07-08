@@ -22,7 +22,7 @@ class LoginResponse with _$LoginResponse {
 @freezed
 class LoginData with _$LoginData {
   const factory LoginData({
-    UserInfo? userInfo,
+    FitUserInfo? userInfo,
     String? token,
   }) = _LoginData;
 

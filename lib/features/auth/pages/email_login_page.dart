@@ -27,7 +27,7 @@ class EmailLoginPage extends ConsumerWidget {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -41,7 +41,7 @@ class EmailLoginPage extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 TextField(
-                  style: TextStyle(color: ThemChange.backgroundColor),
+                  style: TextStyle(color: FitTheme.backgroundColor),
                   decoration: InputDecoration(
                     hintText: l10n.enterEmail,
                     hintStyle: const TextStyle(color: Colors.grey),
@@ -71,9 +71,9 @@ class EmailLoginPage extends ConsumerWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemChange.buttonColor,
+                    backgroundColor: FitTheme.buttonColor,
                     disabledBackgroundColor:
-                        ThemChange.buttonColor.withValues(alpha: 0.5),
+                        FitTheme.buttonColor.withValues(alpha: 0.5),
                   ),
                   child: Container(
                     width: width * 0.8,

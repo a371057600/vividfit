@@ -239,7 +239,7 @@ LoginData _$LoginDataFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$LoginData {
-  UserInfo? get userInfo => throw _privateConstructorUsedError;
+  FitUserInfo? get userInfo => throw _privateConstructorUsedError;
   String? get token => throw _privateConstructorUsedError;
 
   /// Serializes this LoginData to a JSON map.
@@ -257,9 +257,9 @@ abstract class $LoginDataCopyWith<$Res> {
   factory $LoginDataCopyWith(LoginData value, $Res Function(LoginData) then) =
       _$LoginDataCopyWithImpl<$Res, LoginData>;
   @useResult
-  $Res call({UserInfo? userInfo, String? token});
+  $Res call({FitUserInfo? userInfo, String? token});
 
-  $UserInfoCopyWith<$Res>? get userInfo;
+  $FitUserInfoCopyWith<$Res>? get userInfo;
 }
 
 /// @nodoc
@@ -283,7 +283,7 @@ class _$LoginDataCopyWithImpl<$Res, $Val extends LoginData>
                 freezed == userInfo
                     ? _value.userInfo
                     : userInfo // ignore: cast_nullable_to_non_nullable
-                        as UserInfo?,
+                        as FitUserInfo?,
             token:
                 freezed == token
                     ? _value.token
@@ -298,12 +298,12 @@ class _$LoginDataCopyWithImpl<$Res, $Val extends LoginData>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $UserInfoCopyWith<$Res>? get userInfo {
+  $FitUserInfoCopyWith<$Res>? get userInfo {
     if (_value.userInfo == null) {
       return null;
     }
 
-    return $UserInfoCopyWith<$Res>(_value.userInfo!, (value) {
+    return $FitUserInfoCopyWith<$Res>(_value.userInfo!, (value) {
       return _then(_value.copyWith(userInfo: value) as $Val);
     });
   }
@@ -318,10 +318,10 @@ abstract class _$$LoginDataImplCopyWith<$Res>
   ) = __$$LoginDataImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({UserInfo? userInfo, String? token});
+  $Res call({FitUserInfo? userInfo, String? token});
 
   @override
-  $UserInfoCopyWith<$Res>? get userInfo;
+  $FitUserInfoCopyWith<$Res>? get userInfo;
 }
 
 /// @nodoc
@@ -344,7 +344,7 @@ class __$$LoginDataImplCopyWithImpl<$Res>
             freezed == userInfo
                 ? _value.userInfo
                 : userInfo // ignore: cast_nullable_to_non_nullable
-                    as UserInfo?,
+                    as FitUserInfo?,
         token:
             freezed == token
                 ? _value.token
@@ -364,7 +364,7 @@ class _$LoginDataImpl implements _LoginData {
       _$$LoginDataImplFromJson(json);
 
   @override
-  final UserInfo? userInfo;
+  final FitUserInfo? userInfo;
   @override
   final String? token;
 
@@ -402,14 +402,14 @@ class _$LoginDataImpl implements _LoginData {
 }
 
 abstract class _LoginData implements LoginData {
-  const factory _LoginData({final UserInfo? userInfo, final String? token}) =
+  const factory _LoginData({final FitUserInfo? userInfo, final String? token}) =
       _$LoginDataImpl;
 
   factory _LoginData.fromJson(Map<String, dynamic> json) =
       _$LoginDataImpl.fromJson;
 
   @override
-  UserInfo? get userInfo;
+  FitUserInfo? get userInfo;
   @override
   String? get token;
 

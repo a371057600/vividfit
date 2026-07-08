@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'statistics_data.freezed.dart';
 part 'statistics_data.g.dart';
 
-/// 运动统计项(对应旧 StatisticsData.data 列表元素)。
+/// 运动统计项(对应旧 FitStatsData.data 列表元素)。
 @freezed
 class StatisticsItem with _$StatisticsItem {
   const factory StatisticsItem({
@@ -18,12 +18,12 @@ class StatisticsItem with _$StatisticsItem {
 
 /// getStatistics 接口返回。
 @freezed
-class StatisticsData with _$StatisticsData {
-  const factory StatisticsData({
+class FitStatsData with _$FitStatsData {
+  const factory FitStatsData({
     @Default('') String code,
     @Default([]) List<StatisticsItem> data,
-  }) = _StatisticsData;
+  }) = _FitStatsData;
 
-  factory StatisticsData.fromJson(Map<String, dynamic> json) =>
-      _$StatisticsDataFromJson(json);
+  factory FitStatsData.fromJson(Map<String, dynamic> json) =>
+      _$FitStatsDataFromJson(json);
 }

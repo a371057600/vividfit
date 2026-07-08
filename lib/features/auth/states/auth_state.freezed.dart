@@ -23,7 +23,7 @@ mixin _$AuthState {
   bool get agreedToPrivacy => throw _privateConstructorUsedError;
   String? get accessToken => throw _privateConstructorUsedError;
   int? get userId => throw _privateConstructorUsedError;
-  UserInfo? get userInfo => throw _privateConstructorUsedError;
+  FitUserInfo? get userInfo => throw _privateConstructorUsedError;
   String? get errorMessage =>
       throw _privateConstructorUsedError; // ---- 表单字段(对应旧 .obs 变量)----
   String get emailAccount =>
@@ -63,7 +63,7 @@ abstract class $AuthStateCopyWith<$Res> {
     bool agreedToPrivacy,
     String? accessToken,
     int? userId,
-    UserInfo? userInfo,
+    FitUserInfo? userInfo,
     String? errorMessage,
     String emailAccount,
     String password,
@@ -81,7 +81,7 @@ abstract class $AuthStateCopyWith<$Res> {
     int languageNum,
   });
 
-  $UserInfoCopyWith<$Res>? get userInfo;
+  $FitUserInfoCopyWith<$Res>? get userInfo;
 }
 
 /// @nodoc
@@ -152,7 +152,7 @@ class _$AuthStateCopyWithImpl<$Res, $Val extends AuthState>
                 freezed == userInfo
                     ? _value.userInfo
                     : userInfo // ignore: cast_nullable_to_non_nullable
-                        as UserInfo?,
+                        as FitUserInfo?,
             errorMessage:
                 freezed == errorMessage
                     ? _value.errorMessage
@@ -237,12 +237,12 @@ class _$AuthStateCopyWithImpl<$Res, $Val extends AuthState>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $UserInfoCopyWith<$Res>? get userInfo {
+  $FitUserInfoCopyWith<$Res>? get userInfo {
     if (_value.userInfo == null) {
       return null;
     }
 
-    return $UserInfoCopyWith<$Res>(_value.userInfo!, (value) {
+    return $FitUserInfoCopyWith<$Res>(_value.userInfo!, (value) {
       return _then(_value.copyWith(userInfo: value) as $Val);
     });
   }
@@ -263,7 +263,7 @@ abstract class _$$AuthStateImplCopyWith<$Res>
     bool agreedToPrivacy,
     String? accessToken,
     int? userId,
-    UserInfo? userInfo,
+    FitUserInfo? userInfo,
     String? errorMessage,
     String emailAccount,
     String password,
@@ -282,7 +282,7 @@ abstract class _$$AuthStateImplCopyWith<$Res>
   });
 
   @override
-  $UserInfoCopyWith<$Res>? get userInfo;
+  $FitUserInfoCopyWith<$Res>? get userInfo;
 }
 
 /// @nodoc
@@ -352,7 +352,7 @@ class __$$AuthStateImplCopyWithImpl<$Res>
             freezed == userInfo
                 ? _value.userInfo
                 : userInfo // ignore: cast_nullable_to_non_nullable
-                    as UserInfo?,
+                    as FitUserInfo?,
         errorMessage:
             freezed == errorMessage
                 ? _value.errorMessage
@@ -475,7 +475,7 @@ class _$AuthStateImpl implements _AuthState {
   @override
   final int? userId;
   @override
-  final UserInfo? userInfo;
+  final FitUserInfo? userInfo;
   @override
   final String? errorMessage;
   // ---- 表单字段(对应旧 .obs 变量)----
@@ -631,7 +631,7 @@ abstract class _AuthState implements AuthState {
     final bool agreedToPrivacy,
     final String? accessToken,
     final int? userId,
-    final UserInfo? userInfo,
+    final FitUserInfo? userInfo,
     final String? errorMessage,
     final String emailAccount,
     final String password,
@@ -661,7 +661,7 @@ abstract class _AuthState implements AuthState {
   @override
   int? get userId;
   @override
-  UserInfo? get userInfo;
+  FitUserInfo? get userInfo;
   @override
   String? get errorMessage; // ---- 表单字段(对应旧 .obs 变量)----
   @override

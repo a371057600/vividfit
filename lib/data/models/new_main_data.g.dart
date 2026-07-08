@@ -6,8 +6,8 @@ part of 'new_main_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$NewMainDataImpl _$$NewMainDataImplFromJson(Map<String, dynamic> json) =>
-    _$NewMainDataImpl(
+_$FitMainDataImpl _$$FitMainDataImplFromJson(Map<String, dynamic> json) =>
+    _$FitMainDataImpl(
       animationIndex2: (json['animationIndex2'] as num?)?.toInt() ?? 1,
       recordDate: json['recordDate'] as String? ?? '',
       triCycleCalorie: (json['triCycleCalorie'] as num?)?.toInt() ?? 0,
@@ -24,7 +24,7 @@ _$NewMainDataImpl _$$NewMainDataImplFromJson(Map<String, dynamic> json) =>
       isLoading2: json['isLoading2'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$$NewMainDataImplToJson(_$NewMainDataImpl instance) =>
+Map<String, dynamic> _$$FitMainDataImplToJson(_$FitMainDataImpl instance) =>
     <String, dynamic>{
       'animationIndex2': instance.animationIndex2,
       'recordDate': instance.recordDate,

@@ -54,10 +54,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final token = _storage.accessToken;
     final userId = _storage.userId;
     final userInfoJson = _storage.userInfoJson;
-    UserInfo? userInfo;
+    FitUserInfo? userInfo;
     if (userInfoJson != null) {
       try {
-        userInfo = UserInfo.fromJson(
+        userInfo = FitUserInfo.fromJson(
           jsonDecode(userInfoJson) as Map<String, dynamic>,
         );
       } catch (_) {}
@@ -202,7 +202,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.setHeadImageHash(userInfo?.headImage ?? '');
       await _storage.setHasPassword(userInfo?.hasPsw ?? false);
       if (userInfo != null) {
-        await _storage.setUserInfoJson(jsonEncode(userInfo.toJson()));
+        await _storage.setFitUserInfoJson(jsonEncode(userInfo.toJson()));
       }
       await _storage.setFirstOpenApp(false);
       state = state.copyWith(

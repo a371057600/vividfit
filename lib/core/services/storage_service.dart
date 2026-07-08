@@ -27,7 +27,7 @@ class StorageService {
 
   // ---- userInfo(JSON 字符串)----
   String? get userInfoJson => _prefs.getString(StorageKeys.userInfo);
-  Future<void> setUserInfoJson(String json) =>
+  Future<void> setFitUserInfoJson(String json) =>
       _prefs.setString(StorageKeys.userInfo, json);
 
   // ---- hasPassword ----

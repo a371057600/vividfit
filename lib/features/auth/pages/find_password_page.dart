@@ -28,7 +28,7 @@ class FindPasswordPage extends ConsumerWidget {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: ThemChange.backgroundColor,
+      backgroundColor: FitTheme.backgroundColor,
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -43,20 +43,20 @@ class FindPasswordPage extends ConsumerWidget {
               children: <Widget>[
                 TextField(
                   style: TextStyle(
-                    color: ThemChange.backgroundColor,
+                    color: FitTheme.backgroundColor,
                     fontSize: 15,
                   ),
                   decoration: InputDecoration(
                     enabledBorder: UnderlineInputBorder(
                       borderSide:
-                          BorderSide(color: ThemChange.backgroundColor),
+                          BorderSide(color: FitTheme.backgroundColor),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide:
-                          BorderSide(color: ThemChange.backgroundColor),
+                          BorderSide(color: FitTheme.backgroundColor),
                     ),
                     hintText: l10n.enterEmail,
-                    hintStyle: TextStyle(color: ThemChange.backgroundColor),
+                    hintStyle: TextStyle(color: FitTheme.backgroundColor),
                   ),
                   onChanged: (value) => ref
                       .read(authNotifierProvider.notifier)
@@ -65,7 +65,7 @@ class FindPasswordPage extends ConsumerWidget {
                 TextField(
                   obscureText: showPassword,
                   style: TextStyle(
-                    color: ThemChange.backgroundColor,
+                    color: FitTheme.backgroundColor,
                     fontSize: 15,
                   ),
                   decoration: InputDecoration(
@@ -87,14 +87,14 @@ class FindPasswordPage extends ConsumerWidget {
                     ),
                     enabledBorder: UnderlineInputBorder(
                       borderSide:
-                          BorderSide(color: ThemChange.backgroundColor),
+                          BorderSide(color: FitTheme.backgroundColor),
                     ),
                     focusedBorder: UnderlineInputBorder(
                       borderSide:
-                          BorderSide(color: ThemChange.backgroundColor),
+                          BorderSide(color: FitTheme.backgroundColor),
                     ),
                     hintText: l10n.enterPassword,
-                    hintStyle: TextStyle(color: ThemChange.backgroundColor),
+                    hintStyle: TextStyle(color: FitTheme.backgroundColor),
                   ),
                   onChanged: (value) => ref
                       .read(authNotifierProvider.notifier)
@@ -104,23 +104,23 @@ class FindPasswordPage extends ConsumerWidget {
                   children: [
                     TextField(
                       style: TextStyle(
-                        color: ThemChange.backgroundColor,
+                        color: FitTheme.backgroundColor,
                         fontSize: 15,
                       ),
                       decoration: InputDecoration(
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: ThemChange.backgroundColor,
+                            color: FitTheme.backgroundColor,
                           ),
                         ),
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: ThemChange.backgroundColor,
+                            color: FitTheme.backgroundColor,
                           ),
                         ),
                         hintText: l10n.enterCode,
                         hintStyle: TextStyle(
-                          color: ThemChange.backgroundColor,
+                          color: FitTheme.backgroundColor,
                         ),
                       ),
                       onChanged: (value) => ref
@@ -138,7 +138,7 @@ class FindPasswordPage extends ConsumerWidget {
                               child: Text(
                                 l10n.getCode,
                                 style: TextStyle(
-                                  color: ThemChange.buttonColor,
+                                  color: FitTheme.buttonColor,
                                   fontSize: 30.sp,
                                 ),
                               ),
@@ -159,7 +159,7 @@ class FindPasswordPage extends ConsumerWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemChange.buttonColor,
+                    backgroundColor: FitTheme.buttonColor,
                   ),
                   child: Container(
                     alignment: Alignment.center,

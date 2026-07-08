@@ -47,7 +47,7 @@ void main() {
         msg: 'ok',
         data: LoginData(
           token: 'tok_success',
-          userInfo: UserInfo(
+          userInfo: FitUserInfo(
             id: 99,
             nickName: 'Bob',
             hasPsw: true,
@@ -126,7 +126,7 @@ void main() {
     test('新用户注册(code=201):同样视为登录成功并持久化', () async {
       final loginResp = LoginResponse(
         code: '201',
-        data: LoginData(token: 'tok_new', userInfo: UserInfo(id: 7, nickName: 'New')),
+        data: LoginData(token: 'tok_new', userInfo: FitUserInfo(id: 7, nickName: 'New')),
       );
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenAnswer((_) async => loginResp);
@@ -159,7 +159,7 @@ void main() {
     test('logout:清空状态 + 清除本地存储(保留 languageNum)', () async {
       await storage.setAccessToken('t');
       await storage.setUserId(1);
-      await storage.setUserInfoJson('{}');
+      await storage.setFitUserInfoJson('{}');
       await storage.setLanguageNum(0);
 
       final notifier = AuthNotifier(repository, storage);
@@ -176,7 +176,7 @@ void main() {
     test('构造时从本地存储恢复已登录状态', () async {
       await storage.setAccessToken('persisted_tok');
       await storage.setUserId(55);
-      await storage.setUserInfoJson('{"id":55,"nickName":"Restored"}');
+      await storage.setFitUserInfoJson('{"id":55,"nickName":"Restored"}');
 
       final notifier = AuthNotifier(repository, storage);
 

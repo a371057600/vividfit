@@ -88,7 +88,7 @@ class AccountLoginPage extends ConsumerWidget {
                   onPressed: () =>
                       ref.read(authNotifierProvider.notifier).login(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ThemChange.buttonColor,
+                    backgroundColor: FitTheme.buttonColor,
                   ),
                   child: Container(
                     alignment: Alignment.center,

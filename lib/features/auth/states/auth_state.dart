@@ -14,7 +14,7 @@ class AuthState with _$AuthState {
     @Default(false) bool agreedToPrivacy,
     String? accessToken,
     int? userId,
-    UserInfo? userInfo,
+    FitUserInfo? userInfo,
     String? errorMessage,
 
     // ---- 表单字段(对应旧 .obs 变量)----

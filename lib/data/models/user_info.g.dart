@@ -6,8 +6,8 @@ part of 'user_info.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>
-    _$UserInfoImpl(
+_$FitUserInfoImpl _$$FitUserInfoImplFromJson(Map<String, dynamic> json) =>
+    _$FitUserInfoImpl(
       id: (json['id'] as num?)?.toInt(),
       nickName: json['nickName'] as String?,
       sex: json['sex'] as bool?,
@@ -23,7 +23,7 @@ _$UserInfoImpl _$$UserInfoImplFromJson(Map<String, dynamic> json) =>
       hasPsw: json['hasPsw'] as bool?,
     );
 
-Map<String, dynamic> _$$UserInfoImplToJson(_$UserInfoImpl instance) =>
+Map<String, dynamic> _$$FitUserInfoImplToJson(_$FitUserInfoImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'nickName': instance.nickName,

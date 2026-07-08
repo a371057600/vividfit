@@ -133,41 +133,22 @@ class HomeNotifier extends StateNotifier<HomeState> {
         '${s.toString().padLeft(2, '0')}';
   }
 
-  /// 主页卡片显示数据,对应旧 homePageWrapData。
-  String homePageWrapData(int index) {
+  /// 是否简中环境(对应旧 box.read(languageNum) == 0)。
+  bool get isCn => _storage.languageNum == 0;
+
+  /// 主页卡片数值(纯数字,不含文字标签)。
+  /// 文字标签(Achieved/Unachieved/Customized 等)由 UI 层用 l10n 渲染。
+  String cardDataValue(int index) {
     final m = state.mainData;
     switch (index) {
       case 0:
         return m.todayCount.toString();
       case 1:
-        return _storage.languageNum == 0 ? m.bodyBmi.toStringAsFixed(1) : '';
+        return isCn ? m.bodyBmi.toStringAsFixed(1) : '';
       case 2:
         return state.myRank;
       case 3:
         return m.triCycleCalorie.toString();
-      case 4:
-        return state.isReached ? 'Achieved' : 'Unachieved';
-      case 5:
-        if (_storage.languageNum == 0) {
-          return state.hasAiReport ? 'Customized' : 'Unsatisfactory';
-        }
-        return '';
-      default:
-        return '';
-    }
-  }
-
-  /// 主页卡片单位,对应旧 homePageUnit。
-  String homePageUnit(int index) {
-    switch (index) {
-      case 0:
-        return 'Times';
-      case 1:
-        return _storage.languageNum == 0 ? 'BMI' : '';
-      case 2:
-        return _storage.languageNum == 0 ? '名' : '';
-      case 3:
-        return 'Kcal';
       default:
         return '';
     }

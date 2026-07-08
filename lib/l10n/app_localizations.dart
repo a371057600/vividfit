@@ -274,6 +274,600 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'It seems that there is no internet'**
   String get itSeemsNoInternet;
+
+  /// No description provided for @fitMonster.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit Monster'**
+  String get fitMonster;
+
+  /// No description provided for @madeFitnessFunSlogan.
+  ///
+  /// In en, this message translates to:
+  /// **'Made fitness fun'**
+  String get madeFitnessFunSlogan;
+
+  /// No description provided for @health.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get health;
+
+  /// No description provided for @sport.
+  ///
+  /// In en, this message translates to:
+  /// **'Sport'**
+  String get sport;
+
+  /// No description provided for @device.
+  ///
+  /// In en, this message translates to:
+  /// **'Device'**
+  String get device;
+
+  /// No description provided for @me.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get me;
+
+  /// No description provided for @course.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get course;
+
+  /// No description provided for @timeMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Time/Min'**
+  String get timeMin;
+
+  /// No description provided for @met.
+  ///
+  /// In en, this message translates to:
+  /// **'MET'**
+  String get met;
+
+  /// No description provided for @kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Kcal'**
+  String get kcal;
+
+  /// No description provided for @calorieConsumptionToday.
+  ///
+  /// In en, this message translates to:
+  /// **'The calorie consumption today is '**
+  String get calorieConsumptionToday;
+
+  /// No description provided for @exerciseRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Record'**
+  String get exerciseRecord;
+
+  /// No description provided for @bodyData.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Data'**
+  String get bodyData;
+
+  /// No description provided for @bodyMassIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Mass Index'**
+  String get bodyMassIndex;
+
+  /// No description provided for @burnRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Burn Rank'**
+  String get burnRank;
+
+  /// No description provided for @ranks.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranks'**
+  String get ranks;
+
+  /// No description provided for @todaysBurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Burn'**
+  String get todaysBurn;
+
+  /// No description provided for @kcalCons.
+  ///
+  /// In en, this message translates to:
+  /// **'Kcal cons'**
+  String get kcalCons;
+
+  /// No description provided for @checkInTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in Task'**
+  String get checkInTask;
+
+  /// No description provided for @dailyTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Task'**
+  String get dailyTask;
+
+  /// No description provided for @aiPt.
+  ///
+  /// In en, this message translates to:
+  /// **'AI PT'**
+  String get aiPt;
+
+  /// No description provided for @fitnessGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitness Goals'**
+  String get fitnessGoals;
+
+  /// No description provided for @onlineStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Store'**
+  String get onlineStore;
+
+  /// No description provided for @sportsGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports Goal'**
+  String get sportsGoal;
+
+  /// No description provided for @sportsReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports Report'**
+  String get sportsReport;
+
+  /// No description provided for @deviceManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Manual'**
+  String get deviceManual;
+
+  /// No description provided for @onlineManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Manual'**
+  String get onlineManual;
+
+  /// No description provided for @underWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Under Weight'**
+  String get underWeight;
+
+  /// No description provided for @normalWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal Weight'**
+  String get normalWeight;
+
+  /// No description provided for @overWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Over Weight'**
+  String get overWeight;
+
+  /// No description provided for @obesity.
+  ///
+  /// In en, this message translates to:
+  /// **'Obesity'**
+  String get obesity;
+
+  /// No description provided for @bodyMassIndexColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Mass Index:'**
+  String get bodyMassIndexColon;
+
+  /// No description provided for @physicalFitnessAssessment.
+  ///
+  /// In en, this message translates to:
+  /// **'Physical fitness assessment:'**
+  String get physicalFitnessAssessment;
+
+  /// No description provided for @bmiLowWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Low body weight, may pose health risks such as malnutrition'**
+  String get bmiLowWeight;
+
+  /// No description provided for @bmiNormalRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal range, indicating good physical condition'**
+  String get bmiNormalRange;
+
+  /// No description provided for @bmiOverweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Overweight, pay attention to diet and exercise'**
+  String get bmiOverweight;
+
+  /// No description provided for @bmiObese.
+  ///
+  /// In en, this message translates to:
+  /// **'Obese body type, with risk of chronic diseases'**
+  String get bmiObese;
+
+  /// No description provided for @courses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get courses;
+
+  /// No description provided for @daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get daily;
+
+  /// No description provided for @fitnessAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Fitness AI'**
+  String get fitnessAi;
+
+  /// No description provided for @medal.
+  ///
+  /// In en, this message translates to:
+  /// **'Medal'**
+  String get medal;
+
+  /// No description provided for @game.
+  ///
+  /// In en, this message translates to:
+  /// **'Game'**
+  String get game;
+
+  /// No description provided for @spinBike.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin    Bike'**
+  String get spinBike;
+
+  /// No description provided for @treadmillMachine.
+  ///
+  /// In en, this message translates to:
+  /// **'Treadmill Machine'**
+  String get treadmillMachine;
+
+  /// No description provided for @ellipticalMachine.
+  ///
+  /// In en, this message translates to:
+  /// **'Elliptical Machine'**
+  String get ellipticalMachine;
+
+  /// No description provided for @rowingMachine.
+  ///
+  /// In en, this message translates to:
+  /// **'Rowing Machine'**
+  String get rowingMachine;
+
+  /// No description provided for @strengthStation.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength Station'**
+  String get strengthStation;
+
+  /// No description provided for @times.
+  ///
+  /// In en, this message translates to:
+  /// **'Times'**
+  String get times;
+
+  /// No description provided for @bmi.
+  ///
+  /// In en, this message translates to:
+  /// **'BMI'**
+  String get bmi;
+
+  /// No description provided for @rankUnit.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get rankUnit;
+
+  /// No description provided for @achieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Achieved'**
+  String get achieved;
+
+  /// No description provided for @unachieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Unachieved'**
+  String get unachieved;
+
+  /// No description provided for @customized.
+  ///
+  /// In en, this message translates to:
+  /// **'Customized'**
+  String get customized;
+
+  /// No description provided for @unsatisfactory.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsatisfactory'**
+  String get unsatisfactory;
+
+  /// No description provided for @goalSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal Setting'**
+  String get goalSetting;
+
+  /// No description provided for @annualSportsReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Sports Review'**
+  String get annualSportsReview;
+
+  /// No description provided for @manualDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Download'**
+  String get manualDownload;
+
+  /// No description provided for @jdShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'JD Selection'**
+  String get jdShopping;
+
+  /// No description provided for @reasonableGoalSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Set suitable goals'**
+  String get reasonableGoalSetting;
+
+  /// No description provided for @annualSportsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Sports Summary'**
+  String get annualSportsSummary;
+
+  /// No description provided for @sportsGoalSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports Goal Setting'**
+  String get sportsGoalSetting;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading....'**
+  String get loading;
+
+  /// No description provided for @gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// No description provided for @birthday.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get birthday;
+
+  /// No description provided for @height.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get height;
+
+  /// No description provided for @weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weight;
+
+  /// No description provided for @male.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// No description provided for @genderSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender Selection'**
+  String get genderSelection;
+
+  /// No description provided for @dateSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Selection'**
+  String get dateSelection;
+
+  /// No description provided for @heightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get heightLabel;
+
+  /// No description provided for @weightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weightLabel;
+
+  /// No description provided for @selectDateBeforeToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select date before today'**
+  String get selectDateBeforeToday;
+
+  /// No description provided for @aerobic.
+  ///
+  /// In en, this message translates to:
+  /// **'Aerobic'**
+  String get aerobic;
+
+  /// No description provided for @anaerobic.
+  ///
+  /// In en, this message translates to:
+  /// **'Anaerobic'**
+  String get anaerobic;
+
+  /// No description provided for @rehab.
+  ///
+  /// In en, this message translates to:
+  /// **'Rehab'**
+  String get rehab;
+
+  /// No description provided for @basic.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic'**
+  String get basic;
+
+  /// No description provided for @moderate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get moderate;
+
+  /// No description provided for @hiit.
+  ///
+  /// In en, this message translates to:
+  /// **'HIIT'**
+  String get hiit;
+
+  /// No description provided for @strength.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength'**
+  String get strength;
+
+  /// No description provided for @shaping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shaping'**
+  String get shaping;
+
+  /// No description provided for @power.
+  ///
+  /// In en, this message translates to:
+  /// **'Power'**
+  String get power;
+
+  /// No description provided for @stage1.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage 1'**
+  String get stage1;
+
+  /// No description provided for @stage2.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage 2'**
+  String get stage2;
+
+  /// No description provided for @stage3.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage 3'**
+  String get stage3;
+
+  /// No description provided for @aerobicContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Oxygen-based endurance exercises: running, swimming, cycling, aerobics, ball games'**
+  String get aerobicContent;
+
+  /// No description provided for @anaerobicContent.
+  ///
+  /// In en, this message translates to:
+  /// **'High-intensity strength training: weightlifting, resistance training, push-ups, squats, sprints, planks'**
+  String get anaerobicContent;
+
+  /// No description provided for @rehabContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery exercises: phased training for injuries, cardiac rehab under medical supervision'**
+  String get rehabContent;
+
+  /// No description provided for @basicArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Seniors/Pregnant/Rehab'**
+  String get basicArea;
+
+  /// No description provided for @moderateArea.
+  ///
+  /// In en, this message translates to:
+  /// **'General fitness/Weight loss'**
+  String get moderateArea;
+
+  /// No description provided for @hiitArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced fitness/Busy schedules'**
+  String get hiitArea;
+
+  /// No description provided for @strengthArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Builds strength & bone density'**
+  String get strengthArea;
+
+  /// No description provided for @shapingArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Shapes muscles & posture'**
+  String get shapingArea;
+
+  /// No description provided for @powerArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Explosive power training: sprints, box jumps'**
+  String get powerArea;
+
+  /// No description provided for @stage1Area.
+  ///
+  /// In en, this message translates to:
+  /// **'Prevents muscle atrophy, maintains mobility'**
+  String get stage1Area;
+
+  /// No description provided for @stage2Area.
+  ///
+  /// In en, this message translates to:
+  /// **'Strengthens joints & stability'**
+  String get stage2Area;
+
+  /// No description provided for @stage3Area.
+  ///
+  /// In en, this message translates to:
+  /// **'Restores daily functions'**
+  String get stage3Area;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

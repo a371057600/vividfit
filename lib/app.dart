@@ -9,7 +9,7 @@ import 'l10n/app_localizations.dart';
 
 /// 应用根 Widget(1:1 复刻旧项目 ThemeData + ScreenUtilInit + i18n)。
 ///
-/// 保留:dark 主题、iOS 平台、dividerColor grey、iconTheme/textTheme 用 ThemChange、
+/// 保留:dark 主题、iOS 平台、dividerColor grey、iconTheme/textTheme 用 FitTheme、
 /// 文本不缩放(旧 FlutterSmartDialog.init 的 MediaQuery textScaler noScaling)。
 class VividFitApp extends ConsumerWidget {
   const VividFitApp({super.key});
@@ -35,11 +35,11 @@ class VividFitApp extends ConsumerWidget {
               visualDensity: VisualDensity.adaptivePlatformDensity,
               platform: TargetPlatform.iOS,
               primarySwatch: Colors.blue,
-              iconTheme: IconThemeData(color: ThemChange.textColor),
+              iconTheme: IconThemeData(color: FitTheme.textColor),
               textTheme: TextTheme(
                 displayLarge: TextStyle(
-                  fontSize: ThemChange.fonSizeSmall,
-                  color: ThemChange.textColor,
+                  fontSize: FitTheme.fonSizeSmall,
+                  color: FitTheme.textColor,
                 ),
               ),
               useMaterial3: true,

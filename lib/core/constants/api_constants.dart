@@ -40,32 +40,33 @@ class ApiConstants {
   static const String downLoadPictureUrl = '$baseUrl/api/picture/path/';
 
   /// 获取用户信息(后续 profile 模块用,此处先声明)
-  static const String getUserInfoUrl = '$baseUrl/api/user/info';
+  static const String getFitUserInfoUrl = '$baseUrl/api/user/info';
 
   /// 退出登录
   static const String signOutUrl = '$baseUrl/api/user/signOut';
 
   /// 注销账号
-  static const String deleteUserInfoUrl = '$baseUrl/api/user/loginOut';
+  static const String deleteFitUserInfoUrl = '$baseUrl/api/user/loginOut';
 
   /// 刷新 token(后续模块用,此处先声明)
   static const String refreshTokenUrl = '$baseUrl/api/public/refreshToken';
 
   /// 获取运动统计(主页三环数据)
-  static const String getStatisticsUrl = '$baseUrl/api/user/statistics';
+  static const String getStatisticsUrl = '$baseUrl/api/sport/statistics';
 
   /// 获取打卡日历(签到检测)
   static const String getStatisticsCalendarUrl =
-      '$baseUrl/api/user/statisticsCalendar';
+      '$baseUrl/api/sport/statistics/calendar';
 
   /// 获取历史运动数据
-  static const String historySportDataUrl = '$baseUrl/api/user/historyData';
+  static const String historySportDataUrl = '$baseUrl/api/sport/data/history';
 
   /// 推荐列表(首页 banner)
-  static const String recommendListUrl = '$baseUrl/api/public/recommendList';
+  static const String recommendListUrl = '$baseUrl/api/course/recommend/list';
 
   /// 获取徽章总数
-  static const String getMedalTotalCountUrl = '$baseUrl/api/user/medalTotalCount';
+  static const String getMedalTotalCountUrl =
+      '$baseUrl/api/sport/statistics/user/medal/totalCount';
 
   /// 版本检测
   static const String versionUpdate = '$baseUrl/api/public/version';

@@ -21,7 +21,7 @@ mixin _$HomeState {
   int get currentIndex => throw _privateConstructorUsedError;
 
   /// 主页三环 + BMI 数据
-  NewMainData get mainData => throw _privateConstructorUsedError;
+  FitMainData get mainData => throw _privateConstructorUsedError;
 
   /// 用户昵称(主页标题用)
   String get nickName => throw _privateConstructorUsedError;
@@ -58,7 +58,7 @@ abstract class $HomeStateCopyWith<$Res> {
   @useResult
   $Res call({
     int currentIndex,
-    NewMainData mainData,
+    FitMainData mainData,
     String nickName,
     String headImageHash,
     int selectedCharacterIndex,
@@ -68,7 +68,7 @@ abstract class $HomeStateCopyWith<$Res> {
     bool isLoading,
   });
 
-  $NewMainDataCopyWith<$Res> get mainData;
+  $FitMainDataCopyWith<$Res> get mainData;
 }
 
 /// @nodoc
@@ -107,7 +107,7 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
                 null == mainData
                     ? _value.mainData
                     : mainData // ignore: cast_nullable_to_non_nullable
-                        as NewMainData,
+                        as FitMainData,
             nickName:
                 null == nickName
                     ? _value.nickName
@@ -152,8 +152,8 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $NewMainDataCopyWith<$Res> get mainData {
-    return $NewMainDataCopyWith<$Res>(_value.mainData, (value) {
+  $FitMainDataCopyWith<$Res> get mainData {
+    return $FitMainDataCopyWith<$Res>(_value.mainData, (value) {
       return _then(_value.copyWith(mainData: value) as $Val);
     });
   }
@@ -170,7 +170,7 @@ abstract class _$$HomeStateImplCopyWith<$Res>
   @useResult
   $Res call({
     int currentIndex,
-    NewMainData mainData,
+    FitMainData mainData,
     String nickName,
     String headImageHash,
     int selectedCharacterIndex,
@@ -181,7 +181,7 @@ abstract class _$$HomeStateImplCopyWith<$Res>
   });
 
   @override
-  $NewMainDataCopyWith<$Res> get mainData;
+  $FitMainDataCopyWith<$Res> get mainData;
 }
 
 /// @nodoc
@@ -219,7 +219,7 @@ class __$$HomeStateImplCopyWithImpl<$Res>
             null == mainData
                 ? _value.mainData
                 : mainData // ignore: cast_nullable_to_non_nullable
-                    as NewMainData,
+                    as FitMainData,
         nickName:
             null == nickName
                 ? _value.nickName
@@ -265,7 +265,7 @@ class __$$HomeStateImplCopyWithImpl<$Res>
 class _$HomeStateImpl implements _HomeState {
   const _$HomeStateImpl({
     this.currentIndex = 0,
-    this.mainData = const NewMainData(),
+    this.mainData = const FitMainData(),
     this.nickName = 'UserName',
     this.headImageHash = '',
     this.selectedCharacterIndex = 0,
@@ -283,7 +283,7 @@ class _$HomeStateImpl implements _HomeState {
   /// 主页三环 + BMI 数据
   @override
   @JsonKey()
-  final NewMainData mainData;
+  final FitMainData mainData;
 
   /// 用户昵称(主页标题用)
   @override
@@ -375,7 +375,7 @@ class _$HomeStateImpl implements _HomeState {
 abstract class _HomeState implements HomeState {
   const factory _HomeState({
     final int currentIndex,
-    final NewMainData mainData,
+    final FitMainData mainData,
     final String nickName,
     final String headImageHash,
     final int selectedCharacterIndex,
@@ -391,7 +391,7 @@ abstract class _HomeState implements HomeState {
 
   /// 主页三环 + BMI 数据
   @override
-  NewMainData get mainData;
+  FitMainData get mainData;
 
   /// 用户昵称(主页标题用)
   @override

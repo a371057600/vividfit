@@ -224,46 +224,46 @@ abstract class _StatisticsItem implements StatisticsItem {
       throw _privateConstructorUsedError;
 }
 
-StatisticsData _$StatisticsDataFromJson(Map<String, dynamic> json) {
-  return _StatisticsData.fromJson(json);
+FitStatsData _$FitStatsDataFromJson(Map<String, dynamic> json) {
+  return _FitStatsData.fromJson(json);
 }
 
 /// @nodoc
-mixin _$StatisticsData {
+mixin _$FitStatsData {
   String get code => throw _privateConstructorUsedError;
   List<StatisticsItem> get data => throw _privateConstructorUsedError;
 
-  /// Serializes this StatisticsData to a JSON map.
+  /// Serializes this FitStatsData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of StatisticsData
+  /// Create a copy of FitStatsData
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $StatisticsDataCopyWith<StatisticsData> get copyWith =>
+  $FitStatsDataCopyWith<FitStatsData> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $StatisticsDataCopyWith<$Res> {
-  factory $StatisticsDataCopyWith(
-    StatisticsData value,
-    $Res Function(StatisticsData) then,
-  ) = _$StatisticsDataCopyWithImpl<$Res, StatisticsData>;
+abstract class $FitStatsDataCopyWith<$Res> {
+  factory $FitStatsDataCopyWith(
+    FitStatsData value,
+    $Res Function(FitStatsData) then,
+  ) = _$FitStatsDataCopyWithImpl<$Res, FitStatsData>;
   @useResult
   $Res call({String code, List<StatisticsItem> data});
 }
 
 /// @nodoc
-class _$StatisticsDataCopyWithImpl<$Res, $Val extends StatisticsData>
-    implements $StatisticsDataCopyWith<$Res> {
-  _$StatisticsDataCopyWithImpl(this._value, this._then);
+class _$FitStatsDataCopyWithImpl<$Res, $Val extends FitStatsData>
+    implements $FitStatsDataCopyWith<$Res> {
+  _$FitStatsDataCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of StatisticsData
+  /// Create a copy of FitStatsData
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -287,33 +287,33 @@ class _$StatisticsDataCopyWithImpl<$Res, $Val extends StatisticsData>
 }
 
 /// @nodoc
-abstract class _$$StatisticsDataImplCopyWith<$Res>
-    implements $StatisticsDataCopyWith<$Res> {
-  factory _$$StatisticsDataImplCopyWith(
-    _$StatisticsDataImpl value,
-    $Res Function(_$StatisticsDataImpl) then,
-  ) = __$$StatisticsDataImplCopyWithImpl<$Res>;
+abstract class _$$FitStatsDataImplCopyWith<$Res>
+    implements $FitStatsDataCopyWith<$Res> {
+  factory _$$FitStatsDataImplCopyWith(
+    _$FitStatsDataImpl value,
+    $Res Function(_$FitStatsDataImpl) then,
+  ) = __$$FitStatsDataImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String code, List<StatisticsItem> data});
 }
 
 /// @nodoc
-class __$$StatisticsDataImplCopyWithImpl<$Res>
-    extends _$StatisticsDataCopyWithImpl<$Res, _$StatisticsDataImpl>
-    implements _$$StatisticsDataImplCopyWith<$Res> {
-  __$$StatisticsDataImplCopyWithImpl(
-    _$StatisticsDataImpl _value,
-    $Res Function(_$StatisticsDataImpl) _then,
+class __$$FitStatsDataImplCopyWithImpl<$Res>
+    extends _$FitStatsDataCopyWithImpl<$Res, _$FitStatsDataImpl>
+    implements _$$FitStatsDataImplCopyWith<$Res> {
+  __$$FitStatsDataImplCopyWithImpl(
+    _$FitStatsDataImpl _value,
+    $Res Function(_$FitStatsDataImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of StatisticsData
+  /// Create a copy of FitStatsData
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({Object? code = null, Object? data = null}) {
     return _then(
-      _$StatisticsDataImpl(
+      _$FitStatsDataImpl(
         code:
             null == code
                 ? _value.code
@@ -331,14 +331,14 @@ class __$$StatisticsDataImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$StatisticsDataImpl implements _StatisticsData {
-  const _$StatisticsDataImpl({
+class _$FitStatsDataImpl implements _FitStatsData {
+  const _$FitStatsDataImpl({
     this.code = '',
     final List<StatisticsItem> data = const [],
   }) : _data = data;
 
-  factory _$StatisticsDataImpl.fromJson(Map<String, dynamic> json) =>
-      _$$StatisticsDataImplFromJson(json);
+  factory _$FitStatsDataImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FitStatsDataImplFromJson(json);
 
   @override
   @JsonKey()
@@ -354,14 +354,14 @@ class _$StatisticsDataImpl implements _StatisticsData {
 
   @override
   String toString() {
-    return 'StatisticsData(code: $code, data: $data)';
+    return 'FitStatsData(code: $code, data: $data)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$StatisticsDataImpl &&
+            other is _$FitStatsDataImpl &&
             (identical(other.code, code) || other.code == code) &&
             const DeepCollectionEquality().equals(other._data, _data));
   }
@@ -374,41 +374,38 @@ class _$StatisticsDataImpl implements _StatisticsData {
     const DeepCollectionEquality().hash(_data),
   );
 
-  /// Create a copy of StatisticsData
+  /// Create a copy of FitStatsData
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$StatisticsDataImplCopyWith<_$StatisticsDataImpl> get copyWith =>
-      __$$StatisticsDataImplCopyWithImpl<_$StatisticsDataImpl>(
-        this,
-        _$identity,
-      );
+  _$$FitStatsDataImplCopyWith<_$FitStatsDataImpl> get copyWith =>
+      __$$FitStatsDataImplCopyWithImpl<_$FitStatsDataImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$StatisticsDataImplToJson(this);
+    return _$$FitStatsDataImplToJson(this);
   }
 }
 
-abstract class _StatisticsData implements StatisticsData {
-  const factory _StatisticsData({
+abstract class _FitStatsData implements FitStatsData {
+  const factory _FitStatsData({
     final String code,
     final List<StatisticsItem> data,
-  }) = _$StatisticsDataImpl;
+  }) = _$FitStatsDataImpl;
 
-  factory _StatisticsData.fromJson(Map<String, dynamic> json) =
-      _$StatisticsDataImpl.fromJson;
+  factory _FitStatsData.fromJson(Map<String, dynamic> json) =
+      _$FitStatsDataImpl.fromJson;
 
   @override
   String get code;
   @override
   List<StatisticsItem> get data;
 
-  /// Create a copy of StatisticsData
+  /// Create a copy of FitStatsData
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$StatisticsDataImplCopyWith<_$StatisticsDataImpl> get copyWith =>
+  _$$FitStatsDataImplCopyWith<_$FitStatsDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

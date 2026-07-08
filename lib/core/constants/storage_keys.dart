@@ -6,7 +6,7 @@ class StorageKeys {
 
   static const String accessToken = 'AccessToken';
   static const String userId = 'userId';
-  static const String userInfo = 'userInfo'; // UserInfo 的 JSON 字符串
+  static const String userInfo = 'userInfo'; // FitUserInfo 的 JSON 字符串
   static const String hasPassword = 'hasPassword';
   static const String headImageHash = 'HeadImageHash';
   static const String languageNum = 'languageNum'; // 0=简中 1=英 2=繁中...

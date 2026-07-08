@@ -21,8 +21,8 @@ Map<String, dynamic> _$$StatisticsItemImplToJson(
   'sportCount': instance.sportCount,
 };
 
-_$StatisticsDataImpl _$$StatisticsDataImplFromJson(Map<String, dynamic> json) =>
-    _$StatisticsDataImpl(
+_$FitStatsDataImpl _$$FitStatsDataImplFromJson(Map<String, dynamic> json) =>
+    _$FitStatsDataImpl(
       code: json['code'] as String? ?? '',
       data:
           (json['data'] as List<dynamic>?)
@@ -31,6 +31,5 @@ _$StatisticsDataImpl _$$StatisticsDataImplFromJson(Map<String, dynamic> json) =>
           const [],
     );
 
-Map<String, dynamic> _$$StatisticsDataImplToJson(
-  _$StatisticsDataImpl instance,
-) => <String, dynamic>{'code': instance.code, 'data': instance.data};
+Map<String, dynamic> _$$FitStatsDataImplToJson(_$FitStatsDataImpl instance) =>
+    <String, dynamic>{'code': instance.code, 'data': instance.data};
