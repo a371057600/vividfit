@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/home/repositories/home_repository.dart';
 import 'api_service.dart';
 import 'storage_service.dart';
 
@@ -17,4 +18,8 @@ final storageServiceProvider = Provider<StorageService>((ref) {
 final apiServiceProvider = Provider<ApiService>((ref) {
   final storage = ref.watch(storageServiceProvider);
   return ApiService(storage);
+});
+
+final homeRepositoryProvider = Provider<HomeRepository>((ref) {
+  return HomeRepository(ref.read(apiServiceProvider), ref.read(storageServiceProvider));
 });
