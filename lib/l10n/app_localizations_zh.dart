@@ -394,4 +394,73 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get stage3Area => '恢复日常功能';
+
+  @override
+  String get settings => '设置';
+
+  @override
+  String get other => '其他';
+
+  @override
+  String get virtualCoach => '虚拟教练';
+
+  @override
+  String get received => '已获得';
+
+  @override
+  String get sportsSettings => '运动设置';
+
+  @override
+  String get accountSecurity => '账号安全';
+
+  @override
+  String get softwareUpdate => '软件更新';
+
+  @override
+  String get userPrivacyPolicy => '用户隐私政策';
+
+  @override
+  String get about => '关于';
+
+  @override
+  String get reLogin => '重新登录';
+
+  @override
+  String get basicSettings => '基本设置';
+
+  @override
+  String get avatar => '头像';
+
+  @override
+  String get create => '创建';
+
+  @override
+  String get nickname => '昵称';
+
+  @override
+  String get setNickName => '设置昵称';
+
+  @override
+  String get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname => '昵称用于隐藏您的真实姓名，系统中的其他用户可以看到您的昵称。';
+
+  @override
+  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter => '字数不应少于3个，请重新输入';
+
+  @override
+  String get thereAreMoreThan10WordsPleaseReEnter => '字数超过10个，请重新输入';
+
+  @override
+  String get takePhoto => '拍照';
+
+  @override
+  String get pictureSelect => '图片选择';
+
+  @override
+  String get returnButton => '返回';
+
+  @override
+  String get serviceHotline => '服务热线';
+
+  @override
+  String get legalInformation => '法律信息';
 }

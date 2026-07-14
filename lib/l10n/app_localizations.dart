@@ -868,6 +868,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Restores daily functions'**
   String get stage3Area;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// No description provided for @virtualCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Virtual Coach'**
+  String get virtualCoach;
+
+  /// No description provided for @received.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get received;
+
+  /// No description provided for @sportsSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Sports Settings'**
+  String get sportsSettings;
+
+  /// No description provided for @accountSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security'**
+  String get accountSecurity;
+
+  /// No description provided for @softwareUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Software Update'**
+  String get softwareUpdate;
+
+  /// No description provided for @userPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'User Privacy Policy'**
+  String get userPrivacyPolicy;
+
+  /// No description provided for @about.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// No description provided for @reLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-login'**
+  String get reLogin;
+
+  /// No description provided for @basicSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Settings'**
+  String get basicSettings;
+
+  /// No description provided for @avatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar'**
+  String get avatar;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @nickname.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get nickname;
+
+  /// No description provided for @setNickName.
+  ///
+  /// In en, this message translates to:
+  /// **'Set NickName'**
+  String get setNickName;
+
+  /// No description provided for @theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname.
+  ///
+  /// In en, this message translates to:
+  /// **'The nickname is used to hide your real name. Other users in the system can see your nickname.'**
+  String get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname;
+
+  /// No description provided for @theNumberOfWordsShouldNotBeLessThan3PleaseReEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'The number of words should not be less than 3, please re-enter'**
+  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter;
+
+  /// No description provided for @thereAreMoreThan10WordsPleaseReEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'There are more than 10 words, please re-enter'**
+  String get thereAreMoreThan10WordsPleaseReEnter;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @pictureSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture Select'**
+  String get pictureSelect;
+
+  /// No description provided for @returnButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get returnButton;
+
+  /// No description provided for @serviceHotline.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Hotline'**
+  String get serviceHotline;
+
+  /// No description provided for @legalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Information'**
+  String get legalInformation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

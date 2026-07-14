@@ -14,6 +14,13 @@ import '../../features/home/pages/body_data_page.dart';
 import '../../features/home/pages/goal_setting_page.dart';
 import '../../features/home/pages/home_shell_screen.dart';
 import '../../features/home/pages/placeholder_page.dart';
+import '../../features/about/pages/about_info_page.dart';
+import '../../features/about/pages/about_shell_page.dart';
+import '../../features/about/pages/account_security_page.dart';
+import '../../features/about/pages/avatar_select_page.dart';
+import '../../features/about/pages/medal_display_page.dart';
+import '../../features/about/pages/sport_setting_page.dart';
+import '../../features/about/pages/user_settings_page.dart';
 
 /// 登录流程所有路由(未登录态允许停留的页面)。
 const _loginFlowRoutes = {
@@ -104,6 +111,42 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'placeholder',
         builder: (context, state) =>
             const PlaceholderPage(targetName: 'Placeholder'),
+      ),
+      // About 模块路由
+      GoRoute(
+        path: '/about-shell',
+        name: 'about-shell',
+        builder: (context, state) => const AboutShellPage(),
+      ),
+      GoRoute(
+        path: '/user-settings',
+        name: 'user-settings',
+        builder: (context, state) => const UserSettingsPage(),
+      ),
+      GoRoute(
+        path: '/avatar-select',
+        name: 'avatar-select',
+        builder: (context, state) => const AvatarSelectPage(),
+      ),
+      GoRoute(
+        path: '/about-info',
+        name: 'about-info',
+        builder: (context, state) => const AboutInfoPage(),
+      ),
+      GoRoute(
+        path: '/sport-setting',
+        name: 'sport-setting',
+        builder: (context, state) => const SportSettingPage(),
+      ),
+      GoRoute(
+        path: '/account-security',
+        name: 'account-security',
+        builder: (context, state) => const AccountSecurityPage(),
+      ),
+      GoRoute(
+        path: '/medal-display',
+        name: 'medal-display',
+        builder: (context, state) => const MedalDisplayPage(),
       ),
     ],
   );

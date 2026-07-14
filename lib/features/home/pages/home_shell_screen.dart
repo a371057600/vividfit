@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
@@ -107,7 +108,13 @@ class HomeShellScreen extends ConsumerWidget {
               type: BottomNavigationBarType.fixed,
               selectedItemColor: FitTheme.buttonColor,
               unselectedItemColor: FitTheme.textColor,
-              onTap: (i) => notifier.changePage(i),
+              onTap: (i) {
+                if (i == 3) {
+                  context.go('/about-shell');
+                } else {
+                  notifier.changePage(i);
+                }
+              },
             ),
           ),
         ),

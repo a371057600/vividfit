@@ -1,4 +1,4 @@
-package com.vividfit.vividfit_v2
+package cn.rido.vividfit
 
 import io.flutter.embedding.android.FlutterActivity
 

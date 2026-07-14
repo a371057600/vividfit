@@ -394,4 +394,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get stage3Area => 'Restores daily functions';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get virtualCoach => 'Virtual Coach';
+
+  @override
+  String get received => 'Received';
+
+  @override
+  String get sportsSettings => 'Sports Settings';
+
+  @override
+  String get accountSecurity => 'Account Security';
+
+  @override
+  String get softwareUpdate => 'Software Update';
+
+  @override
+  String get userPrivacyPolicy => 'User Privacy Policy';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get reLogin => 'Re-login';
+
+  @override
+  String get basicSettings => 'Basic Settings';
+
+  @override
+  String get avatar => 'Avatar';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get nickname => 'Nickname';
+
+  @override
+  String get setNickName => 'Set NickName';
+
+  @override
+  String get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname => 'The nickname is used to hide your real name. Other users in the system can see your nickname.';
+
+  @override
+  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter => 'The number of words should not be less than 3, please re-enter';
+
+  @override
+  String get thereAreMoreThan10WordsPleaseReEnter => 'There are more than 10 words, please re-enter';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get pictureSelect => 'Picture Select';
+
+  @override
+  String get returnButton => 'Return';
+
+  @override
+  String get serviceHotline => 'Service Hotline';
+
+  @override
+  String get legalInformation => 'Legal Information';
 }
