@@ -463,4 +463,70 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get legalInformation => '法律信息';
+
+  @override
+  String get action => '动作';
+
+  @override
+  String get description => '描述';
+
+  @override
+  String get connect => '连接';
+
+  @override
+  String get courseProposal => '课程建议';
+
+  @override
+  String get courseDescription => '课程描述';
+
+  @override
+  String get notice => '注意事项';
+
+  @override
+  String get download => '下载';
+
+  @override
+  String get play => '开始';
+
+  @override
+  String get sportCount => '次数';
+
+  @override
+  String get score => '得分';
+
+  @override
+  String get back => '返回';
+
+  @override
+  String get quickStart => '快速开始';
+
+  @override
+  String get courseTraining => '课程训练';
+
+  @override
+  String get realScene => '实景模式';
+
+  @override
+  String get cityAdventure => '城市探险';
+
+  @override
+  String get recreationalFitness => '趣味健身';
+
+  @override
+  String get deviceConnection => '设备连接';
+
+  @override
+  String get pleaseConnectDevice => '请先连接设备';
+
+  @override
+  String get deviceSelection => '设备选择';
+
+  @override
+  String get pleaseOpenBluetooth => '请打开蓝牙';
+
+  @override
+  String get connected => '已连接';
+
+  @override
+  String get deviceDisconnected => '设备已断开连接';
 }

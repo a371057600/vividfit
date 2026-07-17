@@ -463,4 +463,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legalInformation => 'Legal Information';
+
+  @override
+  String get action => 'Action';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get connect => 'Connect';
+
+  @override
+  String get courseProposal => 'Course Proposal';
+
+  @override
+  String get courseDescription => 'Course Description';
+
+  @override
+  String get notice => 'Notice';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get play => 'Play';
+
+  @override
+  String get sportCount => 'Count';
+
+  @override
+  String get score => 'Score';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get quickStart => 'Quick Start';
+
+  @override
+  String get courseTraining => 'Course Training';
+
+  @override
+  String get realScene => 'Real Scene';
+
+  @override
+  String get cityAdventure => 'City Adventure';
+
+  @override
+  String get recreationalFitness => 'Recreational Fitness';
+
+  @override
+  String get deviceConnection => 'Device Connection';
+
+  @override
+  String get pleaseConnectDevice => 'Please connect the device first';
+
+  @override
+  String get deviceSelection => 'Device Selection';
+
+  @override
+  String get pleaseOpenBluetooth => 'Please turn on Bluetooth';
+
+  @override
+  String get connected => 'Connected';
+
+  @override
+  String get deviceDisconnected => 'Device disconnected';
 }

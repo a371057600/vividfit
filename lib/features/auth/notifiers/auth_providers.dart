@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/services/providers.dart';
+import '../../../core/services/api_service_provider.dart';
+import '../../../core/services/storage_service_provider.dart';
 import '../repositories/auth_repository.dart';
 import '../states/auth_state.dart';
 import 'auth_notifier.dart';

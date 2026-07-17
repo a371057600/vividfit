@@ -113,6 +113,29 @@ class StorageService {
   Future<void> setSecondSettingIndex(int v) =>
       _prefs.setInt(StorageKeys.secondSettingIndex, v);
 
+  // ---- 大设备模块:已连接设备名持久化 ----
+  String? get bikeMachineName => _prefs.getString(StorageKeys.bikeMachine);
+  Future<void> setBikeMachineName(String v) =>
+      _prefs.setString(StorageKeys.bikeMachine, v);
+
+  String? get treadmillName => _prefs.getString(StorageKeys.treadmill);
+  Future<void> setTreadmillName(String v) =>
+      _prefs.setString(StorageKeys.treadmill, v);
+
+  String? get ellipticalMachineName =>
+      _prefs.getString(StorageKeys.ellipticalMachine);
+  Future<void> setEllipticalMachineName(String v) =>
+      _prefs.setString(StorageKeys.ellipticalMachine, v);
+
+  String? get rowerMachineName => _prefs.getString(StorageKeys.powerMachine);
+  Future<void> setRowerMachineName(String v) =>
+      _prefs.setString(StorageKeys.powerMachine, v);
+
+  String? get strengthStationName =>
+      _prefs.getString(StorageKeys.powerStationMachine);
+  Future<void> setStrengthStationName(String v) =>
+      _prefs.setString(StorageKeys.powerStationMachine, v);
+
   /// 清除所有登录相关数据(登出时调用)
   Future<void> clearAuth() async {
     await _prefs.remove(StorageKeys.accessToken);

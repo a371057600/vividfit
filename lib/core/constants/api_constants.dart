@@ -80,4 +80,19 @@ class ApiConstants {
 
   /// app_pass2 固定值(来自旧项目 RequestUrl.appPass2)
   static const String appPass2 = 'Chuan-collector';
+
+  /// 获取课程列表
+  static const String getCourseListUrl = '$baseUrl/api/course/list';
+
+  /// 获取课程动作详情
+  static const String getCourseActionUrl = '$baseUrl/api/course/action';
+
+  /// 下载课程资源(zip/图片/voice)
+  static const String downLoadZipFile = '$baseUrl/api/picture/path/';
+
+  /// 下载音频资源(bgm/介绍语音)
+  static const String downVoiceUrl = '$baseUrl/api/picture/path/';
+
+  /// 获取课程图片基础路径
+  static const String getUserPictureUrl = '$baseUrl/api/picture/path/';
 }

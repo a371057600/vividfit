@@ -1006,6 +1006,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Legal Information'**
   String get legalInformation;
+
+  /// No description provided for @action.
+  ///
+  /// In en, this message translates to:
+  /// **'Action'**
+  String get action;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @courseProposal.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Proposal'**
+  String get courseProposal;
+
+  /// No description provided for @courseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Description'**
+  String get courseDescription;
+
+  /// No description provided for @notice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get notice;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @play.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get play;
+
+  /// No description provided for @sportCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get sportCount;
+
+  /// No description provided for @score.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get score;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @quickStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Start'**
+  String get quickStart;
+
+  /// No description provided for @courseTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Training'**
+  String get courseTraining;
+
+  /// No description provided for @realScene.
+  ///
+  /// In en, this message translates to:
+  /// **'Real Scene'**
+  String get realScene;
+
+  /// No description provided for @cityAdventure.
+  ///
+  /// In en, this message translates to:
+  /// **'City Adventure'**
+  String get cityAdventure;
+
+  /// No description provided for @recreationalFitness.
+  ///
+  /// In en, this message translates to:
+  /// **'Recreational Fitness'**
+  String get recreationalFitness;
+
+  /// No description provided for @deviceConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Connection'**
+  String get deviceConnection;
+
+  /// No description provided for @pleaseConnectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Please connect the device first'**
+  String get pleaseConnectDevice;
+
+  /// No description provided for @deviceSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Selection'**
+  String get deviceSelection;
+
+  /// No description provided for @pleaseOpenBluetooth.
+  ///
+  /// In en, this message translates to:
+  /// **'Please turn on Bluetooth'**
+  String get pleaseOpenBluetooth;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @deviceDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Device disconnected'**
+  String get deviceDisconnected;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

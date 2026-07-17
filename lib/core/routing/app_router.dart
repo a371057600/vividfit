@@ -21,6 +21,10 @@ import '../../features/about/pages/avatar_select_page.dart';
 import '../../features/about/pages/medal_display_page.dart';
 import '../../features/about/pages/sport_setting_page.dart';
 import '../../features/about/pages/user_settings_page.dart';
+import '../../features/course/pages/course_list_page.dart';
+import '../../features/course/pages/course_detail_page.dart';
+import '../../features/course/pages/course_play_page.dart';
+import '../../features/big_device/pages/gym_device_entry_screen.dart';
 
 /// 登录流程所有路由(未登录态允许停留的页面)。
 const _loginFlowRoutes = {
@@ -147,6 +151,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/medal-display',
         name: 'medal-display',
         builder: (context, state) => const MedalDisplayPage(),
+      ),
+      // Course 模块路由
+      GoRoute(
+        path: '/course-list',
+        name: 'course-list',
+        builder: (context, state) => const CourseListPage(),
+      ),
+      GoRoute(
+        path: '/course-detail',
+        name: 'course-detail',
+        builder: (context, state) => const CourseDetailPage(),
+      ),
+      GoRoute(
+        path: '/course-play',
+        name: 'course-play',
+        builder: (context, state) => const CoursePlayPage(),
+      ),
+      // Big Device 模块路由
+      GoRoute(
+        path: '/big-device-entry',
+        name: 'big-device-entry',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final deviceCategoryIndex = extra?['deviceCategoryIndex'] as int? ?? 0;
+          return GymDeviceEntryScreen(deviceCategoryIndex: deviceCategoryIndex);
+        },
       ),
     ],
   );

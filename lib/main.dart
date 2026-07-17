@@ -8,7 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'app.dart';
-import 'core/services/providers.dart';
+import 'core/services/storage_service_provider.dart';
 import 'core/services/storage_service.dart';
 
 void main() async {

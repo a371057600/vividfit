@@ -40,4 +40,11 @@ class StorageKeys {
   static const String allowGetPermission = 'AllowGetPermission';
   static const String allowAskPermission = 'AllowAskPermission';
   static const String permissionDateTime = 'PermissionDateTime';
+
+  // ---- 大设备模块 ----
+  static const String bikeMachine = 'bikeMachine';
+  static const String treadmill = 'treadmill';
+  static const String ellipticalMachine = 'ellipticalMachine';
+  static const String powerMachine = 'powerMachine';
+  static const String powerStationMachine = 'powerStationMachine';
 }
