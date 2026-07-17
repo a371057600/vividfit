@@ -9,7 +9,7 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../data/models/course_list.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/course_providers.dart';
+import '../notifiers/course_list_notifier.dart';
 import '../states/course_list_state.dart';
 
 /// 课程列表页（1:1 还原原 new_course_list_homepage.dart + new_course_list_screen.dart）。
