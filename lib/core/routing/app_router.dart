@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/notifiers/auth_notifier.dart';
 import '../../features/auth/pages/account_login_page.dart';
@@ -26,7 +27,8 @@ import '../../features/course/pages/course_detail_page.dart';
 import '../../features/course/pages/course_play_page.dart';
 import '../../features/big_device/pages/gym_device_entry_screen.dart';
 
-/// 登录流程所有路由(未登录态允许停留的页面)。
+part 'app_router.g.dart';
+
 const _loginFlowRoutes = {
   '/splash',
   '/login',
@@ -37,14 +39,8 @@ const _loginFlowRoutes = {
   '/find-password',
 };
 
-/// 把 Riverpod 的状态变化转成 GoRouter 能监听的 ChangeNotifier。
-class _AuthRefreshListenable extends ChangeNotifier {
-  _AuthRefreshListenable(Ref ref) {
-    ref.listen(authNotifierProvider, (_, __) => notifyListeners());
-  }
-}
-
-final appRouterProvider = Provider<GoRouter>((ref) {
+@riverpod
+GoRouter appRouter(Ref ref) {
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
@@ -53,9 +49,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.isAuthenticated;
       final location = state.matchedLocation;
       final inLoginFlow = _loginFlowRoutes.contains(location);
-      // 已登录且仍在登录流程(含 splash)→ 去首页。
       if (isLoggedIn && inLoginFlow) return '/home-shell';
-      // 未登录且不在登录流程 → 去登录入口。
       if (!isLoggedIn && !inLoginFlow) return '/login';
       return null;
     },
@@ -116,7 +110,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             const PlaceholderPage(targetName: 'Placeholder'),
       ),
-      // About 模块路由
       GoRoute(
         path: '/about-shell',
         name: 'about-shell',
@@ -152,7 +145,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'medal-display',
         builder: (context, state) => const MedalDisplayPage(),
       ),
-      // Course 模块路由
       GoRoute(
         path: '/course-list',
         name: 'course-list',
@@ -168,7 +160,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'course-play',
         builder: (context, state) => const CoursePlayPage(),
       ),
-      // Big Device 模块路由
       GoRoute(
         path: '/big-device-entry',
         name: 'big-device-entry',
@@ -180,4 +171,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-});
+}
+
+class _AuthRefreshListenable extends ChangeNotifier {
+  _AuthRefreshListenable(Ref ref) {
+    ref.listen(authNotifierProvider, (_, __) => notifyListeners());
+  }
+}
