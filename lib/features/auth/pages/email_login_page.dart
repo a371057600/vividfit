@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_providers.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 邮箱验证码登录-输入邮箱页(1:1 复刻旧项目 NewEmailLoginScreen)。

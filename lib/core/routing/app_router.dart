@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/notifiers/auth_providers.dart';
+import '../../features/auth/notifiers/auth_notifier.dart';
 import '../../features/auth/pages/account_login_page.dart';
 import '../../features/auth/pages/email_login_page.dart';
 import '../../features/auth/pages/find_password_page.dart';

@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_providers.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 登录入口选择页(1:1 复刻旧项目 NewLoginScreen)。

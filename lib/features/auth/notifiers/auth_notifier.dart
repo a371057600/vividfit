@@ -2,13 +2,18 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/storage_service_provider.dart';
 import '../../../data/models/login_response.dart';
 import '../../../data/models/user_info.dart';
 import '../repositories/auth_repository.dart';
 import '../states/auth_state.dart';
+import 'auth_repository_provider.dart';
+
+part 'auth_notifier.g.dart';
 
 /// 登录状态机(1:1 迁移自旧项目 NewLoginController)。
 ///
@@ -22,9 +27,13 @@ import '../states/auth_state.dart';
 /// - code 400 → 验证码错误,402/403/412 → 旧项目空处理,else → 验证码错误
 ///
 /// 导航不在 Notifier 里做(旧项目用 Get.off),改由 UI 层根据状态/返回值跳转。
-class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._repository, this._storage) : super(const AuthState()) {
-    _restoreFromStorage();
+@riverpod
+class AuthNotifier extends _$AuthNotifier {
+  @override
+  AuthState build() {
+    _repository = ref.watch(authRepositoryProvider);
+    _storage = ref.watch(storageServiceProvider);
+    _connectivity = Connectivity();
     _initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       _updateConnectionStatus,
@@ -32,25 +41,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
         // 平台通道异常时忽略,保持现有网络状态(与旧项目静默处理一致)。
       },
     );
+    ref.onDispose(() {
+      _timer?.cancel();
+      _connectivitySubscription.cancel();
+    });
+    return _buildInitialState();
   }
 
-  final AuthRepository _repository;
-  final StorageService _storage;
-
-  // ---- 倒计时 / 网络检测 ----
+  late AuthRepository _repository;
+  late StorageService _storage;
+  late Connectivity _connectivity;
   Timer? _timer;
-  final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _connectivitySubscription.cancel();
-    super.dispose();
-  }
-
-  /// 启动时从本地存储恢复登录态。
-  void _restoreFromStorage() {
+  /// 从本地存储构建初始状态(供 build() 返回,避免在 build() 中读取 state)。
+  AuthState _buildInitialState() {
     final token = _storage.accessToken;
     final userId = _storage.userId;
     final userInfoJson = _storage.userInfoJson;
@@ -62,16 +67,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       } catch (_) {}
     }
-    var newState = state.copyWith(languageNum: _storage.languageNum);
+    var state = AuthState(languageNum: _storage.languageNum);
     if (token != null && token.isNotEmpty) {
-      newState = newState.copyWith(
+      state = state.copyWith(
         isAuthenticated: true,
         accessToken: token,
         userId: userId,
         userInfo: userInfo,
       );
     }
-    state = newState;
+    return state;
   }
 
   // ============ 表单 setter(对应旧 .obs 赋值)============
@@ -299,8 +304,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     });
     // 60 秒后恢复可重新获取(对应旧 Future.delayed)
     Future.delayed(const Duration(seconds: 60), () {
-      if (mounted) {
+      try {
         state = state.copyWith(reGetCode: true, reGetCode2: true);
+      } catch (_) {
+        // Notifier 已 dispose，忽略状态更新。
       }
     });
   }

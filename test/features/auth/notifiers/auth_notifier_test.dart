@@ -1,13 +1,27 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vividfit_v2/core/services/storage_service.dart';
+import 'package:vividfit_v2/core/services/storage_service_provider.dart';
 import 'package:vividfit_v2/data/models/login_response.dart';
 import 'package:vividfit_v2/data/models/user_info.dart';
 import 'package:vividfit_v2/features/auth/notifiers/auth_notifier.dart';
+import 'package:vividfit_v2/features/auth/notifiers/auth_repository_provider.dart';
 import 'package:vividfit_v2/features/auth/repositories/auth_repository.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+AuthNotifier _createNotifier(AuthRepository repository, StorageService storage) {
+  final container = ProviderContainer(
+    overrides: [
+      authRepositoryProvider.overrideWithValue(repository),
+      storageServiceProvider.overrideWithValue(storage),
+    ],
+  );
+  addTearDown(container.dispose);
+  return container.read(authNotifierProvider.notifier);
+}
 
 void main() {
   // connectivity_plus 的平台通道需要 binding 已初始化。
@@ -25,7 +39,7 @@ void main() {
 
   group('AuthNotifier', () {
     test('初始状态:未登录、未同意协议、无错误', () {
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       expect(notifier.state.isLoading, false);
       expect(notifier.state.isAuthenticated, false);
       expect(notifier.state.agreedToPrivacy, false);
@@ -33,7 +47,7 @@ void main() {
     });
 
     test('togglePrivacyAgreement 切换同意状态', () {
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       expect(notifier.state.agreedToPrivacy, false);
       notifier.togglePrivacyAgreement();
       expect(notifier.state.agreedToPrivacy, true);
@@ -58,7 +72,7 @@ void main() {
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenAnswer((_) async => loginResp);
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       notifier.setEmailAccount('bob');
       notifier.setPassword('pw');
       await notifier.login();
@@ -83,7 +97,7 @@ void main() {
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenAnswer((_) async => loginResp);
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       notifier.setEmailAccount('x');
       notifier.setPassword('y');
       await notifier.login();
@@ -100,7 +114,7 @@ void main() {
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenAnswer((_) async => loginResp);
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       notifier.setEmailAccount('x');
       notifier.setPassword('y');
       await notifier.login();
@@ -114,7 +128,7 @@ void main() {
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenAnswer((_) async => loginResp);
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       notifier.setEmailAccount('x');
       notifier.setPassword('y');
       await notifier.login();
@@ -131,7 +145,7 @@ void main() {
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenAnswer((_) async => loginResp);
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       notifier.setEmailAccount('n');
       notifier.setPassword('p');
       await notifier.login();
@@ -146,7 +160,7 @@ void main() {
       when(() => repository.login(account: any(named: 'account'), password: any(named: 'password')))
           .thenThrow(Exception('boom'));
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       notifier.setEmailAccount('a');
       notifier.setPassword('b');
       await notifier.login();
@@ -162,7 +176,7 @@ void main() {
       await storage.setFitUserInfoJson('{}');
       await storage.setLanguageNum(0);
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       await notifier.logout();
 
       expect(notifier.state.isAuthenticated, false);
@@ -178,7 +192,7 @@ void main() {
       await storage.setUserId(55);
       await storage.setFitUserInfoJson('{"id":55,"nickName":"Restored"}');
 
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
 
       expect(notifier.state.isAuthenticated, true);
       expect(notifier.state.accessToken, 'persisted_tok');
@@ -188,7 +202,7 @@ void main() {
 
     test('构造时从本地存储恢复 languageNum', () async {
       await storage.setLanguageNum(0);
-      final notifier = AuthNotifier(repository, storage);
+      final notifier = _createNotifier(repository, storage);
       expect(notifier.state.languageNum, 0);
     });
   });
