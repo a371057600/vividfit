@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/gym_device_connect_notifier.dart';
-import '../states/gym_device_connect_state.dart';
 
 /// 设备搜索对话框(对应旧 `showMyDialog`)。
 ///

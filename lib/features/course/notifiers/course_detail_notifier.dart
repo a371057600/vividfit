@@ -1,8 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/home_repository_provider.dart';
-import '../../../core/services/storage_service.dart';
-import '../../../core/services/storage_service_provider.dart';
 import '../../home/repositories/home_repository.dart';
 import '../repositories/course_repository.dart';
 import '../states/course_detail_state.dart';
@@ -16,14 +14,12 @@ class CourseDetailNotifier extends _$CourseDetailNotifier {
   @override
   CourseDetailState build() {
     _repo = ref.watch(courseRepositoryProvider);
-    _storage = ref.watch(storageServiceProvider);
     _homeRepo = ref.watch(homeRepositoryProvider);
     _checkVersion();
     return const CourseDetailState();
   }
 
   late CourseRepository _repo;
-  late StorageService _storage;
   late HomeRepository _homeRepo;
 
   void initFromArguments(Map<String, dynamic> args) {

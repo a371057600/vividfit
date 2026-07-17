@@ -1,8 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/home_repository_provider.dart';
-import '../../../core/services/storage_service.dart';
-import '../../../core/services/storage_service_provider.dart';
 import '../../../data/models/course_list.dart';
 import '../../home/repositories/home_repository.dart';
 import '../repositories/course_repository.dart';
@@ -17,7 +15,6 @@ class CourseListNotifier extends _$CourseListNotifier {
   @override
   CourseListState build() {
     _repo = ref.watch(courseRepositoryProvider);
-    _storage = ref.watch(storageServiceProvider);
     _homeRepo = ref.watch(homeRepositoryProvider);
     Future.delayed(const Duration(milliseconds: 500), () {
       getCourseList();
@@ -26,7 +23,6 @@ class CourseListNotifier extends _$CourseListNotifier {
   }
 
   late CourseRepository _repo;
-  late StorageService _storage;
   late HomeRepository _homeRepo;
 
   void selectDeviceType(int index) {
