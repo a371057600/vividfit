@@ -7,7 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/about_providers.dart';
+import '../notifiers/user_settings_notifier.dart';
 
 class AvatarSelectPage extends ConsumerWidget {
   const AvatarSelectPage({super.key});

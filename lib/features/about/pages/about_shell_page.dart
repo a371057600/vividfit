@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/about_providers.dart';
+import '../notifiers/user_settings_notifier.dart';
 
 class AboutShellPage extends ConsumerStatefulWidget {
   const AboutShellPage({super.key});
