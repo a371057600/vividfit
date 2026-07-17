@@ -1,15 +1,36 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/bluetooth_connection_service.dart';
+import '../../../core/services/bluetooth_connection_service_provider.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/storage_service_provider.dart';
 import '../data/device_category.dart';
 import '../data/device_scan_constants.dart';
 import '../states/gym_device_connect_state.dart';
 
-class GymDeviceConnectNotifier extends StateNotifier<GymDeviceConnectState> {
-  GymDeviceConnectNotifier(this._service)
-      : super(const GymDeviceConnectState()) {
+part 'gym_device_connect_notifier.g.dart';
+
+@riverpod
+class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
+  @override
+  GymDeviceConnectState build() {
+    final service = ref.watch(bluetoothConnectionServiceProvider);
+    _storage = ref.watch(storageServiceProvider);
+    _service = service;
+    _deviceCategory = DeviceCategory.bike;
+    _setupServiceCallbacks();
+    return const GymDeviceConnectState();
+  }
+
+  late BluetoothConnectionService _service;
+  late StorageService _storage;
+  DeviceCategory _deviceCategory = DeviceCategory.bike;
+
+  DeviceCategory get deviceCategory => _deviceCategory;
+
+  void _setupServiceCallbacks() {
     _service.onDevicesUpdated = (names) {
       state = state.copyWith(foundDeviceNames: names);
     };
@@ -28,14 +49,6 @@ class GymDeviceConnectNotifier extends StateNotifier<GymDeviceConnectState> {
       }
     };
   }
-
-  final BluetoothConnectionService _service;
-  StorageService? _storage;
-
-  DeviceCategory _deviceCategory = DeviceCategory.bike;
-  DeviceCategory get deviceCategory => _deviceCategory;
-
-  void setStorage(StorageService storage) => _storage = storage;
 
   void setDeviceCategory(DeviceCategory category) {
     _deviceCategory = category;
@@ -56,23 +69,21 @@ class GymDeviceConnectNotifier extends StateNotifier<GymDeviceConnectState> {
   }
 
   Future<void> _persistDeviceName(String name) async {
-    final s = _storage;
-    if (s == null) return;
     switch (_deviceCategory) {
       case DeviceCategory.bike:
-        await s.setBikeMachineName(name);
+        await _storage.setBikeMachineName(name);
         break;
       case DeviceCategory.treadmill:
-        await s.setTreadmillName(name);
+        await _storage.setTreadmillName(name);
         break;
       case DeviceCategory.elliptical:
-        await s.setEllipticalMachineName(name);
+        await _storage.setEllipticalMachineName(name);
         break;
       case DeviceCategory.rower:
-        await s.setRowerMachineName(name);
+        await _storage.setRowerMachineName(name);
         break;
       case DeviceCategory.strengthStation:
-        await s.setStrengthStationName(name);
+        await _storage.setStrengthStationName(name);
         break;
     }
   }
@@ -98,11 +109,5 @@ class GymDeviceConnectNotifier extends StateNotifier<GymDeviceConnectState> {
       isEquipmentConnected: true,
       hasConnectedOnce: true,
     );
-  }
-
-  @override
-  void dispose() {
-    _service.dispose();
-    super.dispose();
   }
 }

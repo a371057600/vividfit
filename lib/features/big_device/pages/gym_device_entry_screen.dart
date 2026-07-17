@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/entry_card_data.dart';
-import '../notifiers/big_device_providers.dart';
+import '../notifiers/gym_course_home_notifier.dart';
+import '../notifiers/gym_device_connect_notifier.dart';
+import '../states/gym_course_home_state.dart';
+import '../states/gym_device_connect_state.dart';
 import 'device_search_dialog.dart';
 
 /// 大设备入口屏(1:1 还原旧 `big_device_first_screen.dart` 第一界面)。
