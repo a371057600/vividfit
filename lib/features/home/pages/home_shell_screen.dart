@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/home_providers.dart';
+import '../notifiers/home_notifier.dart';
 import 'home_tab_screen.dart';
 import 'placeholder_page.dart';
 

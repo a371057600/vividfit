@@ -6,7 +6,7 @@ part of 'auth_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authNotifierHash() => r'e400ccf16e06b9ed55213ae00239a61489fecbac';
+String _$authNotifierHash() => r'bd016912a94a113b0ce999556e6b331959c903e0';
 
 /// 登录状态机(1:1 迁移自旧项目 NewLoginController)。
 ///

@@ -1,36 +1,48 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/services/home_repository_provider.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/storage_service_provider.dart';
+import '../../../data/models/new_main_data.dart';
 import '../repositories/home_repository.dart';
 import '../states/home_state.dart';
 
+part 'home_notifier.g.dart';
+
 /// 主页状态机(1:1 迁移自旧 HomeController + NewMainController 的状态逻辑)。
-class HomeNotifier extends StateNotifier<HomeState> {
-  HomeNotifier(this._repo, this._storage) : super(const HomeState()) {
-    _restoreFromStorage();
+@riverpod
+class HomeNotifier extends _$HomeNotifier {
+  @override
+  HomeState build() {
+    _repo = ref.watch(homeRepositoryProvider);
+    _storage = ref.watch(storageServiceProvider);
+    final state = _buildInitialState();
     _initData();
+    return state;
   }
 
-  final HomeRepository _repo;
-  final StorageService _storage;
+  late HomeRepository _repo;
+  late StorageService _storage;
 
-  /// 启动时从本地存储恢复基础数据。
-  void _restoreFromStorage() {
-    var mainData = state.mainData;
-    // 目标数据
+  HomeState _buildInitialState() {
+    var mainData = FitMainData();
     mainData = mainData.copyWith(
       goalCalorie: _storage.goalKcal,
       goalDuration: _storage.goalDuring,
       goalStrength: _storage.goalStrength,
     );
-    // 身高体重 BMI
     final h = _storage.userHeight;
     final w = _storage.userWeight;
     final bmi = w / ((h / 100) * (h / 100));
     mainData = mainData.copyWith(bodyHeight: h, bodyWeight: w, bodyBmi: bmi);
 
-    state = state.copyWith(
-      mainData: mainData,
+    final d = DateTime.now();
+    final m = d.month < 10 ? '0${d.month}' : '${d.month}';
+    final day = d.day < 10 ? '0${d.day}' : '${d.day}';
+    mainData = mainData.copyWith(recordDate: '$m/$day');
+
+    return HomeState(
+      mainData: mainData.copyWith(isLoading: false, isLoading2: false),
       nickName: _storage.username ?? 'UserName',
       headImageHash: _storage.headImageHash ?? '',
       selectedCharacterIndex: _storage.selectedCharacterIndex,
@@ -40,26 +52,14 @@ class HomeNotifier extends StateNotifier<HomeState> {
       currentIndex: 0,
       isLoading: false,
     );
-    _formatRecordDate();
   }
 
-  void _formatRecordDate() {
-    final d = DateTime.now();
-    final m = d.month < 10 ? '0${d.month}' : '${d.month}';
-    final day = d.day < 10 ? '0${d.day}' : '${d.day}';
-    state = state.copyWith(
-      mainData: state.mainData.copyWith(recordDate: '$m/$day'),
-    );
-  }
-
-  /// 初始化数据(对应旧 initData)。
   Future<void> _initData() async {
     await _fetchStatistics();
     await _repo.getStatisticsCalendar();
     state = state.copyWith(isReached: _storage.isReached ?? false);
   }
 
-  /// 拉取运动统计并整合(对应旧 getsportStatistics + integratedData)。
   Future<void> _fetchStatistics() async {
     final stats = await _repo.getSportStatistics();
     if (stats.code == '200') {
@@ -68,7 +68,6 @@ class HomeNotifier extends StateNotifier<HomeState> {
         mainData: integrated.copyWith(isLoading: false, isLoading2: false),
       );
     } else {
-      // token 过期,尝试刷新后重试一次
       final ok = await _repo.refreshToken();
       if (ok) {
         await _fetchStatistics();
@@ -76,7 +75,6 @@ class HomeNotifier extends StateNotifier<HomeState> {
     }
   }
 
-  /// 下拉刷新。
   Future<void> refresh() async {
     state = state.copyWith(
       mainData: state.mainData.copyWith(isLoading: true),
@@ -86,19 +84,12 @@ class HomeNotifier extends StateNotifier<HomeState> {
     state = state.copyWith(isReached: _storage.isReached ?? false);
   }
 
-  /// 切换底部 tab(对应旧 changePage)。
   void changePage(int index) {
     state = state.copyWith(currentIndex: index);
   }
 
-  /// 点击动画人物(对应旧 touchAnmiation)。
-  /// 旧项目用 30ms 递增 ainimationIndex2 到 123 再回到 1。
-  /// 这里仅做触发标记,实际动画由 UI 用 AnimationController 实现。
-  void touchCharacter() {
-    // UI 层自行处理帧动画;此处保留方法签名供 UI 调用。
-  }
+  void touchCharacter() {}
 
-  /// BMI 档位(0=偏瘦 1=正常 2=超重 3=肥胖),对应旧 bmiIndexSelect。
   int bmiIndex() {
     final bmi = state.mainData.bodyBmi;
     if (bmi < 18.5) return 0;
@@ -107,8 +98,6 @@ class HomeNotifier extends StateNotifier<HomeState> {
     return 3;
   }
 
-  /// 主页三环显示值,对应旧 mainDataShow。
-  /// index 0=时长 1=强度 2=卡路里。
   String mainDataShow(int index) {
     final m = state.mainData;
     switch (index) {
@@ -133,11 +122,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
         '${s.toString().padLeft(2, '0')}';
   }
 
-  /// 是否简中环境(对应旧 box.read(languageNum) == 0)。
   bool get isCn => _storage.languageNum == 0;
 
-  /// 主页卡片数值(纯数字,不含文字标签)。
-  /// 文字标签(Achieved/Unachieved/Customized 等)由 UI 层用 l10n 渲染。
   String cardDataValue(int index) {
     final m = state.mainData;
     switch (index) {

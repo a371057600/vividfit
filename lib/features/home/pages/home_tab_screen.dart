@@ -8,7 +8,7 @@ import 'package:step_progress_indicator/step_progress_indicator.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/home_providers.dart';
+import '../notifiers/home_notifier.dart';
 
 /// 主页主屏(1:1 复刻旧 NewMainSportScreen)。
 class HomeTabScreen extends ConsumerWidget {

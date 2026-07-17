@@ -1,31 +1,35 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/storage_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../states/goal_setting_state.dart';
 
+part 'goal_setting_notifier.g.dart';
+
 /// 运动目标设置状态机(1:1 迁移自旧 GoalSettingController)。
 ///
 /// 仅保留数据逻辑(索引/预设值/持久化),显示文本由 UI 层用 l10n 渲染。
-class GoalSettingNotifier extends StateNotifier<GoalSettingState> {
-  GoalSettingNotifier(this._storage) : super(const GoalSettingState()) {
-    _restore();
+@riverpod
+class GoalSettingNotifier extends _$GoalSettingNotifier {
+  @override
+  GoalSettingState build() {
+    _storage = ref.watch(storageServiceProvider);
+    return _buildInitialState();
   }
 
-  final StorageService _storage;
+  late StorageService _storage;
 
-  /// 9 档预设(索引 = first*3 + second):时长 / 强度 / 卡路里。
   static const goalDurationList = [50, 35, 25, 50, 65, 25, 45, 75, 90];
   static const goalStrengthList = [3.0, 9.0, 7.0, 7.0, 6.0, 9.0, 5.0, 2.5, 6.0];
   static const goalKcalList = [165, 345, 400, 400, 400, 325, 125, 400, 600];
 
-  Future<void> _restore() async {
+  GoalSettingState _buildInitialState() {
     final firstIdx = _storage.firstSettingIndex ?? 0;
     final secondIdx = _storage.secondSettingIndex ?? 0;
     final goalD = _storage.goalDuring;
     final goalK = _storage.goalKcal;
     final goalS = _storage.goalStrength;
-    state = state.copyWith(
+    return GoalSettingState(
       sportTypeSelectIndex: firstIdx,
       sportTypeSelectIndex2: secondIdx,
       sportTypeSelectSubIndexString: '$firstIdx-$secondIdx',
@@ -36,7 +40,6 @@ class GoalSettingNotifier extends StateNotifier<GoalSettingState> {
     );
   }
 
-  /// 组合索引(0..8)。
   int goalSportTypeSelectIndex() {
     final first = state.sportTypeSelectIndex;
     final second = state.sportTypeSelectIndex2;
@@ -46,7 +49,6 @@ class GoalSettingNotifier extends StateNotifier<GoalSettingState> {
     return 0;
   }
 
-  /// 选择运动类型 + 子档位,并套用对应 9 档预设。
   void selectType(int first, int second) {
     final idx = first * 3 + second;
     state = state.copyWith(
@@ -59,7 +61,6 @@ class GoalSettingNotifier extends StateNotifier<GoalSettingState> {
     );
   }
 
-  /// 语言对应的图片目录。
   String languageType() {
     switch (_storage.languageNum) {
       case 0:
@@ -75,7 +76,6 @@ class GoalSettingNotifier extends StateNotifier<GoalSettingState> {
     }
   }
 
-  /// 保存目标(持久化目标值与索引)。
   Future<void> saveGoal() async {
     await _storage.setGoalDuring(state.goalDuring);
     await _storage.setGoalKcal(state.goalKcal);
@@ -84,8 +84,3 @@ class GoalSettingNotifier extends StateNotifier<GoalSettingState> {
     await _storage.setSecondSettingIndex(state.sportTypeSelectIndex2);
   }
 }
-
-final goalSettingNotifierProvider =
-    StateNotifierProvider<GoalSettingNotifier, GoalSettingState>((ref) {
-  return GoalSettingNotifier(ref.watch(storageServiceProvider));
-});
