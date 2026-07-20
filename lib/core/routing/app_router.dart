@@ -26,6 +26,12 @@ import '../../features/course/pages/course_list_page.dart';
 import '../../features/course/pages/course_detail_page.dart';
 import '../../features/course/pages/course_play_page.dart';
 import '../../features/big_device/pages/gym_device_entry_screen.dart';
+import '../../features/big_device/pages/gym_course_detail_screen.dart';
+import '../../features/big_device/pages/gym_course_list_screen.dart';
+import '../../features/big_device/pages/gym_device_play_screen.dart';
+import '../../features/big_device/pages/gym_game_select_screen.dart';
+import '../../features/big_device/pages/gym_quick_start_screen.dart';
+import '../../features/big_device/pages/gym_device_games.dart';
 
 part 'app_router.g.dart';
 
@@ -168,6 +174,96 @@ GoRouter appRouter(Ref ref) {
           final deviceCategoryIndex = extra?['deviceCategoryIndex'] as int? ?? 0;
           return GymDeviceEntryScreen(deviceCategoryIndex: deviceCategoryIndex);
         },
+      ),
+      // Big Device - Course
+      GoRoute(
+        path: '/gym-course-list',
+        name: 'gym-course-list',
+        builder: (context, state) => const GymCourseListScreen(),
+      ),
+      GoRoute(
+        path: '/gym-course-detail',
+        name: 'gym-course-detail',
+        builder: (context, state) => const GymCourseDetailScreen(),
+      ),
+      GoRoute(
+        path: '/gym-device-play',
+        name: 'gym-device-play',
+        builder: (context, state) => const GymDevicePlayScreen(),
+      ),
+      GoRoute(
+        path: '/gym-game-select',
+        name: 'gym-game-select',
+        builder: (context, state) => const GymGameSelectScreen(),
+      ),
+      GoRoute(
+        path: '/gym-quick-start',
+        name: 'gym-quick-start',
+        builder: (context, state) => const GymQuickStartScreen(),
+      ),
+      // Big Device - Bike Games
+      GoRoute(
+        path: '/gym-bike-game',
+        name: 'gym-bike-game',
+        builder: (context, state) => const GymBikeGameScreen(),
+      ),
+      GoRoute(
+        path: '/gym-bike-game2',
+        name: 'gym-bike-game2',
+        builder: (context, state) => const GymBikeGame2Screen(),
+      ),
+      GoRoute(
+        path: '/gym-bike-realscene',
+        name: 'gym-bike-realscene',
+        builder: (context, state) => const GymBikeRealsceneScreen(),
+      ),
+      // Big Device - Treadmill Games
+      GoRoute(
+        path: '/gym-treadmill-game',
+        name: 'gym-treadmill-game',
+        builder: (context, state) => const GymTreadmillGameScreen(),
+      ),
+      GoRoute(
+        path: '/gym-treadmill-game2',
+        name: 'gym-treadmill-game2',
+        builder: (context, state) => const GymTreadmillGame2Screen(),
+      ),
+      GoRoute(
+        path: '/gym-treadmill-realscene',
+        name: 'gym-treadmill-realscene',
+        builder: (context, state) => const GymTreadmillRealsceneScreen(),
+      ),
+      // Big Device - Elliptical Games
+      GoRoute(
+        path: '/gym-elliptical-game',
+        name: 'gym-elliptical-game',
+        builder: (context, state) => const GymEllipticalGameScreen(),
+      ),
+      GoRoute(
+        path: '/gym-elliptical-game2',
+        name: 'gym-elliptical-game2',
+        builder: (context, state) => const GymEllipticalGame2Screen(),
+      ),
+      GoRoute(
+        path: '/gym-elliptical-realscene',
+        name: 'gym-elliptical-realscene',
+        builder: (context, state) => const GymEllipticalRealsceneScreen(),
+      ),
+      // Big Device - Rower Games
+      GoRoute(
+        path: '/gym-rower-game',
+        name: 'gym-rower-game',
+        builder: (context, state) => const GymRowerGameScreen(),
+      ),
+      GoRoute(
+        path: '/gym-rower-game2',
+        name: 'gym-rower-game2',
+        builder: (context, state) => const GymRowerGame2Screen(),
+      ),
+      GoRoute(
+        path: '/gym-rower-realscene',
+        name: 'gym-rower-realscene',
+        builder: (context, state) => const GymRowerRealsceneScreen(),
       ),
     ],
   );
