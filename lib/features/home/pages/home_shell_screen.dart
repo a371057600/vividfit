@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/home_notifier.dart';
+import '../../about/pages/about_shell_page.dart';
+import '../../big_device/pages/device_search_screen.dart';
+import '../notifiers/home_notifier_provider.dart';
 import 'home_tab_screen.dart';
 import 'placeholder_page.dart';
 
@@ -44,8 +45,8 @@ class HomeShellScreen extends ConsumerWidget {
             children: [
               const HomeTabScreen(),
               PlaceholderPage(targetName: l10n.sport),
-              PlaceholderPage(targetName: l10n.device),
-              PlaceholderPage(targetName: l10n.me),
+              const DeviceSearchScreen(),
+              const AboutShellPage(),
             ],
           ),
           bottomNavigationBar: Theme(
@@ -108,13 +109,7 @@ class HomeShellScreen extends ConsumerWidget {
               type: BottomNavigationBarType.fixed,
               selectedItemColor: FitTheme.buttonColor,
               unselectedItemColor: FitTheme.textColor,
-              onTap: (i) {
-                if (i == 3) {
-                  context.go('/about-shell');
-                } else {
-                  notifier.changePage(i);
-                }
-              },
+              onTap: (i) => notifier.changePage(i),
             ),
           ),
         ),
