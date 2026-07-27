@@ -80,6 +80,9 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
 
   /// 1:1 还原旧 `checkPermission` + 点击搜索按钮的行为。
   /// 1:1 UI 无功能,仅切换 _isSearching 并启动/停止动画。
+  /// 旧版 `animationPlay()` 在 elapsed >= 9000ms 后自动停止;
+  /// 同时蓝牙扫描结束后也会将 searchingDevice 置 false 停止动画。
+  /// 此处模拟 10 秒超时后自动停止。
   void _onTapSearchDevice() {
     print('[DeviceSearch] search device tapped, start searching');
     if (_isSearching) {
@@ -89,6 +92,15 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
       _isSearching = true;
     });
     _startSearchAnimation();
+    Future.delayed(const Duration(seconds: 10), () {
+      if (!mounted) return;
+      _stopSearchAnimation();
+      setState(() {
+        _isSearching = false;
+        _animationFrameIndex = 0;
+      });
+      print('[DeviceSearch] search animation auto-stopped after 10s');
+    });
   }
 
   /// 1:1 还原旧 `_deleteDeviceWidget` 的 Get.defaultDialog 弹窗。
