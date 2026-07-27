@@ -1,6 +1,6 @@
 # Dio 网络模块重构 - The Implementation Plan (Decomposed and Prioritized Task List)
 
-## [/] Task 1: ApiResponse + ApiException 基础类型
+## [x] Task 1: ApiResponse + ApiException 基础类型
 - **Priority**: high
 - **Depends On**: None
 - **Description**: 
@@ -19,7 +19,7 @@
   - `programmatic` TR-1.7: ApiException 的 isUnauthorized/isNetworkError/isServerError 判断正确
   - `programmatic` TR-1.8: flutter test 对应测试全部通过
 
-## [ ] Task 2: 三个拦截器实现
+## [x] Task 2: 三个拦截器实现
 - **Priority**: high
 - **Depends On**: Task 1
 - **Description**:
@@ -42,7 +42,7 @@
   - `programmatic` TR-2.11: ErrorInterceptor 从响应体读取 message/msg 字段作为错误消息
   - `programmatic` TR-2.12: flutter test 对应测试全部通过
 
-## [ ] Task 3: DioClient + ApiClient 类型安全封装
+## [x] Task 3: DioClient + ApiClient 类型安全封装
 - **Priority**: high
 - **Depends On**: Task 1, Task 2
 - **Description**:
@@ -60,50 +60,32 @@
   - `programmatic` TR-3.7: ApiClient 在响应非 JSON 对象时抛 code='INVALID_RESPONSE' 的 ApiException
   - `programmatic` TR-3.8: flutter test 对应测试全部通过
 
-## [ ] Task 4: Network Providers + ApiConstants 重构
+## [x] Task 4: Network Providers
 - **Priority**: high
 - **Depends On**: Task 3
 - **Description**:
   - 创建 `lib/core/network/network_providers.dart`，定义 `dioClientProvider` 和 `apiClientProvider` 两个 Riverpod Provider
-  - 修改 `lib/core/constants/api_constants.dart`，将所有完整 URL 改为 path 形式（如 `/api/public/login/pwd`），常量名去掉 Url 后缀
-  - 保留 baseUrl、headerAppPass、headerAccessToken、appPass、appPass2 常量
+  - 保留现有 `lib/core/constants/api_constants.dart` 不变（接口未定，后续再调整）
 - **Acceptance Criteria Addressed**: AC-9
 - **Test Requirements**:
-  - `programmatic` TR-4.1: ApiConstants 中所有端点常量为 path 格式（以 / 开头，不含 baseUrl）
-  - `programmatic` TR-4.2: ApiConstants.baseUrl 保留且值正确
-  - `human-judgement` TR-4.3: network_providers.dart 中 Provider 定义风格与项目现有 Provider 一致（手动定义，无 @riverpod）
-  - `human-judgement` TR-4.4: dioClientProvider 依赖 storageServiceProvider，拦截器顺序为 Logging → Auth → Error
+  - `human-judgement` TR-4.1: network_providers.dart 中 Provider 定义风格与项目现有 Provider 一致（手动定义，无 @riverpod）
+  - `human-judgement` TR-4.2: dioClientProvider 依赖 storageServiceProvider，拦截器顺序为 Logging → Auth → Error
 
-## [ ] Task 5: Repository 层迁移 (Auth / Home / Course)
+## [-] Task 5: Repository 层迁移 (Auth / Home / Course)
+- **Priority**: high
+- **Depends On**: Task 4
+- **Status**: **已跳过** — 用户明确要求接口未定，不做业务层迁移，不引入任何 API 调用。新网络模块作为纯工具类独立存在，旧 ApiService 继续供现有业务使用，待接口确定后再统一迁移。
+- **Description**:
+  - ~~重写 AuthRepository / HomeRepository / CourseRepository~~（跳过）
+- **Acceptance Criteria Addressed**: 无
+
+## [/] Task 6: 最终验证
 - **Priority**: high
 - **Depends On**: Task 4
 - **Description**:
-  - 重写 `lib/features/auth/repositories/auth_repository.dart`，改用 ApiClient，方法签名与返回类型不变
-  - 更新 `lib/features/auth/notifiers/auth_repository_provider.dart`，依赖 apiClientProvider
-  - 重写 `lib/features/home/repositories/home_repository.dart`，改用 ApiClient，方法签名与返回类型不变
-  - 更新 `lib/core/services/home_repository_provider.dart`，依赖 apiClientProvider
-  - 重写 `lib/features/course/repositories/course_repository.dart`，改用 ApiClient 并接入真实接口（移除假数据占位）
-  - 更新 `lib/features/course/notifiers/course_repository_provider.dart`，依赖 apiClientProvider
-- **Acceptance Criteria Addressed**: AC-10, AC-11, AC-12
+  - 保留现有 `lib/core/services/api_service.dart` 及 `api_service_provider.dart`（业务层仍在使用，待接口确定后统一迁移时删除）
+  - 运行 flutter analyze 和 flutter test 全量验证，确保新增网络模块不破坏现有代码
+- **Acceptance Criteria Addressed**: AC-14, AC-15
 - **Test Requirements**:
-  - `programmatic` TR-5.1: AuthRepository 所有方法签名与原版本一致
-  - `programmatic` TR-5.2: HomeRepository 所有方法签名与原版本一致
-  - `programmatic` TR-5.3: CourseRepository.getCourseList 返回 CourseList 类型（而非假数据）
-  - `programmatic` TR-5.4: CourseRepository.getCourseDetail 返回 CourseDetail 类型（而非假数据）
-  - `programmatic` TR-5.5: 三个 Repository Provider 均依赖 apiClientProvider
-  - `programmatic` TR-5.6: flutter analyze 0 errors
-
-## [ ] Task 6: 删除旧 ApiService + 验证
-- **Priority**: high
-- **Depends On**: Task 5
-- **Description**:
-  - 删除 `lib/core/services/api_service.dart`
-  - 删除 `lib/core/services/api_service_provider.dart`
-  - 确认代码库中无 ApiService / apiServiceProvider 引用
-  - 运行 flutter analyze 和 flutter test 全量验证
-- **Acceptance Criteria Addressed**: AC-13, AC-14, AC-15
-- **Test Requirements**:
-  - `programmatic` TR-6.1: grep "ApiService" lib/ 无匹配
-  - `programmatic` TR-6.2: grep "apiServiceProvider" lib/ 无匹配
-  - `programmatic` TR-6.3: flutter analyze 0 errors, 0 warnings
-  - `programmatic` TR-6.4: flutter test 全部通过（现有测试 + 新增网络层测试）
+  - `programmatic` TR-6.1: flutter analyze 0 errors, 0 warnings
+  - `programmatic` TR-6.2: flutter test 全部通过（现有测试 + 新增网络层测试）

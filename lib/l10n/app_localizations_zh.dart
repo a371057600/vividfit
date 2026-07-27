@@ -426,6 +426,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reLogin => '重新登录';
 
   @override
+  String get dataCollection => '数据采集';
+
+  @override
   String get basicSettings => '基本设置';
 
   @override

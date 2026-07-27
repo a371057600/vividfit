@@ -436,6 +436,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reLogin => 'Re-login';
 
   @override
+  String get dataCollection => 'Data Collection';
+
+  @override
   String get basicSettings => 'Basic Settings';
 
   @override

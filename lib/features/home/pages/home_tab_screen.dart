@@ -320,7 +320,7 @@ class HomeTabScreen extends ConsumerWidget {
           width: 400.r,
           height: 400.r,
           selectedStepSize: 30.r,
-          roundedCap: (_, __) => true,
+          roundedCap: (_, _) => true,
           child: CircularStepProgressIndicator(
             totalSteps: 115,
             currentStep: 100,
@@ -330,7 +330,7 @@ class HomeTabScreen extends ConsumerWidget {
             unselectedColor: Colors.transparent,
             padding: 0,
             selectedStepSize: 30.r,
-            roundedCap: (_, __) => true,
+            roundedCap: (_, _) => true,
             child: CircularStepProgressIndicator(
               totalSteps: 125,
               currentStep: 100,
@@ -340,7 +340,7 @@ class HomeTabScreen extends ConsumerWidget {
               unselectedColor: Colors.transparent,
               padding: 0,
               selectedStepSize: 30.r,
-              roundedCap: (_, __) => true,
+              roundedCap: (_, _) => true,
             ),
           ),
         ),
@@ -356,7 +356,7 @@ class HomeTabScreen extends ConsumerWidget {
           height: 400.r,
           selectedStepSize: 30.r,
           circularDirection: CircularDirection.clockwise,
-          roundedCap: (_, __) => true,
+          roundedCap: (_, _) => true,
           child: CircularStepProgressIndicator(
             totalSteps: 115,
             currentStep: midStep,
@@ -366,7 +366,7 @@ class HomeTabScreen extends ConsumerWidget {
             unselectedColor: Colors.transparent,
             padding: 0,
             selectedStepSize: 30.r,
-            roundedCap: (_, __) => true,
+            roundedCap: (_, _) => true,
             child: CircularStepProgressIndicator(
               totalSteps: 125,
               currentStep: inStep,
@@ -376,7 +376,7 @@ class HomeTabScreen extends ConsumerWidget {
               unselectedColor: Colors.transparent,
               padding: 0,
               selectedStepSize: 30.r,
-              roundedCap: (_, __) => true,
+              roundedCap: (_, _) => true,
             ),
           ),
         ),
@@ -467,10 +467,13 @@ class HomeTabScreen extends ConsumerWidget {
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       onTap: () {
-        print('[HomeTab] navigate to /big-device-entry, deviceCategoryIndex=$index');
-        context.push('/big-device-entry', extra: {
-          'deviceCategoryIndex': index,
-        });
+        print(
+          '[HomeTab] navigate to /big-device-entry, deviceCategoryIndex=$index',
+        );
+        context.push(
+          '/big-device-entry',
+          extra: {'deviceCategoryIndex': index},
+        );
       },
       child: SizedBox(
         width: 130.w,

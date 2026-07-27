@@ -43,7 +43,7 @@ class HomeRepository {
         'duringTime': 600,
       },
     );
-    if (res['code'] != '200') return false;
+    if (res['code'].toString() != '200') return false;
     final list = (res['data'] as List?) ?? [];
     final todayStr =
         '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';

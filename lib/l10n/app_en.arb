@@ -288,6 +288,8 @@
   "@about": {},
   "reLogin": "Re-login",
   "@reLogin": {},
+  "dataCollection": "Data Collection",
+  "@dataCollection": {},
   "basicSettings": "Basic Settings",
   "@basicSettings": {},
   "avatar": "Avatar",

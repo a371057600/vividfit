@@ -268,7 +268,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               onTap: () {
                 context.push('/sport-setting');
               },
-              child: _buildSmallItemButton(0),
+              child: _buildSmallItemButton(0, l10n),
             ),
             const Divider(color: Color.fromARGB(167, 36, 36, 36)),
             InkWell(
@@ -277,7 +277,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               onTap: () {
                 context.push('/account-security');
               },
-              child: _buildSmallItemButton(1),
+              child: _buildSmallItemButton(1, l10n),
             ),
           ],
         ),
@@ -301,7 +301,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               onTap: () {
                 // 占位:软件更新
               },
-              child: _buildSmallItemButton(2),
+              child: _buildSmallItemButton(2, l10n),
             ),
             const Divider(color: Color.fromARGB(167, 36, 36, 36)),
             InkWell(
@@ -310,7 +310,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               onTap: () {
                 // 占位:隐私政策
               },
-              child: _buildSmallItemButton(3),
+              child: _buildSmallItemButton(3, l10n),
             ),
             const Divider(color: Color.fromARGB(167, 36, 36, 36)),
             InkWell(
@@ -319,7 +319,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               onTap: () {
                 context.push('/about-info');
               },
-              child: _buildSmallItemButton(4),
+              child: _buildSmallItemButton(4, l10n),
             ),
             const Divider(color: Color.fromARGB(167, 36, 36, 36)),
             InkWell(
@@ -328,7 +328,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               onTap: () {
                 _showSignOutDialog(context, ref, l10n);
               },
-              child: _buildSmallItemButton(5),
+              child: _buildSmallItemButton(5, l10n),
             ),
           ],
         ),
@@ -336,7 +336,17 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     );
   }
 
-  Widget _buildSmallItemButton(int index) {
+  Widget _buildSmallItemButton(int index, AppLocalizations l10n) {
+    final label = switch (index) {
+      0 => l10n.sportsSettings,
+      1 => l10n.accountSecurity,
+      2 => l10n.softwareUpdate,
+      3 => l10n.userPrivacyPolicy,
+      4 => l10n.about,
+      5 => l10n.reLogin,
+      6 => l10n.dataCollection,
+      _ => '',
+    };
     return Container(
       margin: const EdgeInsets.only(top: 20, bottom: 20, left: 20, right: 20).r,
       padding: EdgeInsets.zero,
@@ -360,7 +370,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.only(top: 5).r,
                 child: Text(
-                  iconTitle[index],
+                  label,
                   style: TextStyle(
                     color: FitTheme.textColor,
                     fontSize: 30.sp,
@@ -455,104 +465,103 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return Dialog(
           backgroundColor: FitTheme.secondbackGround,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 24.w,
-            vertical: 20.h,
-          ),
-          titlePadding: EdgeInsets.only(top: 24.h, left: 24.w, right: 24.w),
-          actionsPadding: EdgeInsets.only(
-            bottom: 16.h,
-            left: 16.w,
-            right: 16.w,
-          ),
+          insetPadding: EdgeInsets.symmetric(horizontal: 120.w, vertical: 24.h),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(20.r),
           ),
-          title: Center(
-            child: Text(
-              "退出登录",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: FitTheme.textColor,
-                fontSize: 32.sp,
-                fontWeight: FontWeight.bold,
-                fontFamily: AppFonts.hofontmedium,
-              ),
-            ),
-          ),
-          content: Center(
-            child: Text(
-              "确定要退出登录吗？",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: FitTheme.textColor,
-                fontSize: 28.sp,
-                fontFamily: AppFonts.hofontregular,
-              ),
-            ),
-          ),
-          actions: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 32.w,
-                      vertical: 12.h,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      side: BorderSide(
-                        color: FitTheme.textColor.withOpacity(0.3),
-                      ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 560.w),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 36.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "退出登录",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: FitTheme.textColor,
+                      fontSize: 32.sp,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: AppFonts.hofontmedium,
                     ),
                   ),
-                  child: Text(
-                    l10n.cancel,
+                  SizedBox(height: 20.h),
+                  Text(
+                    "确定要退出登录吗？",
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: FitTheme.textColor,
                       fontSize: 28.sp,
-                      fontFamily: AppFonts.hofontmedium,
+                      fontFamily: AppFonts.hofontregular,
                     ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                    final authNotifier = ref.read(
-                      authNotifierProvider.notifier,
-                    );
-                    await authNotifier.logout();
-                    if (context.mounted) {
-                      context.go('/login');
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 32.w,
-                      vertical: 12.h,
-                    ),
-                    backgroundColor: FitTheme.buttonColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
+                  SizedBox(height: 36.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 18.h),
+                            foregroundColor: FitTheme.textColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                              side: BorderSide(
+                                color: FitTheme.textColor.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            l10n.cancel,
+                            style: TextStyle(
+                              color: FitTheme.textColor,
+                              fontSize: 28.sp,
+                              fontFamily: AppFonts.hofontmedium,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 24.w),
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                            final authNotifier = ref.read(
+                              authNotifierProvider.notifier,
+                            );
+                            await authNotifier.logout();
+                            if (context.mounted) {
+                              context.go('/login');
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 18.h),
+                            backgroundColor: FitTheme.buttonColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          child: Text(
+                            l10n.confirm,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28.sp,
+                              fontFamily: AppFonts.hofontmedium,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    l10n.confirm,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28.sp,
-                      fontFamily: AppFonts.hofontmedium,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ],
+          ),
         );
       },
     );

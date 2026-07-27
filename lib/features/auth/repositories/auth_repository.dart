@@ -1,65 +1,56 @@
 import 'package:dio/dio.dart';
 
 import '../../../core/constants/api_constants.dart';
-import '../../../core/services/api_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/network/api_response_extension.dart';
 import '../../../data/models/login_response.dart';
 
-/// 登录数据仓库(1:1 迁移自旧项目 NewLoginController 的网络调用部分)。
-///
-/// 保留原请求方式:GET/POST + queryParameters + headers{app_pass} + 50s 超时。
-/// CN/AWS 服务器切换由 [ApiConstants] 单端点承担(当前默认 CN),后续 i18n 模块再加分支。
 class AuthRepository {
   AuthRepository(this._api);
 
-  final ApiService _api;
+  final ApiClient _api;
 
-  /// 请求头 app_pass(旧项目统一带上)。
-  Options get _appPassOptions => Options(
-        headers: const {ApiConstants.headerAppPass: ApiConstants.appPass},
-        sendTimeout: const Duration(seconds: 50),
-        receiveTimeout: const Duration(seconds: 50),
-      );
+  Options get _publicOptions => Options(
+    sendTimeout: const Duration(seconds: 50),
+    receiveTimeout: const Duration(seconds: 50),
+  );
 
-  /// 账号密码登录(旧 passWordLogin)。
   Future<LoginResponse> login({
     required String account,
     required String password,
   }) async {
-    final json = await _api.post(
+    final response = await _api.post<LoginResponse>(
       ApiConstants.pwdLoginUrl,
-      queryParameters: {
-        'password': password,
-        'bindingAccount': account,
-      },
-      options: _appPassOptions,
+      queryParameters: {'password': password, 'bindingAccount': account},
+      options: _publicOptions,
+      parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    return LoginResponse.fromJson(json);
+    return response.getOrThrow();
   }
 
-  /// 邮箱验证码登录(旧 emailCaptchaLogin)。
   Future<LoginResponse> emailCaptchaLogin({
     required String mailAddress,
     required String code,
   }) async {
-    final json = await _api.post(
+    final response = await _api.post<LoginResponse>(
       ApiConstants.mailLoginUrl,
       queryParameters: {
         'mailAddress': mailAddress,
         'code': code,
         'businessType': 'mailLogin',
       },
-      options: _appPassOptions,
+      options: _publicOptions,
+      parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    return LoginResponse.fromJson(json);
+    return response.getOrThrow();
   }
 
-  /// 手机验证码登录(旧 phoneCaptchaLogin)。
   Future<LoginResponse> phoneCaptchaLogin({
     required String areaCode,
     required String phoneNumber,
     required String code,
   }) async {
-    final json = await _api.post(
+    final response = await _api.post<LoginResponse>(
       ApiConstants.phoneLoginUrl,
       queryParameters: {
         'areaCode': areaCode,
@@ -67,31 +58,31 @@ class AuthRepository {
         'phoneNumber': phoneNumber,
         'businessType': 'phoneLogin',
       },
-      options: _appPassOptions,
+      options: _publicOptions,
+      parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    return LoginResponse.fromJson(json);
+    return response.getOrThrow();
   }
 
-  /// 发送邮箱验证码(旧 getEmailCaptcha)。成功返回 true。
   Future<bool> sendEmailCaptcha(String mailAddress) async {
-    final json = await _api.get(
+    final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.sendMailNumberUrl,
       queryParameters: {
         'mailAddress': mailAddress,
         'businessType': 'mailLogin',
         'isCn': false,
       },
-      options: _appPassOptions,
+      options: _publicOptions,
+      parser: (json) => json as Map<String, dynamic>,
     );
-    return !json.containsKey('error');
+    return response.isSuccess;
   }
 
-  /// 发送手机验证码(旧 getPhoneCaptcha)。成功返回 true。
   Future<bool> sendPhoneCaptcha({
     required String areaCode,
     required String phoneNumber,
   }) async {
-    final json = await _api.get(
+    final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.sendPhoneNumberUrl,
       queryParameters: {
         'areaCode': areaCode,
@@ -99,55 +90,52 @@ class AuthRepository {
         'businessType': 'phoneLogin',
         'isCn': areaCode == '86',
       },
-      options: _appPassOptions,
+      options: _publicOptions,
+      parser: (json) => json as Map<String, dynamic>,
     );
-    return !json.containsKey('error');
+    return response.isSuccess;
   }
 
-  /// 校验验证码(旧 checkCaptcha)。code=="200" 返回 true。
   Future<bool> checkCaptcha({
     required String target,
     required String code,
   }) async {
-    final json = await _api.get(
+    final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.checkNumberUrl,
       queryParameters: {
         'target': target,
         'code': code,
         'businessType': 'mailLogin',
       },
-      options: _appPassOptions,
+      options: _publicOptions,
+      parser: (json) => json as Map<String, dynamic>,
     );
-    return json['code'] == '200';
+    return response.isSuccess;
   }
 
-  /// 查邮箱绑定账号(旧 _setNewPassword 第一步)。返回 accountId,失败返回 null。
   Future<int?> checkBindMail(String mailAddress) async {
-    final json = await _api.get(
+    final response = await _api.get<Map<String, dynamic>>(
       ApiConstants.checkBindMailUrl,
       queryParameters: {'mailAddress': mailAddress},
-      options: _appPassOptions,
+      options: _publicOptions,
+      parser: (json) => json as Map<String, dynamic>,
     );
-    if (json['code'] == '200') {
-      final data = json['data'];
-      if (data is Map && data['id'] is int) return data['id'] as int;
-    }
+    if (!response.isSuccess) return null;
+    final data = response.data?['data'];
+    if (data is Map && data['id'] is int) return data['id'] as int;
     return null;
   }
 
-  /// 修改密码(旧 _setNewPassword 第二步)。code=="200" 返回 true。
   Future<bool> updatePassword({
     required int userId,
     required String newPassword,
   }) async {
-    final json = await _api.put(
+    final response = await _api.put<Map<String, dynamic>>(
       ApiConstants.updatePwdUrl,
-      queryParameters: {
-        'userId': userId,
-        'newPassword': newPassword,
-      },
-      options: _appPassOptions,
+      queryParameters: {'userId': userId, 'newPassword': newPassword},
+      options: _publicOptions,
+      parser: (json) => json as Map<String, dynamic>,
     );
-    return json['code'] == '200';
+    return response.isSuccess;
   }
 }

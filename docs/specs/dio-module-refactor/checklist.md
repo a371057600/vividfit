@@ -29,21 +29,9 @@
 - [ ] network_providers.dart 定义了 dioClientProvider
 - [ ] network_providers.dart 定义了 apiClientProvider
 - [ ] Provider 风格与项目一致（手动定义，无 @riverpod 注解）
-- [ ] ApiConstants 所有端点常量为 path 格式（以 / 开头，不含 baseUrl）
-- [ ] ApiConstants.baseUrl 保留且值为 https://www.ucfitness.club
-- [ ] ApiConstants.headerAppPass / headerAccessToken / appPass / appPass2 保留
-- [ ] AuthRepository 所有方法签名与原版本一致
-- [ ] AuthRepository 内部使用 ApiClient 而非 ApiService
-- [ ] authRepositoryProvider 依赖 apiClientProvider
-- [ ] HomeRepository 所有方法签名与原版本一致
-- [ ] HomeRepository 内部使用 ApiClient 而非 ApiService
-- [ ] homeRepositoryProvider 依赖 apiClientProvider
-- [ ] CourseRepository.getCourseList 返回 CourseList（真实接口，非假数据）
-- [ ] CourseRepository.getCourseDetail 返回 CourseDetail（真实接口，非假数据）
-- [ ] courseRepositoryProvider 依赖 apiClientProvider
-- [ ] lib/core/services/api_service.dart 已删除
-- [ ] lib/core/services/api_service_provider.dart 已删除
-- [ ] 全局搜索 "ApiService" 在 lib/ 目录下无匹配
-- [ ] 全局搜索 "apiServiceProvider" 在 lib/ 目录下无匹配
+- [ ] dioClientProvider 依赖 storageServiceProvider
+- [ ] dioClientProvider 拦截器顺序为 Logging → Auth → Error
+- [ ] ApiConstants 保持原完整 URL 格式（接口未定，不改动）
+- [ ] 旧 ApiService 及 apiServiceProvider 保留（业务层仍在使用）
 - [ ] flutter analyze 0 errors, 0 warnings
-- [ ] flutter test 全部通过
+- [ ] flutter test 全部通过（现有测试 + 新增网络层测试）

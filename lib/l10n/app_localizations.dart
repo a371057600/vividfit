@@ -932,6 +932,12 @@ abstract class AppLocalizations {
   /// **'Re-login'**
   String get reLogin;
 
+  /// No description provided for @dataCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Collection'**
+  String get dataCollection;
+
   /// No description provided for @basicSettings.
   ///
   /// In en, this message translates to:
