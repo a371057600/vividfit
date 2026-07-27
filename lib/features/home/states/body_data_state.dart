@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'body_data_state.freezed.dart';
 
 @freezed
-class BodyDataState with _$BodyDataState {
+abstract class BodyDataState with _$BodyDataState {
   const factory BodyDataState({
     @Default(false) bool sexValue,
     @Default(150) int bodyHeight,

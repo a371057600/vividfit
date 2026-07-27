@@ -1,13 +1,10 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../data/device_category.dart';
 import '../data/entry_card_data.dart';
 import '../states/gym_course_home_state.dart';
 
-part 'gym_course_home_notifier.g.dart';
-
-@riverpod
-class GymCourseHomeNotifier extends _$GymCourseHomeNotifier {
+class GymCourseHomeNotifier extends Notifier<GymCourseHomeState> {
   @override
   GymCourseHomeState build() {
     return const GymCourseHomeState();

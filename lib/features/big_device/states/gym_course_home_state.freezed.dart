@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,206 +9,287 @@ part of 'gym_course_home_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
 /// @nodoc
 mixin _$GymCourseHomeState {
-  /// 当前选中的设备类型(对应旧 `newMainSelectType`)。
-  DeviceCategory get selectedDeviceCategory =>
-      throw _privateConstructorUsedError;
 
-  /// 5 张入口卡片数据(对应旧 `cardData`)。
-  List<EntryCardData> get entryCards => throw _privateConstructorUsedError;
+/// 当前选中的设备类型(对应旧 `newMainSelectType`)。
+ DeviceCategory get selectedDeviceCategory;/// 5 张入口卡片数据(对应旧 `cardData`)。
+ List<EntryCardData> get entryCards;/// 是否处于快速播放模式(对应旧 `isInQuickPlay`)。
+ bool get isInQuickPlay;/// 数据允许标志(对应旧 `dataAllowFlag`)。
+ bool get dataAllowFlag;
+/// Create a copy of GymCourseHomeState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GymCourseHomeStateCopyWith<GymCourseHomeState> get copyWith => _$GymCourseHomeStateCopyWithImpl<GymCourseHomeState>(this as GymCourseHomeState, _$identity);
 
-  /// Create a copy of GymCourseHomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $GymCourseHomeStateCopyWith<GymCourseHomeState> get copyWith =>
-      throw _privateConstructorUsedError;
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GymCourseHomeState&&(identical(other.selectedDeviceCategory, selectedDeviceCategory) || other.selectedDeviceCategory == selectedDeviceCategory)&&const DeepCollectionEquality().equals(other.entryCards, entryCards)&&(identical(other.isInQuickPlay, isInQuickPlay) || other.isInQuickPlay == isInQuickPlay)&&(identical(other.dataAllowFlag, dataAllowFlag) || other.dataAllowFlag == dataAllowFlag));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,selectedDeviceCategory,const DeepCollectionEquality().hash(entryCards),isInQuickPlay,dataAllowFlag);
+
+@override
+String toString() {
+  return 'GymCourseHomeState(selectedDeviceCategory: $selectedDeviceCategory, entryCards: $entryCards, isInQuickPlay: $isInQuickPlay, dataAllowFlag: $dataAllowFlag)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $GymCourseHomeStateCopyWith<$Res> {
-  factory $GymCourseHomeStateCopyWith(
-    GymCourseHomeState value,
-    $Res Function(GymCourseHomeState) then,
-  ) = _$GymCourseHomeStateCopyWithImpl<$Res, GymCourseHomeState>;
-  @useResult
-  $Res call({
-    DeviceCategory selectedDeviceCategory,
-    List<EntryCardData> entryCards,
-  });
-}
+abstract mixin class $GymCourseHomeStateCopyWith<$Res>  {
+  factory $GymCourseHomeStateCopyWith(GymCourseHomeState value, $Res Function(GymCourseHomeState) _then) = _$GymCourseHomeStateCopyWithImpl;
+@useResult
+$Res call({
+ DeviceCategory selectedDeviceCategory, List<EntryCardData> entryCards, bool isInQuickPlay, bool dataAllowFlag
+});
 
+
+
+
+}
 /// @nodoc
-class _$GymCourseHomeStateCopyWithImpl<$Res, $Val extends GymCourseHomeState>
+class _$GymCourseHomeStateCopyWithImpl<$Res>
     implements $GymCourseHomeStateCopyWith<$Res> {
-  _$GymCourseHomeStateCopyWithImpl(this._value, this._then);
+  _$GymCourseHomeStateCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final GymCourseHomeState _self;
+  final $Res Function(GymCourseHomeState) _then;
 
-  /// Create a copy of GymCourseHomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? selectedDeviceCategory = null,
-    Object? entryCards = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            selectedDeviceCategory:
-                null == selectedDeviceCategory
-                    ? _value.selectedDeviceCategory
-                    : selectedDeviceCategory // ignore: cast_nullable_to_non_nullable
-                        as DeviceCategory,
-            entryCards:
-                null == entryCards
-                    ? _value.entryCards
-                    : entryCards // ignore: cast_nullable_to_non_nullable
-                        as List<EntryCardData>,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of GymCourseHomeState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? selectedDeviceCategory = null,Object? entryCards = null,Object? isInQuickPlay = null,Object? dataAllowFlag = null,}) {
+  return _then(_self.copyWith(
+selectedDeviceCategory: null == selectedDeviceCategory ? _self.selectedDeviceCategory : selectedDeviceCategory // ignore: cast_nullable_to_non_nullable
+as DeviceCategory,entryCards: null == entryCards ? _self.entryCards : entryCards // ignore: cast_nullable_to_non_nullable
+as List<EntryCardData>,isInQuickPlay: null == isInQuickPlay ? _self.isInQuickPlay : isInQuickPlay // ignore: cast_nullable_to_non_nullable
+as bool,dataAllowFlag: null == dataAllowFlag ? _self.dataAllowFlag : dataAllowFlag // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [GymCourseHomeState].
+extension GymCourseHomeStatePatterns on GymCourseHomeState {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _GymCourseHomeState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _GymCourseHomeState() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _GymCourseHomeState value)  $default,){
+final _that = this;
+switch (_that) {
+case _GymCourseHomeState():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _GymCourseHomeState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _GymCourseHomeState() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DeviceCategory selectedDeviceCategory,  List<EntryCardData> entryCards,  bool isInQuickPlay,  bool dataAllowFlag)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _GymCourseHomeState() when $default != null:
+return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPlay,_that.dataAllowFlag);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DeviceCategory selectedDeviceCategory,  List<EntryCardData> entryCards,  bool isInQuickPlay,  bool dataAllowFlag)  $default,) {final _that = this;
+switch (_that) {
+case _GymCourseHomeState():
+return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPlay,_that.dataAllowFlag);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DeviceCategory selectedDeviceCategory,  List<EntryCardData> entryCards,  bool isInQuickPlay,  bool dataAllowFlag)?  $default,) {final _that = this;
+switch (_that) {
+case _GymCourseHomeState() when $default != null:
+return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPlay,_that.dataAllowFlag);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
-abstract class _$$GymCourseHomeStateImplCopyWith<$Res>
-    implements $GymCourseHomeStateCopyWith<$Res> {
-  factory _$$GymCourseHomeStateImplCopyWith(
-    _$GymCourseHomeStateImpl value,
-    $Res Function(_$GymCourseHomeStateImpl) then,
-  ) = __$$GymCourseHomeStateImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    DeviceCategory selectedDeviceCategory,
-    List<EntryCardData> entryCards,
-  });
+
+
+class _GymCourseHomeState implements GymCourseHomeState {
+  const _GymCourseHomeState({this.selectedDeviceCategory = DeviceCategory.bike, final  List<EntryCardData> entryCards = const <EntryCardData>[], this.isInQuickPlay = false, this.dataAllowFlag = false}): _entryCards = entryCards;
+  
+
+/// 当前选中的设备类型(对应旧 `newMainSelectType`)。
+@override@JsonKey() final  DeviceCategory selectedDeviceCategory;
+/// 5 张入口卡片数据(对应旧 `cardData`)。
+ final  List<EntryCardData> _entryCards;
+/// 5 张入口卡片数据(对应旧 `cardData`)。
+@override@JsonKey() List<EntryCardData> get entryCards {
+  if (_entryCards is EqualUnmodifiableListView) return _entryCards;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_entryCards);
+}
+
+/// 是否处于快速播放模式(对应旧 `isInQuickPlay`)。
+@override@JsonKey() final  bool isInQuickPlay;
+/// 数据允许标志(对应旧 `dataAllowFlag`)。
+@override@JsonKey() final  bool dataAllowFlag;
+
+/// Create a copy of GymCourseHomeState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$GymCourseHomeStateCopyWith<_GymCourseHomeState> get copyWith => __$GymCourseHomeStateCopyWithImpl<_GymCourseHomeState>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GymCourseHomeState&&(identical(other.selectedDeviceCategory, selectedDeviceCategory) || other.selectedDeviceCategory == selectedDeviceCategory)&&const DeepCollectionEquality().equals(other._entryCards, _entryCards)&&(identical(other.isInQuickPlay, isInQuickPlay) || other.isInQuickPlay == isInQuickPlay)&&(identical(other.dataAllowFlag, dataAllowFlag) || other.dataAllowFlag == dataAllowFlag));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,selectedDeviceCategory,const DeepCollectionEquality().hash(_entryCards),isInQuickPlay,dataAllowFlag);
+
+@override
+String toString() {
+  return 'GymCourseHomeState(selectedDeviceCategory: $selectedDeviceCategory, entryCards: $entryCards, isInQuickPlay: $isInQuickPlay, dataAllowFlag: $dataAllowFlag)';
+}
+
+
 }
 
 /// @nodoc
-class __$$GymCourseHomeStateImplCopyWithImpl<$Res>
-    extends _$GymCourseHomeStateCopyWithImpl<$Res, _$GymCourseHomeStateImpl>
-    implements _$$GymCourseHomeStateImplCopyWith<$Res> {
-  __$$GymCourseHomeStateImplCopyWithImpl(
-    _$GymCourseHomeStateImpl _value,
-    $Res Function(_$GymCourseHomeStateImpl) _then,
-  ) : super(_value, _then);
+abstract mixin class _$GymCourseHomeStateCopyWith<$Res> implements $GymCourseHomeStateCopyWith<$Res> {
+  factory _$GymCourseHomeStateCopyWith(_GymCourseHomeState value, $Res Function(_GymCourseHomeState) _then) = __$GymCourseHomeStateCopyWithImpl;
+@override @useResult
+$Res call({
+ DeviceCategory selectedDeviceCategory, List<EntryCardData> entryCards, bool isInQuickPlay, bool dataAllowFlag
+});
 
-  /// Create a copy of GymCourseHomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? selectedDeviceCategory = null,
-    Object? entryCards = null,
-  }) {
-    return _then(
-      _$GymCourseHomeStateImpl(
-        selectedDeviceCategory:
-            null == selectedDeviceCategory
-                ? _value.selectedDeviceCategory
-                : selectedDeviceCategory // ignore: cast_nullable_to_non_nullable
-                    as DeviceCategory,
-        entryCards:
-            null == entryCards
-                ? _value._entryCards
-                : entryCards // ignore: cast_nullable_to_non_nullable
-                    as List<EntryCardData>,
-      ),
-    );
-  }
+
+
+
 }
-
 /// @nodoc
+class __$GymCourseHomeStateCopyWithImpl<$Res>
+    implements _$GymCourseHomeStateCopyWith<$Res> {
+  __$GymCourseHomeStateCopyWithImpl(this._self, this._then);
 
-class _$GymCourseHomeStateImpl implements _GymCourseHomeState {
-  const _$GymCourseHomeStateImpl({
-    this.selectedDeviceCategory = DeviceCategory.bike,
-    final List<EntryCardData> entryCards = const <EntryCardData>[],
-  }) : _entryCards = entryCards;
+  final _GymCourseHomeState _self;
+  final $Res Function(_GymCourseHomeState) _then;
 
-  /// 当前选中的设备类型(对应旧 `newMainSelectType`)。
-  @override
-  @JsonKey()
-  final DeviceCategory selectedDeviceCategory;
-
-  /// 5 张入口卡片数据(对应旧 `cardData`)。
-  final List<EntryCardData> _entryCards;
-
-  /// 5 张入口卡片数据(对应旧 `cardData`)。
-  @override
-  @JsonKey()
-  List<EntryCardData> get entryCards {
-    if (_entryCards is EqualUnmodifiableListView) return _entryCards;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_entryCards);
-  }
-
-  @override
-  String toString() {
-    return 'GymCourseHomeState(selectedDeviceCategory: $selectedDeviceCategory, entryCards: $entryCards)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$GymCourseHomeStateImpl &&
-            (identical(other.selectedDeviceCategory, selectedDeviceCategory) ||
-                other.selectedDeviceCategory == selectedDeviceCategory) &&
-            const DeepCollectionEquality().equals(
-              other._entryCards,
-              _entryCards,
-            ));
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    selectedDeviceCategory,
-    const DeepCollectionEquality().hash(_entryCards),
-  );
-
-  /// Create a copy of GymCourseHomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$GymCourseHomeStateImplCopyWith<_$GymCourseHomeStateImpl> get copyWith =>
-      __$$GymCourseHomeStateImplCopyWithImpl<_$GymCourseHomeStateImpl>(
-        this,
-        _$identity,
-      );
+/// Create a copy of GymCourseHomeState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? selectedDeviceCategory = null,Object? entryCards = null,Object? isInQuickPlay = null,Object? dataAllowFlag = null,}) {
+  return _then(_GymCourseHomeState(
+selectedDeviceCategory: null == selectedDeviceCategory ? _self.selectedDeviceCategory : selectedDeviceCategory // ignore: cast_nullable_to_non_nullable
+as DeviceCategory,entryCards: null == entryCards ? _self._entryCards : entryCards // ignore: cast_nullable_to_non_nullable
+as List<EntryCardData>,isInQuickPlay: null == isInQuickPlay ? _self.isInQuickPlay : isInQuickPlay // ignore: cast_nullable_to_non_nullable
+as bool,dataAllowFlag: null == dataAllowFlag ? _self.dataAllowFlag : dataAllowFlag // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-abstract class _GymCourseHomeState implements GymCourseHomeState {
-  const factory _GymCourseHomeState({
-    final DeviceCategory selectedDeviceCategory,
-    final List<EntryCardData> entryCards,
-  }) = _$GymCourseHomeStateImpl;
 
-  /// 当前选中的设备类型(对应旧 `newMainSelectType`)。
-  @override
-  DeviceCategory get selectedDeviceCategory;
-
-  /// 5 张入口卡片数据(对应旧 `cardData`)。
-  @override
-  List<EntryCardData> get entryCards;
-
-  /// Create a copy of GymCourseHomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$GymCourseHomeStateImplCopyWith<_$GymCourseHomeStateImpl> get copyWith =>
-      throw _privateConstructorUsedError;
 }
+
+// dart format on

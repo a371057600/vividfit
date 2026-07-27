@@ -7,6 +7,7 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/goal_setting_notifier.dart';
+import '../notifiers/goal_setting_notifier_provider.dart';
 
 /// 运动目标设置页(1:1 复刻旧 GoalSettingScreen)。
 class GoalSettingPage extends ConsumerWidget {

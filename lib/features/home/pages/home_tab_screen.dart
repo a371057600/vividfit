@@ -8,7 +8,7 @@ import 'package:step_progress_indicator/step_progress_indicator.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/home_notifier.dart';
+import '../notifiers/home_notifier_provider.dart';
 
 /// 主页主屏(1:1 复刻旧 NewMainSportScreen)。
 class HomeTabScreen extends ConsumerWidget {
@@ -21,7 +21,15 @@ class HomeTabScreen extends ConsumerWidget {
     Color.fromARGB(255, 255, 168, 0),
     Color.fromARGB(255, 230, 51, 16),
   ];
-  static const _funcEntryKeys = ['courses', 'ranks', 'daily', 'fitnessAi', 'medal', 'game', 'game'];
+  static const _funcEntryKeys = [
+    'courses',
+    'ranks',
+    'daily',
+    'fitnessAi',
+    'medal',
+    'game',
+    'game',
+  ];
   static const _funcEntryImages = [
     'images/newUIScreen/icons/icon_second_button3.png',
     'images/newUIScreen/icons/icon_second_button0.png',
@@ -31,8 +39,13 @@ class HomeTabScreen extends ConsumerWidget {
     'images/newUIScreen/icons/icon_game.png',
   ];
   static const _deviceEntryKeys = [
-    'spinBike', 'treadmillMachine', 'ellipticalMachine',
-    'rowingMachine', 'strengthStation', 'game', 'game'
+    'spinBike',
+    'treadmillMachine',
+    'ellipticalMachine',
+    'rowingMachine',
+    'strengthStation',
+    'game',
+    'game',
   ];
   static const _deviceEntryImages = [
     'images/newUIScreen/HomePageAnimation/other/icon_bike.png',
@@ -154,7 +167,15 @@ class HomeTabScreen extends ConsumerWidget {
 
   Widget _buildCharacterImage(WidgetRef ref) {
     final state = ref.watch(homeNotifierProvider);
-    const characters = ['xinxin', 'rubby', 'cat', 'boxing', 'dog', 'jack', 'carol'];
+    const characters = [
+      'xinxin',
+      'rubby',
+      'cat',
+      'boxing',
+      'dog',
+      'jack',
+      'carol',
+    ];
     final character = characters[state.selectedCharacterIndex.clamp(0, 6)];
     return SizedBox(
       height: 460.h,
@@ -167,7 +188,8 @@ class HomeTabScreen extends ConsumerWidget {
               InkWell(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
-                onTap: () => ref.read(homeNotifierProvider.notifier).touchCharacter(),
+                onTap: () =>
+                    ref.read(homeNotifierProvider.notifier).touchCharacter(),
                 child: ExtendedImage.asset(
                   'images/newUIScreen/HomePageAnimation/$character/1.png',
                   repeat: ImageRepeat.noRepeat,
@@ -193,8 +215,8 @@ class HomeTabScreen extends ConsumerWidget {
     final label = _ringLabels[index] == 'timeMin'
         ? l10n.timeMin
         : _ringLabels[index] == 'met'
-            ? l10n.met
-            : l10n.kcal;
+        ? l10n.met
+        : l10n.kcal;
     return Container(
       alignment: Alignment.center,
       width: 155.w,
@@ -250,9 +272,11 @@ class HomeTabScreen extends ConsumerWidget {
     final inColor = m.triCycleCalorie / m.goalCalorie > 1
         ? FitTheme.threeRingsColorbackGroundInSide2
         : FitTheme.threeRingsColorbackGroundInSide;
-    final outStep = ((m.triCycleDuration / m.goalDuration / 60) * 100).round() % 101;
+    final outStep =
+        ((m.triCycleDuration / m.goalDuration / 60) * 100).round() % 101;
     final midStep = ((m.triCycleStrength / m.goalStrength) * 100).round() % 101;
-    final inStep = ((m.triCycleCalorie / m.goalCalorie) * 100).round() % 101 % 100;
+    final inStep =
+        ((m.triCycleCalorie / m.goalCalorie) * 100).round() % 101 % 100;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -262,52 +286,97 @@ class HomeTabScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Image.asset('images/newUIScreen/icons/icon_mainCardK.png',
-                  color: FitTheme.textColor, height: 30.r, width: 30.r),
+              Image.asset(
+                'images/newUIScreen/icons/icon_mainCardK.png',
+                color: FitTheme.textColor,
+                height: 30.r,
+                width: 30.r,
+              ),
               SizedBox(height: 2),
-              Image.asset('images/newUIScreen/icons/icon_mainCardP.png',
-                  color: FitTheme.textColor, height: 30.r, width: 30.r),
+              Image.asset(
+                'images/newUIScreen/icons/icon_mainCardP.png',
+                color: FitTheme.textColor,
+                height: 30.r,
+                width: 30.r,
+              ),
               SizedBox(height: 2),
-              Image.asset('images/newUIScreen/icons/icon_mainCardT.png',
-                  color: FitTheme.textColor, height: 30.r, width: 30.r),
+              Image.asset(
+                'images/newUIScreen/icons/icon_mainCardT.png',
+                color: FitTheme.textColor,
+                height: 30.r,
+                width: 30.r,
+              ),
             ],
           ),
         ),
         CircularStepProgressIndicator(
-          totalSteps: 111, currentStep: 100, stepSize: 30.r,
-          startingAngle: -3.14 * 0.9, selectedColor: outColor,
-          unselectedColor: Colors.transparent, padding: 0,
-          width: 400.r, height: 400.r, selectedStepSize: 30.r,
+          totalSteps: 111,
+          currentStep: 100,
+          stepSize: 30.r,
+          startingAngle: -3.14 * 0.9,
+          selectedColor: outColor,
+          unselectedColor: Colors.transparent,
+          padding: 0,
+          width: 400.r,
+          height: 400.r,
+          selectedStepSize: 30.r,
           roundedCap: (_, __) => true,
           child: CircularStepProgressIndicator(
-            totalSteps: 115, currentStep: 100, stepSize: 30.r,
-            startingAngle: -3.14 * 0.87, selectedColor: midColor,
-            unselectedColor: Colors.transparent, padding: 0,
-            selectedStepSize: 30.r, roundedCap: (_, __) => true,
+            totalSteps: 115,
+            currentStep: 100,
+            stepSize: 30.r,
+            startingAngle: -3.14 * 0.87,
+            selectedColor: midColor,
+            unselectedColor: Colors.transparent,
+            padding: 0,
+            selectedStepSize: 30.r,
+            roundedCap: (_, __) => true,
             child: CircularStepProgressIndicator(
-              totalSteps: 125, currentStep: 100, stepSize: 30.r,
-              startingAngle: -3.14 * 0.8, selectedColor: inColor,
-              unselectedColor: Colors.transparent, padding: 0,
-              selectedStepSize: 30.r, roundedCap: (_, __) => true,
+              totalSteps: 125,
+              currentStep: 100,
+              stepSize: 30.r,
+              startingAngle: -3.14 * 0.8,
+              selectedColor: inColor,
+              unselectedColor: Colors.transparent,
+              padding: 0,
+              selectedStepSize: 30.r,
+              roundedCap: (_, __) => true,
             ),
           ),
         ),
         CircularStepProgressIndicator(
-          totalSteps: 111, currentStep: outStep, stepSize: 30.r,
-          startingAngle: -3.14 * 0.9, selectedColor: FitTheme.threeRingsColorOutSide,
-          unselectedColor: Colors.transparent, padding: 0,
-          width: 400.r, height: 400.r, selectedStepSize: 30.r,
-          circularDirection: CircularDirection.clockwise, roundedCap: (_, __) => true,
+          totalSteps: 111,
+          currentStep: outStep,
+          stepSize: 30.r,
+          startingAngle: -3.14 * 0.9,
+          selectedColor: FitTheme.threeRingsColorOutSide,
+          unselectedColor: Colors.transparent,
+          padding: 0,
+          width: 400.r,
+          height: 400.r,
+          selectedStepSize: 30.r,
+          circularDirection: CircularDirection.clockwise,
+          roundedCap: (_, __) => true,
           child: CircularStepProgressIndicator(
-            totalSteps: 115, currentStep: midStep, stepSize: 30.r,
-            startingAngle: -3.14 * 0.87, selectedColor: FitTheme.threeRingsColorMiddle,
-            unselectedColor: Colors.transparent, padding: 0,
-            selectedStepSize: 30.r, roundedCap: (_, __) => true,
+            totalSteps: 115,
+            currentStep: midStep,
+            stepSize: 30.r,
+            startingAngle: -3.14 * 0.87,
+            selectedColor: FitTheme.threeRingsColorMiddle,
+            unselectedColor: Colors.transparent,
+            padding: 0,
+            selectedStepSize: 30.r,
+            roundedCap: (_, __) => true,
             child: CircularStepProgressIndicator(
-              totalSteps: 125, currentStep: inStep, stepSize: 30.r,
-              startingAngle: -3.14 * 0.8, selectedColor: FitTheme.threeRingsColorInSide,
-              unselectedColor: Colors.transparent, padding: 0,
-              selectedStepSize: 30.r, roundedCap: (_, __) => true,
+              totalSteps: 125,
+              currentStep: inStep,
+              stepSize: 30.r,
+              startingAngle: -3.14 * 0.8,
+              selectedColor: FitTheme.threeRingsColorInSide,
+              unselectedColor: Colors.transparent,
+              padding: 0,
+              selectedStepSize: 30.r,
+              roundedCap: (_, __) => true,
             ),
           ),
         ),
@@ -336,23 +405,30 @@ class HomeTabScreen extends ConsumerWidget {
             height: 35.r,
             child: ExtendedImage.asset('images/newUIScreen/footSetp.png'),
           ),
-          Text(l10n.calorieConsumptionToday,
-              style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp)),
+          Text(
+            l10n.calorieConsumptionToday,
+            style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
+          ),
           Container(
             margin: EdgeInsets.only(bottom: 10, left: 10).r,
             child: Text(
               notifier.mainDataShow(2),
               style: TextStyle(
-                height: 0.5, fontSize: 35.sp,
-                color: FitTheme.textColor, fontFamily: AppFonts.bebas,
+                height: 0.5,
+                fontSize: 35.sp,
+                color: FitTheme.textColor,
+                fontFamily: AppFonts.bebas,
               ),
             ),
           ),
-          Text(' ${l10n.kcal}',
-              style: TextStyle(
-                fontSize: 25.sp, color: FitTheme.textColor,
-                fontFamily: AppFonts.hofontmedium,
-              )),
+          Text(
+            ' ${l10n.kcal}',
+            style: TextStyle(
+              fontSize: 25.sp,
+              color: FitTheme.textColor,
+              fontFamily: AppFonts.hofontmedium,
+            ),
+          ),
         ],
       ),
     );
@@ -379,18 +455,23 @@ class HomeTabScreen extends ConsumerWidget {
     final label = _deviceEntryKeys[index] == 'spinBike'
         ? l10n.spinBike
         : _deviceEntryKeys[index] == 'treadmillMachine'
-            ? l10n.treadmillMachine
-            : _deviceEntryKeys[index] == 'ellipticalMachine'
-                ? l10n.ellipticalMachine
-                : _deviceEntryKeys[index] == 'rowingMachine'
-                    ? l10n.rowingMachine
-                    : _deviceEntryKeys[index] == 'strengthStation'
-                        ? l10n.strengthStation
-                        : l10n.game;
+        ? l10n.treadmillMachine
+        : _deviceEntryKeys[index] == 'ellipticalMachine'
+        ? l10n.ellipticalMachine
+        : _deviceEntryKeys[index] == 'rowingMachine'
+        ? l10n.rowingMachine
+        : _deviceEntryKeys[index] == 'strengthStation'
+        ? l10n.strengthStation
+        : l10n.game;
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      onTap: () => context.push('/placeholder'),
+      onTap: () {
+        print('[HomeTab] navigate to /big-device-entry, deviceCategoryIndex=$index');
+        context.push('/big-device-entry', extra: {
+          'deviceCategoryIndex': index,
+        });
+      },
       child: SizedBox(
         width: 130.w,
         child: Column(
@@ -403,11 +484,14 @@ class HomeTabScreen extends ConsumerWidget {
             ),
             Text(
               label,
-              maxLines: 2, overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                letterSpacing: 0.5, color: FitTheme.textColor,
-                fontFamily: AppFonts.hofontregular, fontSize: 25.sp,
+                letterSpacing: 0.5,
+                color: FitTheme.textColor,
+                fontFamily: AppFonts.hofontregular,
+                fontSize: 25.sp,
               ),
             ),
           ],
@@ -438,14 +522,14 @@ class HomeTabScreen extends ConsumerWidget {
     final label = _funcEntryKeys[index] == 'courses'
         ? l10n.courses
         : _funcEntryKeys[index] == 'ranks'
-            ? l10n.ranks
-            : _funcEntryKeys[index] == 'daily'
-                ? l10n.daily
-                : _funcEntryKeys[index] == 'fitnessAi'
-                    ? l10n.fitnessAi
-                    : _funcEntryKeys[index] == 'medal'
-                        ? l10n.medal
-                        : l10n.game;
+        ? l10n.ranks
+        : _funcEntryKeys[index] == 'daily'
+        ? l10n.daily
+        : _funcEntryKeys[index] == 'fitnessAi'
+        ? l10n.fitnessAi
+        : _funcEntryKeys[index] == 'medal'
+        ? l10n.medal
+        : l10n.game;
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -458,15 +542,21 @@ class HomeTabScreen extends ConsumerWidget {
               margin: EdgeInsets.only(bottom: 20).r,
               height: 60.h,
               width: 60.w,
-              child: Image.asset(_funcEntryImages[index], color: FitTheme.buttonColor),
+              child: Image.asset(
+                _funcEntryImages[index],
+                color: FitTheme.buttonColor,
+              ),
             ),
             Text(
               label,
-              maxLines: 2, overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: TextStyle(
-                letterSpacing: 0.5, color: FitTheme.textColor,
-                fontFamily: AppFonts.hofontregular, fontSize: 25.sp,
+                letterSpacing: 0.5,
+                color: FitTheme.textColor,
+                fontFamily: AppFonts.hofontregular,
+                fontSize: 25.sp,
               ),
             ),
           ],
@@ -480,8 +570,18 @@ class HomeTabScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(homeNotifierProvider.notifier);
     final bmiIdx = notifier.bmiIndex();
-    final weightLabels = [l10n.underWeight, l10n.normalWeight, l10n.overWeight, l10n.obesity];
-    final bmiDescs = [l10n.bmiLowWeight, l10n.bmiNormalRange, l10n.bmiOverweight, l10n.bmiObese];
+    final weightLabels = [
+      l10n.underWeight,
+      l10n.normalWeight,
+      l10n.overWeight,
+      l10n.obesity,
+    ];
+    final bmiDescs = [
+      l10n.bmiLowWeight,
+      l10n.bmiNormalRange,
+      l10n.bmiOverweight,
+      l10n.bmiObese,
+    ];
     return Card(
       color: FitTheme.secondbackGround,
       margin: EdgeInsets.only(left: 25, right: 25, bottom: 25).r,
@@ -492,8 +592,14 @@ class HomeTabScreen extends ConsumerWidget {
           children: [
             Container(
               alignment: Alignment.centerLeft,
-              child: Text(l10n.bodyMassIndexColon,
-                  style: TextStyle(height: 1, fontSize: 30.sp, color: FitTheme.textColor)),
+              child: Text(
+                l10n.bodyMassIndexColon,
+                style: TextStyle(
+                  height: 1,
+                  fontSize: 30.sp,
+                  color: FitTheme.textColor,
+                ),
+              ),
             ),
             _buildBmiMiddle(context, ref, bmiIdx, weightLabels),
             if (notifier.isCn)
@@ -505,8 +611,10 @@ class HomeTabScreen extends ConsumerWidget {
                   '${l10n.physicalFitnessAssessment} ${bmiDescs[bmiIdx]}',
                   maxLines: 2,
                   style: TextStyle(
-                    color: FitTheme.textColor, fontSize: 25.sp,
-                    height: 1.5, fontFamily: AppFonts.hofontregular,
+                    color: FitTheme.textColor,
+                    fontSize: 25.sp,
+                    height: 1.5,
+                    fontFamily: AppFonts.hofontregular,
                   ),
                 ),
               ),
@@ -516,7 +624,12 @@ class HomeTabScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBmiMiddle(BuildContext context, WidgetRef ref, int bmiIdx, List<String> weightLabels) {
+  Widget _buildBmiMiddle(
+    BuildContext context,
+    WidgetRef ref,
+    int bmiIdx,
+    List<String> weightLabels,
+  ) {
     final state = ref.watch(homeNotifierProvider);
     return SizedBox(
       width: MediaQuery.of(context).size.width,
@@ -536,8 +649,10 @@ class HomeTabScreen extends ConsumerWidget {
                   child: Text(
                     state.mainData.bodyBmi.toStringAsFixed(1),
                     style: TextStyle(
-                      height: 1, color: _ringColors[bmiIdx],
-                      fontSize: 60.sp, fontFamily: AppFonts.bebas,
+                      height: 1,
+                      color: _ringColors[bmiIdx],
+                      fontSize: 60.sp,
+                      fontFamily: AppFonts.bebas,
                     ),
                   ),
                 ),
@@ -552,9 +667,11 @@ class HomeTabScreen extends ConsumerWidget {
                   alignment: Alignment.center,
                   child: Text(
                     weightLabels[bmiIdx],
-                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.black, fontSize: 15.sp,
+                      color: Colors.black,
+                      fontSize: 15.sp,
                       fontFamily: AppFonts.hofontregular,
                     ),
                   ),
@@ -569,11 +686,29 @@ class HomeTabScreen extends ConsumerWidget {
                 Row(
                   children: [
                     SizedBox(width: 80.w),
-                    Text('18.5', style: TextStyle(fontSize: 24.sp, color: FitTheme.textColor)),
+                    Text(
+                      '18.5',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        color: FitTheme.textColor,
+                      ),
+                    ),
                     SizedBox(width: 70.w),
-                    Text('25', style: TextStyle(fontSize: 24.sp, color: FitTheme.textColor)),
+                    Text(
+                      '25',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        color: FitTheme.textColor,
+                      ),
+                    ),
                     SizedBox(width: 70.w),
-                    Text('30', style: TextStyle(fontSize: 24.sp, color: FitTheme.textColor)),
+                    Text(
+                      '30',
+                      style: TextStyle(
+                        fontSize: 24.sp,
+                        color: FitTheme.textColor,
+                      ),
+                    ),
                   ],
                 ),
                 Image.asset('images/newUIScreen/mian_bar_BMI.png'),
@@ -605,7 +740,10 @@ class HomeTabScreen extends ConsumerWidget {
         text,
         textAlign: TextAlign.center,
         maxLines: 2,
-        style: TextStyle(fontSize: FitTheme.fonSizeSmall, color: FitTheme.textColor),
+        style: TextStyle(
+          fontSize: FitTheme.fonSizeSmall,
+          color: FitTheme.textColor,
+        ),
       ),
     );
   }
@@ -628,13 +766,26 @@ class HomeTabScreen extends ConsumerWidget {
   /// 获取卡片名称(基于 l10n)。
   String _gridCardName(AppLocalizations l10n, int index, bool isCn) {
     final cnKeys = [
-      l10n.exerciseRecord, l10n.bodyData, l10n.burnRank, l10n.todaysBurn,
-      l10n.checkInTask, l10n.aiPt, l10n.onlineStore, l10n.sportsGoal,
-      l10n.sportsReport, l10n.onlineManual
+      l10n.exerciseRecord,
+      l10n.bodyData,
+      l10n.burnRank,
+      l10n.todaysBurn,
+      l10n.checkInTask,
+      l10n.aiPt,
+      l10n.onlineStore,
+      l10n.sportsGoal,
+      l10n.sportsReport,
+      l10n.onlineManual,
     ];
     final notCnKeys = [
-      l10n.exerciseRecord, l10n.bodyMassIndex, l10n.ranks, l10n.kcalCons,
-      l10n.dailyTask, l10n.fitnessGoals, l10n.sportsReport, l10n.deviceManual
+      l10n.exerciseRecord,
+      l10n.bodyMassIndex,
+      l10n.ranks,
+      l10n.kcalCons,
+      l10n.dailyTask,
+      l10n.fitnessGoals,
+      l10n.sportsReport,
+      l10n.deviceManual,
     ];
     final list = isCn ? cnKeys : notCnKeys;
     return list[index % list.length];
@@ -702,7 +853,8 @@ class HomeTabScreen extends ConsumerWidget {
                         cardName,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 30.sp, color: FitTheme.textColor,
+                          fontSize: 30.sp,
+                          color: FitTheme.textColor,
                           fontFamily: AppFonts.hofontmedium,
                         ),
                       ),
@@ -734,8 +886,10 @@ class HomeTabScreen extends ConsumerWidget {
               Text(
                 state.mainData.recordDate,
                 style: TextStyle(
-                  fontSize: 25.sp, color: FitTheme.textColor,
-                  height: 1, fontFamily: AppFonts.hofontregular,
+                  fontSize: 25.sp,
+                  color: FitTheme.textColor,
+                  height: 1,
+                  fontFamily: AppFonts.hofontregular,
                 ),
               ),
             ],
@@ -747,8 +901,11 @@ class HomeTabScreen extends ConsumerWidget {
 
   /// 卡片内容区:文字卡 / 纯单位卡 / 数字+单位卡。
   Widget _buildCardContent(
-    BuildContext context, WidgetRef ref, AppLocalizations l10n,
-    int index, bool isCn,
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    int index,
+    bool isCn,
   ) {
     final state = ref.watch(homeNotifierProvider);
     final notifier = ref.read(homeNotifierProvider.notifier);
@@ -756,7 +913,9 @@ class HomeTabScreen extends ConsumerWidget {
     // index 4:打卡 — 文字 "已达成/未达成",25sp,红/绿色
     if (index == 4) {
       final text = state.isReached ? l10n.achieved : l10n.unachieved;
-      final color = state.isReached ? Colors.green : const Color.fromARGB(255, 221, 62, 44);
+      final color = state.isReached
+          ? Colors.green
+          : const Color.fromARGB(255, 221, 62, 44);
       return Container(
         alignment: Alignment.centerLeft,
         margin: EdgeInsets.only(bottom: 10).r,
@@ -765,8 +924,11 @@ class HomeTabScreen extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
           style: TextStyle(
-            letterSpacing: 0, color: color,
-            fontSize: 25.sp, fontFamily: AppFonts.hofontmedium, height: 1,
+            letterSpacing: 0,
+            color: color,
+            fontSize: 25.sp,
+            fontFamily: AppFonts.hofontmedium,
+            height: 1,
           ),
         ),
       );
@@ -786,8 +948,11 @@ class HomeTabScreen extends ConsumerWidget {
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
           style: TextStyle(
-            letterSpacing: 0, color: color,
-            fontSize: 25.sp, fontFamily: AppFonts.hofontmedium, height: 1,
+            letterSpacing: 0,
+            color: color,
+            fontSize: 25.sp,
+            fontFamily: AppFonts.hofontmedium,
+            height: 1,
           ),
         ),
       );
@@ -803,7 +968,9 @@ class HomeTabScreen extends ConsumerWidget {
           unit,
           overflow: TextOverflow.clip,
           style: TextStyle(
-            color: FitTheme.textColor, fontSize: 25.sp, height: 1,
+            color: FitTheme.textColor,
+            fontSize: 25.sp,
+            height: 1,
           ),
         ),
       );
@@ -826,8 +993,11 @@ class HomeTabScreen extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: TextStyle(
-                letterSpacing: 0, color: FitTheme.textColor,
-                fontSize: 50.sp, fontFamily: AppFonts.bebas, height: 1,
+                letterSpacing: 0,
+                color: FitTheme.textColor,
+                fontSize: 50.sp,
+                fontFamily: AppFonts.bebas,
+                height: 1,
               ),
             ),
           ),
@@ -838,7 +1008,9 @@ class HomeTabScreen extends ConsumerWidget {
               unit,
               overflow: TextOverflow.clip,
               style: TextStyle(
-                color: FitTheme.textColor, fontSize: 25.sp, height: 0.8,
+                color: FitTheme.textColor,
+                fontSize: 25.sp,
+                height: 0.8,
               ),
             ),
           ),

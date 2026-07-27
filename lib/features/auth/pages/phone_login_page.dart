@@ -7,7 +7,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier.dart';
+import '../notifiers/auth_notifier_provider.dart';
 import 'auth_video_background.dart';
 
 /// 手机验证码登录-输入手机号页(1:1 复刻旧项目 NewPhoneLoginScreen)。

@@ -5,7 +5,7 @@ part 'statistics_data.g.dart';
 
 /// 运动统计项(对应旧 FitStatsData.data 列表元素)。
 @freezed
-class StatisticsItem with _$StatisticsItem {
+abstract class StatisticsItem with _$StatisticsItem {
   const factory StatisticsItem({
     @Default(0) int calorie,
     @Default(0) int duringTime,
@@ -18,7 +18,7 @@ class StatisticsItem with _$StatisticsItem {
 
 /// getStatistics 接口返回。
 @freezed
-class FitStatsData with _$FitStatsData {
+abstract class FitStatsData with _$FitStatsData {
   const factory FitStatsData({
     @Default('') String code,
     @Default([]) List<StatisticsItem> data,

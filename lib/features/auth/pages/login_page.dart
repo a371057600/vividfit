@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier.dart';
+import '../notifiers/auth_notifier_provider.dart';
 import 'auth_video_background.dart';
 
 /// 登录入口选择页(1:1 复刻旧项目 NewLoginScreen)。
@@ -205,6 +206,17 @@ class LoginPage extends ConsumerWidget {
                         ),
                         SizedBox(height: 20.r),
                         _buildPrivacy(context, ref, l10n, languageNum, agreed),
+                        if (kDebugMode) ...[
+                          SizedBox(height: 20.r),
+                          TextButton.icon(
+                            onPressed: () async {
+                              await ref.read(authNotifierProvider.notifier).devLogin();
+                              if (context.mounted) context.go('/home-shell');
+                            },
+                            icon: const Icon(Icons.developer_board, color: Colors.orange),
+                            label: const Text('DEV 一键登录', style: TextStyle(color: Colors.orange)),
+                          ),
+                        ],
                       ],
                     ),
                   ),

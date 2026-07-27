@@ -6,7 +6,7 @@ part 'auth_state.freezed.dart';
 
 /// 登录模块状态(字段对应旧项目 NewLoginController 的 .obs 变量)。
 @freezed
-class AuthState with _$AuthState {
+abstract class AuthState with _$AuthState {
   const factory AuthState({
     // ---- 通用 ----
     @Default(false) bool isLoading,

@@ -1,4 +1,3 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/user_settings_notifier.dart';
+import '../../auth/notifiers/auth_notifier_provider.dart';
+import '../notifiers/user_settings_notifier_provider.dart';
 
 class AboutShellPage extends ConsumerStatefulWidget {
   const AboutShellPage({super.key});
@@ -68,7 +68,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
             onTap: () {
-              context.go('/user-settings');
+              context.push('/user-settings');
             },
             child: Card(
               margin: const EdgeInsets.only(left: 25, right: 25, top: 25).r,
@@ -123,7 +123,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
             highlightColor: Colors.transparent,
             splashColor: Colors.transparent,
             onTap: () {
-              context.go('/medal-display');
+              context.push('/medal-display');
             },
             child: _buildMedalWidget(context, l10n),
           ),
@@ -179,27 +179,9 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
       height: 80.r,
       width: 80.r,
       decoration: const BoxDecoration(shape: BoxShape.circle),
-      child: ExtendedImage.asset(
+      child: Image.asset(
         "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
         fit: BoxFit.fill,
-        loadStateChanged: (ExtendedImageState state) {
-          switch (state.extendedImageLoadState) {
-            case LoadState.loading:
-              return Center(
-                child: CircularProgressIndicator(
-                  color: FitTheme.textColor,
-                ),
-              );
-            case LoadState.failed:
-              return const Center(child: Text(""));
-            case LoadState.completed:
-              return ExtendedRawImage(
-                image: state.extendedImageInfo?.image,
-                width: MediaQuery.of(context).size.width - 10,
-                fit: BoxFit.fill,
-              );
-          }
-        },
       ),
     );
   }
@@ -284,7 +266,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () {
-                context.go('/sport-setting');
+                context.push('/sport-setting');
               },
               child: _buildSmallItemButton(0),
             ),
@@ -293,7 +275,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () {
-                context.go('/account-security');
+                context.push('/account-security');
               },
               child: _buildSmallItemButton(1),
             ),
@@ -335,7 +317,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () {
-                context.go('/about-info');
+                context.push('/about-info');
               },
               child: _buildSmallItemButton(4),
             ),
@@ -344,7 +326,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () {
-                _showSignOutDialog(context, l10n);
+                _showSignOutDialog(context, ref, l10n);
               },
               child: _buildSmallItemButton(5),
             ),
@@ -433,9 +415,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _buildCharacterRadio(6, "Carol", state, notifier),
-              ],
+              children: [_buildCharacterRadio(6, "Carol", state, notifier)],
             ),
           ],
         ),
@@ -443,12 +423,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     );
   }
 
-  Widget _buildCharacterRadio(
-    int index,
-    String label,
-    state,
-    notifier,
-  ) {
+  Widget _buildCharacterRadio(int index, String label, state, notifier) {
     return Row(
       children: [
         Radio<int>(
@@ -472,70 +447,110 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     );
   }
 
-  void _showSignOutDialog(BuildContext context, AppLocalizations l10n) {
+  void _showSignOutDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: FitTheme.backgroundColor,
-          contentPadding: const EdgeInsets.all(20),
-          titlePadding: const EdgeInsets.only(top: 20),
-          title: Text(
-            "退出登录",
-            style: TextStyle(
-              color: FitTheme.textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          backgroundColor: FitTheme.secondbackGround,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 24.w,
+            vertical: 20.h,
+          ),
+          titlePadding: EdgeInsets.only(top: 24.h, left: 24.w, right: 24.w),
+          actionsPadding: EdgeInsets.only(
+            bottom: 16.h,
+            left: 16.w,
+            right: 16.w,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          title: Center(
+            child: Text(
+              "退出登录",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: FitTheme.textColor,
+                fontSize: 32.sp,
+                fontWeight: FontWeight.bold,
+                fontFamily: AppFonts.hofontmedium,
+              ),
             ),
           ),
-          content: Text(
-            "警告:是否退出,未保存的信息将被删除?",
-            style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
+          content: Center(
+            child: Text(
+              "确定要退出登录吗？",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: FitTheme.textColor,
+                fontSize: 28.sp,
+                fontFamily: AppFonts.hofontregular,
+              ),
+            ),
           ),
           actions: [
-            Container(
-              height: 20,
-              width: MediaQuery.of(context).size.width,
-              alignment: Alignment.center,
-              margin: const EdgeInsets.only(top: 0, bottom: 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: 100,
-                      height: 30,
-                      child: Text(
-                        l10n.cancel,
-                        style: TextStyle(color: FitTheme.textColor),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 32.w,
+                      vertical: 12.h,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                      side: BorderSide(
+                        color: FitTheme.textColor.withOpacity(0.3),
                       ),
                     ),
                   ),
-                  InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      Navigator.of(context).pop();
+                  child: Text(
+                    l10n.cancel,
+                    style: TextStyle(
+                      color: FitTheme.textColor,
+                      fontSize: 28.sp,
+                      fontFamily: AppFonts.hofontmedium,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    final authNotifier = ref.read(
+                      authNotifierProvider.notifier,
+                    );
+                    await authNotifier.logout();
+                    if (context.mounted) {
                       context.go('/login');
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: 100,
-                      height: 30,
-                      child: Text(
-                        l10n.confirm,
-                        style: TextStyle(color: FitTheme.textColor),
-                      ),
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 32.w,
+                      vertical: 12.h,
+                    ),
+                    backgroundColor: FitTheme.buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
                     ),
                   ),
-                ],
-              ),
+                  child: Text(
+                    l10n.confirm,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontFamily: AppFonts.hofontmedium,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         );

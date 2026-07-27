@@ -4,7 +4,7 @@ part 'course_detail.freezed.dart';
 part 'course_detail.g.dart';
 
 @freezed
-class CourseDetail with _$CourseDetail {
+abstract class CourseDetail with _$CourseDetail {
   const factory CourseDetail({
     String? code,
     String? msg,
@@ -16,7 +16,7 @@ class CourseDetail with _$CourseDetail {
 }
 
 @freezed
-class CourseAction with _$CourseAction {
+abstract class CourseAction with _$CourseAction {
   const factory CourseAction({
     int? actionId,
     int? actionType,
@@ -38,7 +38,7 @@ class CourseAction with _$CourseAction {
 }
 
 @freezed
-class ActionPictures with _$ActionPictures {
+abstract class ActionPictures with _$ActionPictures {
   const factory ActionPictures({
     int? id,
     int? actionId,

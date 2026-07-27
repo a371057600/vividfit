@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'gym_device_connect_state.freezed.dart';
 
 @freezed
-class GymDeviceConnectState with _$GymDeviceConnectState {
+abstract class GymDeviceConnectState with _$GymDeviceConnectState {
   const factory GymDeviceConnectState({
     /// 是否正在搜索(对应旧 searchStatus)。
     @Default(false) bool isSearching,

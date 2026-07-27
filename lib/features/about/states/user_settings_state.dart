@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_settings_state.freezed.dart';
 
 @freezed
-class UserSettingsState with _$UserSettingsState {
+abstract class UserSettingsState with _$UserSettingsState {
   const factory UserSettingsState({
     @Default('') String headImage,
     @Default(0) int selectedImageIndex,

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vividfit_v2/features/big_device/data/device_category.dart';
 import 'package:vividfit_v2/features/big_device/notifiers/gym_course_home_notifier.dart';
+import 'package:vividfit_v2/features/big_device/notifiers/gym_course_home_notifier_provider.dart';
 
 GymCourseHomeNotifier _createNotifier() {
   final container = ProviderContainer();

@@ -9,6 +9,7 @@ import 'package:vividfit_v2/core/services/storage_service_provider.dart';
 import 'package:vividfit_v2/data/models/new_main_data.dart';
 import 'package:vividfit_v2/data/models/statistics_data.dart';
 import 'package:vividfit_v2/features/home/notifiers/home_notifier.dart';
+import 'package:vividfit_v2/features/home/notifiers/home_notifier_provider.dart';
 import 'package:vividfit_v2/features/home/repositories/home_repository.dart';
 
 class _MockHomeRepository extends Mock implements HomeRepository {}

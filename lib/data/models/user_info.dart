@@ -5,7 +5,7 @@ part 'user_info.g.dart';
 
 /// 用户个人信息(迁移自旧项目 login_Info.dart 的 FitUserInfo)。
 @freezed
-class FitUserInfo with _$FitUserInfo {
+abstract class FitUserInfo with _$FitUserInfo {
   const factory FitUserInfo({
     int? id,
     String? nickName,

@@ -6,25 +6,24 @@ part of 'new_main_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$FitMainDataImpl _$$FitMainDataImplFromJson(Map<String, dynamic> json) =>
-    _$FitMainDataImpl(
-      animationIndex2: (json['animationIndex2'] as num?)?.toInt() ?? 1,
-      recordDate: json['recordDate'] as String? ?? '',
-      triCycleCalorie: (json['triCycleCalorie'] as num?)?.toInt() ?? 0,
-      goalCalorie: (json['goalCalorie'] as num?)?.toInt() ?? 100,
-      triCycleDuration: (json['triCycleDuration'] as num?)?.toInt() ?? 0,
-      goalDuration: (json['goalDuration'] as num?)?.toInt() ?? 50,
-      triCycleStrength: (json['triCycleStrength'] as num?)?.toDouble() ?? 0.0,
-      goalStrength: (json['goalStrength'] as num?)?.toDouble() ?? 5.0,
-      todayCount: (json['todayCount'] as num?)?.toInt() ?? 0,
-      bodyWeight: (json['bodyWeight'] as num?)?.toInt() ?? 40,
-      bodyBmi: (json['bodyBmi'] as num?)?.toDouble() ?? 20.0,
-      bodyHeight: (json['bodyHeight'] as num?)?.toInt() ?? 160,
-      isLoading: json['isLoading'] as bool? ?? true,
-      isLoading2: json['isLoading2'] as bool? ?? true,
-    );
+_FitMainData _$FitMainDataFromJson(Map<String, dynamic> json) => _FitMainData(
+  animationIndex2: (json['animationIndex2'] as num?)?.toInt() ?? 1,
+  recordDate: json['recordDate'] as String? ?? '',
+  triCycleCalorie: (json['triCycleCalorie'] as num?)?.toInt() ?? 0,
+  goalCalorie: (json['goalCalorie'] as num?)?.toInt() ?? 100,
+  triCycleDuration: (json['triCycleDuration'] as num?)?.toInt() ?? 0,
+  goalDuration: (json['goalDuration'] as num?)?.toInt() ?? 50,
+  triCycleStrength: (json['triCycleStrength'] as num?)?.toDouble() ?? 0.0,
+  goalStrength: (json['goalStrength'] as num?)?.toDouble() ?? 5.0,
+  todayCount: (json['todayCount'] as num?)?.toInt() ?? 0,
+  bodyWeight: (json['bodyWeight'] as num?)?.toInt() ?? 40,
+  bodyBmi: (json['bodyBmi'] as num?)?.toDouble() ?? 20.0,
+  bodyHeight: (json['bodyHeight'] as num?)?.toInt() ?? 160,
+  isLoading: json['isLoading'] as bool? ?? true,
+  isLoading2: json['isLoading2'] as bool? ?? true,
+);
 
-Map<String, dynamic> _$$FitMainDataImplToJson(_$FitMainDataImpl instance) =>
+Map<String, dynamic> _$FitMainDataToJson(_FitMainData instance) =>
     <String, dynamic>{
       'animationIndex2': instance.animationIndex2,
       'recordDate': instance.recordDate,

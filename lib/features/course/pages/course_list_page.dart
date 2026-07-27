@@ -2,17 +2,15 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
-import '../../../data/models/course_list.dart';
-import '../../../l10n/app_localizations.dart';
 import '../notifiers/course_list_notifier.dart';
+import '../notifiers/course_list_notifier_provider.dart';
 import '../states/course_list_state.dart';
 
-/// 课程列表页（1:1 还原原 new_course_list_homepage.dart + new_course_list_screen.dart）。
+/// 课程列表页（1:1 还原原 new_course_list_homepage.dart，纯 UI 假页面）。
 class CourseListPage extends ConsumerWidget {
   const CourseListPage({super.key});
 
@@ -36,98 +34,55 @@ class CourseListPage extends ConsumerWidget {
     'images/newUIScreen/icons/icon_game_orange.png',
   ];
 
+  static const List<String> _gripGameImages = [
+    'images/newUIScreen/courseImage/game_grip_0_en.jpg',
+    'images/newUIScreen/courseImage/game_grip_1_en.jpg',
+    'images/newUIScreen/courseImage/game_armwresting_match.jpg',
+  ];
+
+  static const List<String> _allGameImages = [
+    'images/newUIScreen/courseImage/game_grip_0_en.jpg',
+    'images/newUIScreen/courseImage/game_grip_1_en.jpg',
+    'images/newUIScreen/courseImage/game_armwresting_match.jpg',
+    'images/newUIScreen/courseImage/game_skippingRope.jpg',
+    'images/newUIScreen/courseImage/game_fun_tennis.jpg',
+    'images/newUIScreen/courseImage/game_run_picture.jpg',
+    'images/newUIScreen/courseImage/zombie_screen.jpg',
+  ];
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(courseListNotifierProvider);
     final notifier = ref.read(courseListNotifierProvider.notifier);
-    final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: FitTheme.backgroundColor,
-      appBar: AppBar(
-        centerTitle: false,
-        toolbarHeight: 100.r,
-        foregroundColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        backgroundColor: FitTheme.backgroundColor,
-        leadingWidth: 300,
-        leading: Container(
-          padding: const EdgeInsets.only(left: 45).r,
-          child: InkWell(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            onTap: () => context.pop(),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  alignment: Alignment.bottomCenter,
-                  padding: const EdgeInsets.only(bottom: 10).r,
-                  height: 100.r,
-                  child: Icon(
-                    Icons.arrow_back_ios,
-                    color: FitTheme.textColor,
-                    size: 20,
-                  ),
-                ),
-                Text(
-                  l10n.courses,
-                  style: TextStyle(
-                    color: FitTheme.textColor,
-                    fontFamily: AppFonts.hofontmedium,
-                    fontSize: 40.sp,
-                  ),
-                ),
-              ],
+    return Card(
+      color: FitTheme.secondbackGround,
+      margin: const EdgeInsets.only(left: 25, right: 25, top: 25, bottom: 25).r,
+      child: SizedBox(
+        height: 1600.h,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(left: 20, top: 25).r,
+              width: 195.w,
+              height: 1400.h,
+              child: _buildLeftContent(state, notifier),
             ),
-          ),
-        ),
-      ),
-      body: Card(
-        color: FitTheme.secondbackGround,
-        margin: const EdgeInsets.only(left: 25, right: 25, top: 25, bottom: 25)
-            .r,
-        child: SizedBox(
-          height: 1600.h,
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.only(left: 20, top: 25).r,
-                width: 195.w,
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.only(left: 20, right: 20).r,
                 height: 1400.h,
-                child: _buildLeftContent(state, notifier),
-              ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.only(left: 20, right: 20).r,
-                  height: 1400.h,
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 80.h,
-                        padding: const EdgeInsets.only(bottom: 13).r,
-                        alignment: Alignment.bottomLeft,
-                        child: Container(
-                          margin: const EdgeInsets.only(left: 20).r,
-                          child: Text(
-                            l10n.courses,
-                            style: TextStyle(
-                              color: FitTheme.textColor,
-                              fontFamily: AppFonts.hofontregular,
-                              fontSize: 30.sp,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildRightContent(context, ref, state, notifier),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    Container(height: 25.h),
+                    Expanded(
+                      child: _buildRightContent(state),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -180,51 +135,50 @@ class CourseListPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildRightContent(
-    BuildContext context,
-    WidgetRef ref,
-    CourseListState state,
-    CourseListNotifier notifier,
-  ) {
-    if (state.isLoading || state.courseDataMap[state.deviceType] == null) {
-      return InkWell(
-        onTap: () => notifier.getCourseList(),
-        child: Container(
-          alignment: Alignment.center,
-          child: LoadingAnimationWidget.discreteCircle(
-            color: FitTheme.textColor,
-            size: 100.r,
-          ),
-        ),
-      );
+  Widget _buildRightContent(CourseListState state) {
+    switch (state.deviceType) {
+      case 1:
+        return _buildGameList(_gripGameImages);
+      case 6:
+        return _buildGameList(_allGameImages);
+      default:
+        return _buildMockCourseList();
     }
+  }
 
-    final dataList =
-        state.courseDataMap[state.deviceType]!.data?.dataList ?? [];
+  Widget _buildGameList(List<String> imagePaths) {
+    return ListView(
+      children: imagePaths.map((path) {
+        return Card(
+          color: Colors.transparent,
+          clipBehavior: Clip.antiAlias,
+          child: Image.asset(path),
+        );
+      }).toList(),
+    );
+  }
 
+  Widget _buildMockCourseList() {
     return ListView.builder(
-      itemCount: dataList.length,
+      itemCount: 10,
       itemBuilder: (_, index) {
-        final item = dataList[index];
+        final imagePath = 'images/newUIScreen/courseImage/${index % 10}.jpg';
         return InkWell(
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
-          onTap: () {
-            if (!state.isLoading) {
-              _gotoDetail(context, item, index);
-            }
-          },
+          onTap: () {},
           child: Container(
             margin: const EdgeInsets.only(bottom: 25).r,
             color: FitTheme.textColor,
             child: ExtendedImage.asset(
-              'images/newUIScreen/courseImage/$index.jpg',
+              imagePath,
               fit: BoxFit.fitWidth,
               loadStateChanged: (ExtendedImageState imageState) {
                 switch (imageState.extendedImageLoadState) {
                   case LoadState.loading:
                     return Container(
                       height: 200.h,
+                      width: double.infinity,
                       alignment: Alignment.center,
                       child: LoadingAnimationWidget.waveDots(
                         color: FitTheme.textColor,
@@ -233,9 +187,9 @@ class CourseListPage extends ConsumerWidget {
                     );
                   case LoadState.failed:
                     return Center(
-                      child: Text(
-                        'No Picture',
-                        style: TextStyle(color: FitTheme.textColor),
+                      child: LoadingAnimationWidget.waveDots(
+                        color: Colors.transparent,
+                        size: 50,
                       ),
                     );
                   case LoadState.completed:
@@ -251,20 +205,5 @@ class CourseListPage extends ConsumerWidget {
         );
       },
     );
-  }
-
-  void _gotoDetail(BuildContext context, CourseItem item, int index) {
-    context.push('/course-detail', extra: {
-      'courseIndex': index,
-      'courseTitle': item.title,
-      'courseId': item.id,
-      'courseCover': item.cover,
-      'interactiveEquipment': item.interactiveEquipment,
-      'version': item.version,
-      'courseBGM': item.courseBgm,
-      'proposal': item.proposal,
-      'describe': item.describe,
-      'carefulthing': item.carefulthing,
-    });
   }
 }

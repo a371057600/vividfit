@@ -7,9 +7,9 @@ import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../about/pages/about_shell_page.dart';
 import '../../big_device/pages/device_search_screen.dart';
+import '../../course/pages/course_list_page.dart';
 import '../notifiers/home_notifier_provider.dart';
 import 'home_tab_screen.dart';
-import 'placeholder_page.dart';
 
 /// 主页外壳(1:1 复刻旧 MyHomePage)。
 class HomeShellScreen extends ConsumerWidget {
@@ -44,7 +44,7 @@ class HomeShellScreen extends ConsumerWidget {
             index: state.currentIndex,
             children: [
               const HomeTabScreen(),
-              PlaceholderPage(targetName: l10n.sport),
+              const CourseListPage(),
               const DeviceSearchScreen(),
               const AboutShellPage(),
             ],

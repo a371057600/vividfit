@@ -5,7 +5,7 @@ import '../../../data/models/course_list.dart';
 part 'course_list_state.freezed.dart';
 
 @freezed
-class CourseListState with _$CourseListState {
+abstract class CourseListState with _$CourseListState {
   const factory CourseListState({
     /// 当前选中的设备类型索引(0-6)
     @Default(0) int deviceType,

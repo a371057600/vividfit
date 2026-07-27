@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
-import '../../features/auth/notifiers/auth_notifier.dart';
+import '../../features/auth/notifiers/auth_notifier_provider.dart';
 import '../../features/auth/pages/account_login_page.dart';
 import '../../features/auth/pages/email_login_page.dart';
 import '../../features/auth/pages/find_password_page.dart';
@@ -16,7 +15,6 @@ import '../../features/home/pages/goal_setting_page.dart';
 import '../../features/home/pages/home_shell_screen.dart';
 import '../../features/home/pages/placeholder_page.dart';
 import '../../features/about/pages/about_info_page.dart';
-import '../../features/about/pages/about_shell_page.dart';
 import '../../features/about/pages/account_security_page.dart';
 import '../../features/about/pages/avatar_select_page.dart';
 import '../../features/about/pages/medal_display_page.dart';
@@ -33,10 +31,7 @@ import '../../features/big_device/pages/gym_game_select_screen.dart';
 import '../../features/big_device/pages/gym_quick_start_screen.dart';
 import '../../features/big_device/pages/gym_device_games.dart';
 
-part 'app_router.g.dart';
-
 const _loginFlowRoutes = {
-  '/splash',
   '/login',
   '/account-login',
   '/email-login',
@@ -45,8 +40,7 @@ const _loginFlowRoutes = {
   '/find-password',
 };
 
-@riverpod
-GoRouter appRouter(Ref ref) {
+final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
@@ -54,6 +48,8 @@ GoRouter appRouter(Ref ref) {
       final authState = ref.read(authNotifierProvider);
       final isLoggedIn = authState.isAuthenticated;
       final location = state.matchedLocation;
+      // splash 页总是允许显示,由其自行决定跳转
+      if (location == '/splash') return null;
       final inLoginFlow = _loginFlowRoutes.contains(location);
       if (isLoggedIn && inLoginFlow) return '/home-shell';
       if (!isLoggedIn && !inLoginFlow) return '/login';
@@ -115,11 +111,6 @@ GoRouter appRouter(Ref ref) {
         name: 'placeholder',
         builder: (context, state) =>
             const PlaceholderPage(targetName: 'Placeholder'),
-      ),
-      GoRoute(
-        path: '/about-shell',
-        name: 'about-shell',
-        builder: (context, state) => const AboutShellPage(),
       ),
       GoRoute(
         path: '/user-settings',
@@ -267,7 +258,7 @@ GoRouter appRouter(Ref ref) {
       ),
     ],
   );
-}
+});
 
 class _AuthRefreshListenable extends ChangeNotifier {
   _AuthRefreshListenable(Ref ref) {

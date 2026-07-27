@@ -1,16 +1,10 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../core/services/storage_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../states/goal_setting_state.dart';
 
-part 'goal_setting_notifier.g.dart';
-
-/// 运动目标设置状态机(1:1 迁移自旧 GoalSettingController)。
-///
-/// 仅保留数据逻辑(索引/预设值/持久化),显示文本由 UI 层用 l10n 渲染。
-@riverpod
-class GoalSettingNotifier extends _$GoalSettingNotifier {
+class GoalSettingNotifier extends Notifier<GoalSettingState> {
   @override
   GoalSettingState build() {
     _storage = ref.watch(storageServiceProvider);

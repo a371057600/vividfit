@@ -1,5 +1,5 @@
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../core/services/bluetooth_connection_service.dart';
 import '../../../core/services/bluetooth_connection_service_provider.dart';
@@ -9,10 +9,7 @@ import '../data/device_category.dart';
 import '../data/device_scan_constants.dart';
 import '../states/gym_device_connect_state.dart';
 
-part 'gym_device_connect_notifier.g.dart';
-
-@riverpod
-class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
+class GymDeviceConnectNotifier extends Notifier<GymDeviceConnectState> {
   @override
   GymDeviceConnectState build() {
     final service = ref.watch(bluetoothConnectionServiceProvider);

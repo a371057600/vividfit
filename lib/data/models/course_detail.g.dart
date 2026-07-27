@@ -6,25 +6,24 @@ part of 'course_detail.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CourseDetailImpl _$$CourseDetailImplFromJson(Map<String, dynamic> json) =>
-    _$CourseDetailImpl(
+_CourseDetail _$CourseDetailFromJson(Map<String, dynamic> json) =>
+    _CourseDetail(
       code: json['code'] as String?,
       msg: json['msg'] as String?,
-      data:
-          (json['data'] as List<dynamic>?)
-              ?.map((e) => CourseAction.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      data: (json['data'] as List<dynamic>?)
+          ?.map((e) => CourseAction.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
-Map<String, dynamic> _$$CourseDetailImplToJson(_$CourseDetailImpl instance) =>
+Map<String, dynamic> _$CourseDetailToJson(_CourseDetail instance) =>
     <String, dynamic>{
       'code': instance.code,
       'msg': instance.msg,
       'data': instance.data,
     };
 
-_$CourseActionImpl _$$CourseActionImplFromJson(Map<String, dynamic> json) =>
-    _$CourseActionImpl(
+_CourseAction _$CourseActionFromJson(Map<String, dynamic> json) =>
+    _CourseAction(
       actionId: (json['actionId'] as num?)?.toInt(),
       actionType: (json['actionType'] as num?)?.toInt(),
       video: json['video'] as String?,
@@ -37,15 +36,14 @@ _$CourseActionImpl _$$CourseActionImplFromJson(Map<String, dynamic> json) =>
       during: (json['during'] as num?)?.toInt(),
       sets: (json['sets'] as num?)?.toInt(),
       speed: (json['speed'] as num?)?.toInt(),
-      picturesList:
-          json['picturesList'] == null
-              ? null
-              : ActionPictures.fromJson(
-                json['picturesList'] as Map<String, dynamic>,
-              ),
+      picturesList: json['picturesList'] == null
+          ? null
+          : ActionPictures.fromJson(
+              json['picturesList'] as Map<String, dynamic>,
+            ),
     );
 
-Map<String, dynamic> _$$CourseActionImplToJson(_$CourseActionImpl instance) =>
+Map<String, dynamic> _$CourseActionToJson(_CourseAction instance) =>
     <String, dynamic>{
       'actionId': instance.actionId,
       'actionType': instance.actionType,
@@ -62,19 +60,18 @@ Map<String, dynamic> _$$CourseActionImplToJson(_$CourseActionImpl instance) =>
       'picturesList': instance.picturesList,
     };
 
-_$ActionPicturesImpl _$$ActionPicturesImplFromJson(Map<String, dynamic> json) =>
-    _$ActionPicturesImpl(
+_ActionPictures _$ActionPicturesFromJson(Map<String, dynamic> json) =>
+    _ActionPictures(
       id: (json['id'] as num?)?.toInt(),
       actionId: (json['actionId'] as num?)?.toInt(),
       actionPictureName: json['actionPictureName'] as String?,
       actionPictureHash: json['actionPictureHash'] as String?,
     );
 
-Map<String, dynamic> _$$ActionPicturesImplToJson(
-  _$ActionPicturesImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'actionId': instance.actionId,
-  'actionPictureName': instance.actionPictureName,
-  'actionPictureHash': instance.actionPictureHash,
-};
+Map<String, dynamic> _$ActionPicturesToJson(_ActionPictures instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'actionId': instance.actionId,
+      'actionPictureName': instance.actionPictureName,
+      'actionPictureHash': instance.actionPictureHash,
+    };

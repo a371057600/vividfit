@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../notifiers/auth_notifier.dart';
+import '../notifiers/auth_notifier_provider.dart';
 
 /// 开屏页(用 go_router 的 splash 路由实现,1:1 复刻旧 AnimatedSplashScreen 视觉)。
 ///

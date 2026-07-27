@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/user_settings_notifier.dart';
+import '../notifiers/user_settings_notifier_provider.dart';
 
 class UserSettingsPage extends ConsumerWidget {
   const UserSettingsPage({super.key});
@@ -99,7 +99,7 @@ class UserSettingsPage extends ConsumerWidget {
                 highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
                 onTap: () {
-                  context.go('/avatar-select');
+                  context.push('/avatar-select');
                 },
                 child: Container(
                   margin: const EdgeInsets.only(

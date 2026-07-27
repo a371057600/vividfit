@@ -6,23 +6,22 @@ part of 'statistics_data.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$StatisticsItemImpl _$$StatisticsItemImplFromJson(Map<String, dynamic> json) =>
-    _$StatisticsItemImpl(
+_StatisticsItem _$StatisticsItemFromJson(Map<String, dynamic> json) =>
+    _StatisticsItem(
       calorie: (json['calorie'] as num?)?.toInt() ?? 0,
       duringTime: (json['duringTime'] as num?)?.toInt() ?? 0,
       sportCount: (json['sportCount'] as num?)?.toInt() ?? 0,
     );
 
-Map<String, dynamic> _$$StatisticsItemImplToJson(
-  _$StatisticsItemImpl instance,
-) => <String, dynamic>{
-  'calorie': instance.calorie,
-  'duringTime': instance.duringTime,
-  'sportCount': instance.sportCount,
-};
+Map<String, dynamic> _$StatisticsItemToJson(_StatisticsItem instance) =>
+    <String, dynamic>{
+      'calorie': instance.calorie,
+      'duringTime': instance.duringTime,
+      'sportCount': instance.sportCount,
+    };
 
-_$FitStatsDataImpl _$$FitStatsDataImplFromJson(Map<String, dynamic> json) =>
-    _$FitStatsDataImpl(
+_FitStatsData _$FitStatsDataFromJson(Map<String, dynamic> json) =>
+    _FitStatsData(
       code: json['code'] as String? ?? '',
       data:
           (json['data'] as List<dynamic>?)
@@ -31,5 +30,5 @@ _$FitStatsDataImpl _$$FitStatsDataImplFromJson(Map<String, dynamic> json) =>
           const [],
     );
 
-Map<String, dynamic> _$$FitStatsDataImplToJson(_$FitStatsDataImpl instance) =>
+Map<String, dynamic> _$FitStatsDataToJson(_FitStatsData instance) =>
     <String, dynamic>{'code': instance.code, 'data': instance.data};

@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/body_data_notifier.dart';
+import '../notifiers/body_data_notifier_provider.dart';
 
 /// 身体数据页(1:1 复刻旧 NewBodyDataScreen)。
 class BodyDataPage extends ConsumerWidget {

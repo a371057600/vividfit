@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'goal_setting_state.freezed.dart';
 
 @freezed
-class GoalSettingState with _$GoalSettingState {
+abstract class GoalSettingState with _$GoalSettingState {
   const factory GoalSettingState({
     @Default(165) int goalKcal,
     @Default(3.0) double goalStrength,

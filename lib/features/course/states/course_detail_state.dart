@@ -5,7 +5,7 @@ import '../../../data/models/course_detail.dart';
 part 'course_detail_state.freezed.dart';
 
 @freezed
-class CourseDetailState with _$CourseDetailState {
+abstract class CourseDetailState with _$CourseDetailState {
   const factory CourseDetailState({
     /// 课程动作详情
     CourseDetail? courseDetail,

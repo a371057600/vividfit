@@ -6,7 +6,7 @@ import 'package:pinput/pinput.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier.dart';
+import '../notifiers/auth_notifier_provider.dart';
 import 'auth_video_background.dart';
 
 /// 验证码输入页(1:1 复刻旧项目 NewLoginGetCodeScreen)。

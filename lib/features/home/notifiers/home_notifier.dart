@@ -1,4 +1,4 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../core/services/home_repository_provider.dart';
 import '../../../core/services/storage_service.dart';
@@ -7,11 +7,7 @@ import '../../../data/models/new_main_data.dart';
 import '../repositories/home_repository.dart';
 import '../states/home_state.dart';
 
-part 'home_notifier.g.dart';
-
-/// 主页状态机(1:1 迁移自旧 HomeController + NewMainController 的状态逻辑)。
-@riverpod
-class HomeNotifier extends _$HomeNotifier {
+class HomeNotifier extends Notifier<HomeState> {
   @override
   HomeState build() {
     _repo = ref.watch(homeRepositoryProvider);

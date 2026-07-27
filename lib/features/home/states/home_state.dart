@@ -6,7 +6,7 @@ part 'home_state.freezed.dart';
 
 /// 主页状态(整合旧 HomeController + NewMainController 的核心字段)。
 @freezed
-class HomeState with _$HomeState {
+abstract class HomeState with _$HomeState {
   const factory HomeState({
     /// 底部导航当前 tab
     @Default(0) int currentIndex,

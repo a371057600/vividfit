@@ -1,0 +1,49 @@
+- [ ] ApiResponse.fromJson 正确解析成功响应（code=200, data 非空, message 存在）
+- [ ] ApiResponse.fromJson 正确解析失败响应（code=500, data 为 null）
+- [ ] ApiResponse.isSuccess 在 code=="200" 时为 true，否则为 false
+- [ ] ApiResponse.getOrThrow() 在成功且 data 非空时返回 data
+- [ ] ApiResponse.getOrThrow() 在 code 非 200 时抛 ApiException
+- [ ] ApiResponse.getOrThrow() 在 data 为 null 时抛 ApiException
+- [ ] ApiException 的 isUnauthorized 属性与 code=="401" 一致
+- [ ] ApiException 的 isNetworkError 属性与 code=="NETWORK_ERROR" 一致
+- [ ] ApiException 的 isServerError 属性与 code=="SERVER_ERROR" 一致
+- [ ] LoggingInterceptor.onRequest 调用 handler.next 不阻塞请求
+- [ ] LoggingInterceptor.onResponse 调用 handler.next 不阻塞响应
+- [ ] LoggingInterceptor.onError 调用 handler.next 不阻塞错误传递
+- [ ] AuthInterceptor 在有 token 时同时附加 app_pass 和 access_token 两个 header
+- [ ] AuthInterceptor 在 token 为 null 时只附加 app_pass header
+- [ ] AuthInterceptor 在 token 为空字符串时只附加 app_pass header
+- [ ] ErrorInterceptor 将 HTTP 401 响应转为 code="401" 的 ApiException
+- [ ] ErrorInterceptor 将 HTTP 5xx 响应转为 code="SERVER_ERROR" 的 ApiException
+- [ ] ErrorInterceptor 将 timeout 类型转为 code="TIMEOUT" 的 ApiException
+- [ ] ErrorInterceptor 将 connectionError 类型转为 code="NETWORK_ERROR" 的 ApiException
+- [ ] ErrorInterceptor 从响应体读取 message/msg 字段作为错误消息
+- [ ] DioClient 构造函数正确配置 baseUrl、connectTimeout、receiveTimeout
+- [ ] DioClient 按正确顺序注册拦截器（Logging → Auth → Error）
+- [ ] ApiClient.get 返回 ApiResponse<T>，泛型类型正确
+- [ ] ApiClient.post 返回 ApiResponse<T>，泛型类型正确
+- [ ] ApiClient.put 返回 ApiResponse<T>，泛型类型正确
+- [ ] ApiClient.delete 返回 ApiResponse<T>，泛型类型正确
+- [ ] ApiClient 在 DioException 时抛出 ApiException（而非 DioException）
+- [ ] ApiClient 在响应非 JSON 对象时抛 code="INVALID_RESPONSE" 的 ApiException
+- [ ] network_providers.dart 定义了 dioClientProvider
+- [ ] network_providers.dart 定义了 apiClientProvider
+- [ ] Provider 风格与项目一致（手动定义，无 @riverpod 注解）
+- [ ] ApiConstants 所有端点常量为 path 格式（以 / 开头，不含 baseUrl）
+- [ ] ApiConstants.baseUrl 保留且值为 https://www.ucfitness.club
+- [ ] ApiConstants.headerAppPass / headerAccessToken / appPass / appPass2 保留
+- [ ] AuthRepository 所有方法签名与原版本一致
+- [ ] AuthRepository 内部使用 ApiClient 而非 ApiService
+- [ ] authRepositoryProvider 依赖 apiClientProvider
+- [ ] HomeRepository 所有方法签名与原版本一致
+- [ ] HomeRepository 内部使用 ApiClient 而非 ApiService
+- [ ] homeRepositoryProvider 依赖 apiClientProvider
+- [ ] CourseRepository.getCourseList 返回 CourseList（真实接口，非假数据）
+- [ ] CourseRepository.getCourseDetail 返回 CourseDetail（真实接口，非假数据）
+- [ ] courseRepositoryProvider 依赖 apiClientProvider
+- [ ] lib/core/services/api_service.dart 已删除
+- [ ] lib/core/services/api_service_provider.dart 已删除
+- [ ] 全局搜索 "ApiService" 在 lib/ 目录下无匹配
+- [ ] 全局搜索 "apiServiceProvider" 在 lib/ 目录下无匹配
+- [ ] flutter analyze 0 errors, 0 warnings
+- [ ] flutter test 全部通过

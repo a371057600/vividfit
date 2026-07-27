@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier.dart';
+import '../notifiers/auth_notifier_provider.dart';
 import 'auth_video_background.dart';
 
 /// 找回密码页(1:1 复刻旧项目 NewFindPasswordScreen)。

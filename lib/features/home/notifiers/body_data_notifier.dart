@@ -1,16 +1,10 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod/riverpod.dart';
 
 import '../../../core/services/storage_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../states/body_data_state.dart';
 
-part 'body_data_notifier.g.dart';
-
-/// 身体数据状态机(1:1 迁移自旧 BodyDataController 的本地状态部分)。
-///
-/// 网络上传 PUT 接口在后续 user 模块补齐,本阶段只做本地存储 + UI 状态。
-@riverpod
-class BodyDataNotifier extends _$BodyDataNotifier {
+class BodyDataNotifier extends Notifier<BodyDataState> {
   @override
   BodyDataState build() {
     _storage = ref.watch(storageServiceProvider);

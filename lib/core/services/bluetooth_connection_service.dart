@@ -96,6 +96,7 @@ class BluetoothConnectionService {
 
     try {
       await device.connect(
+        license: License.free,
         timeout: const Duration(seconds: 35),
         autoConnect: false,
       );

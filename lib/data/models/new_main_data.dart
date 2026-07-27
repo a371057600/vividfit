@@ -13,7 +13,7 @@ part 'new_main_data.g.dart';
 /// - goalStrength ↔ goalSportStrength
 /// - goalCalorie ↔ goalCalorie
 @freezed
-class FitMainData with _$FitMainData {
+abstract class FitMainData with _$FitMainData {
   const factory FitMainData({
     @Default(1) int animationIndex2,
     @Default('') String recordDate,

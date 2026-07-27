@@ -7,7 +7,7 @@ part 'login_response.g.dart';
 
 /// 登录接口响应(迁移自旧项目 LoginInfo)。
 @freezed
-class LoginResponse with _$LoginResponse {
+abstract class LoginResponse with _$LoginResponse {
   const factory LoginResponse({
     String? code, // "200" 成功 / "201" 新注册 / "400"/"402"/"403"/"412" 失败
     String? msg,
@@ -20,7 +20,7 @@ class LoginResponse with _$LoginResponse {
 
 /// 登录响应 data 字段(迁移自旧项目 Data)。
 @freezed
-class LoginData with _$LoginData {
+abstract class LoginData with _$LoginData {
   const factory LoginData({
     FitUserInfo? userInfo,
     String? token,

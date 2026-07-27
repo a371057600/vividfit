@@ -7,6 +7,7 @@ import 'package:vividfit_v2/core/services/storage_service_provider.dart';
 import 'package:vividfit_v2/data/models/login_response.dart';
 import 'package:vividfit_v2/data/models/user_info.dart';
 import 'package:vividfit_v2/features/auth/notifiers/auth_notifier.dart';
+import 'package:vividfit_v2/features/auth/notifiers/auth_notifier_provider.dart';
 import 'package:vividfit_v2/features/auth/notifiers/auth_repository_provider.dart';
 import 'package:vividfit_v2/features/auth/repositories/auth_repository.dart';
 

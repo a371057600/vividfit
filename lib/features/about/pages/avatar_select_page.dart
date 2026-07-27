@@ -1,4 +1,3 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/user_settings_notifier.dart';
+import '../notifiers/user_settings_notifier_provider.dart';
 
 class AvatarSelectPage extends ConsumerWidget {
   const AvatarSelectPage({super.key});
@@ -151,27 +150,9 @@ class AvatarSelectPage extends ConsumerWidget {
                 color: FitTheme.secondbackGround,
                 borderRadius: BorderRadius.circular(75).r,
               ),
-              child: ExtendedImage.asset(
+              child: Image.asset(
                 "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
                 fit: BoxFit.fill,
-                loadStateChanged: (ExtendedImageState state) {
-                  switch (state.extendedImageLoadState) {
-                    case LoadState.loading:
-                      return Center(
-                        child: CircularProgressIndicator(
-                          color: FitTheme.textColor,
-                        ),
-                      );
-                    case LoadState.failed:
-                      return const Center(child: Text(""));
-                    case LoadState.completed:
-                      return ExtendedRawImage(
-                        image: state.extendedImageInfo?.image,
-                        width: MediaQuery.of(context).size.width - 10,
-                        fit: BoxFit.fill,
-                      );
-                  }
-                },
               ),
             ),
           ),

@@ -12,7 +12,7 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../data/models/course_detail.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/course_detail_notifier.dart';
+import '../notifiers/course_detail_notifier_provider.dart';
 import '../states/course_detail_state.dart';
 
 /// 课程详情页（1:1 还原原 new_course_detail_screen.dart）。

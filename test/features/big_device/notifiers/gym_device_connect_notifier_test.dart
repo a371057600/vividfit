@@ -7,6 +7,7 @@ import 'package:vividfit_v2/core/services/storage_service.dart';
 import 'package:vividfit_v2/core/services/storage_service_provider.dart';
 import 'package:vividfit_v2/features/big_device/data/device_category.dart';
 import 'package:vividfit_v2/features/big_device/notifiers/gym_device_connect_notifier.dart';
+import 'package:vividfit_v2/features/big_device/notifiers/gym_device_connect_notifier_provider.dart';
 
 GymDeviceConnectNotifier _createNotifier(BluetoothConnectionService service, StorageService storage) {
   final container = ProviderContainer(

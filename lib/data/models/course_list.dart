@@ -4,7 +4,7 @@ part 'course_list.freezed.dart';
 part 'course_list.g.dart';
 
 @freezed
-class CourseList with _$CourseList {
+abstract class CourseList with _$CourseList {
   const factory CourseList({
     String? code,
     CourseListData? data,
@@ -15,7 +15,7 @@ class CourseList with _$CourseList {
 }
 
 @freezed
-class CourseListData with _$CourseListData {
+abstract class CourseListData with _$CourseListData {
   const factory CourseListData({
     List<CourseItem>? dataList,
     int? currentPageNum,
@@ -28,7 +28,7 @@ class CourseListData with _$CourseListData {
 }
 
 @freezed
-class CourseItem with _$CourseItem {
+abstract class CourseItem with _$CourseItem {
   const factory CourseItem({
     int? id,
     String? title,

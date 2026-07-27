@@ -53,3 +53,6 @@ android/app/.cxx/
 
 # Gradle 缓存
 android/.gradle/
+
+# FVM Version Cache
+.fvm/
