@@ -184,5 +184,15 @@
   "deviceSelection": "设备选择",
   "pleaseOpenBluetooth": "请打开蓝牙",
   "connected": "已连接",
-  "deviceDisconnected": "设备已断开连接"
+  "deviceDisconnected": "设备已断开连接",
+  "deviceSearch": "设备搜索",
+  "scanning": "正在扫描",
+  "pleaseMakeSureDeviceOn": "请确保设备已开机,蓝牙已开启",
+  "searchedDevices": "搜索到的设备",
+  "reScan": "重新扫描",
+  "addDevice": "添加设备",
+  "searchDevice": "搜索设备",
+  "connectDevice": "连接设备",
+  "deleteDevice": "删除设备",
+  "warningDeleteDevice": "警告:从列表中删除该设备?"
 }

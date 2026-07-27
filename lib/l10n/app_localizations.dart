@@ -62,7 +62,8 @@ import 'app_localizations_zh.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('zh')
+    Locale('zh'),
   ];
 
   /// No description provided for @madeFitnessFun.
@@ -963,7 +966,8 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'The nickname is used to hide your real name. Other users in the system can see your nickname.'**
-  String get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname;
+  String
+  get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname;
 
   /// No description provided for @theNumberOfWordsShouldNotBeLessThan3PleaseReEnter.
   ///
@@ -1138,9 +1142,70 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Device disconnected'**
   String get deviceDisconnected;
+
+  /// No description provided for @deviceSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Device Search'**
+  String get deviceSearch;
+
+  /// No description provided for @scanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning'**
+  String get scanning;
+
+  /// No description provided for @pleaseMakeSureDeviceOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Please make sure the device is turned on, Bluetooth is enabled'**
+  String get pleaseMakeSureDeviceOn;
+
+  /// No description provided for @searchedDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Searched Devices'**
+  String get searchedDevices;
+
+  /// No description provided for @reScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-scan'**
+  String get reScan;
+
+  /// No description provided for @addDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Device'**
+  String get addDevice;
+
+  /// No description provided for @searchDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Device'**
+  String get searchDevice;
+
+  /// No description provided for @connectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Device'**
+  String get connectDevice;
+
+  /// No description provided for @deleteDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Device'**
+  String get deleteDevice;
+
+  /// No description provided for @warningDeleteDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: Delete the device from the list?'**
+  String get warningDeleteDevice;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1149,25 +1214,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en': return AppLocalizationsEn();
-    case 'zh': return AppLocalizationsZh();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

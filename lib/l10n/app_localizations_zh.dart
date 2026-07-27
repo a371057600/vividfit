@@ -441,10 +441,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get setNickName => '设置昵称';
 
   @override
-  String get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname => '昵称用于隐藏您的真实姓名，系统中的其他用户可以看到您的昵称。';
+  String
+  get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname =>
+      '昵称用于隐藏您的真实姓名，系统中的其他用户可以看到您的昵称。';
 
   @override
-  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter => '字数不应少于3个，请重新输入';
+  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter =>
+      '字数不应少于3个，请重新输入';
 
   @override
   String get thereAreMoreThan10WordsPleaseReEnter => '字数超过10个，请重新输入';
@@ -529,4 +532,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deviceDisconnected => '设备已断开连接';
+
+  @override
+  String get deviceSearch => '设备搜索';
+
+  @override
+  String get scanning => '正在扫描';
+
+  @override
+  String get pleaseMakeSureDeviceOn => '请确保设备已开机,蓝牙已开启';
+
+  @override
+  String get searchedDevices => '搜索到的设备';
+
+  @override
+  String get reScan => '重新扫描';
+
+  @override
+  String get addDevice => '添加设备';
+
+  @override
+  String get searchDevice => '搜索设备';
+
+  @override
+  String get connectDevice => '连接设备';
+
+  @override
+  String get deleteDevice => '删除设备';
+
+  @override
+  String get warningDeleteDevice => '警告:从列表中删除该设备?';
 }

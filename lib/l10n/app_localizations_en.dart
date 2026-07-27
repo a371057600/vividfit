@@ -66,16 +66,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get getCodeTitle => 'Get Code';
 
   @override
-  String get pleaseAgreePrivacy => 'Please agree to the User Agreement and Privacy Policy';
+  String get pleaseAgreePrivacy =>
+      'Please agree to the User Agreement and Privacy Policy';
 
   @override
-  String get pleaseEnterAccountAndPassword => 'Please enter account and password';
+  String get pleaseEnterAccountAndPassword =>
+      'Please enter account and password';
 
   @override
-  String get iHaveReadAndAgreeFitMonster => 'I have read and agree to the Fit Monster';
+  String get iHaveReadAndAgreeFitMonster =>
+      'I have read and agree to the Fit Monster';
 
   @override
-  String get userAgreementAndPrivacyPolicy => '<User Agreement and Privacy Policy>';
+  String get userAgreementAndPrivacyPolicy =>
+      '<User Agreement and Privacy Policy>';
 
   @override
   String get incorrectAccountOrPassword => 'Incorrect account or password';
@@ -90,7 +94,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noInternetConnection => 'No Internet Connection';
 
   @override
-  String get noInternetConnectionOrNoInput => 'No Internet Connection or no input';
+  String get noInternetConnectionOrNoInput =>
+      'No Internet Connection or no input';
 
   @override
   String get incorrectVerificationCode => 'Incorrect verification code.';
@@ -198,10 +203,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get physicalFitnessAssessment => 'Physical fitness assessment:';
 
   @override
-  String get bmiLowWeight => 'Low body weight, may pose health risks such as malnutrition';
+  String get bmiLowWeight =>
+      'Low body weight, may pose health risks such as malnutrition';
 
   @override
-  String get bmiNormalRange => 'Normal range, indicating good physical condition';
+  String get bmiNormalRange =>
+      'Normal range, indicating good physical condition';
 
   @override
   String get bmiOverweight => 'Overweight, pay attention to diet and exercise';
@@ -360,13 +367,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stage3 => 'Stage 3';
 
   @override
-  String get aerobicContent => 'Oxygen-based endurance exercises: running, swimming, cycling, aerobics, ball games';
+  String get aerobicContent =>
+      'Oxygen-based endurance exercises: running, swimming, cycling, aerobics, ball games';
 
   @override
-  String get anaerobicContent => 'High-intensity strength training: weightlifting, resistance training, push-ups, squats, sprints, planks';
+  String get anaerobicContent =>
+      'High-intensity strength training: weightlifting, resistance training, push-ups, squats, sprints, planks';
 
   @override
-  String get rehabContent => 'Recovery exercises: phased training for injuries, cardiac rehab under medical supervision';
+  String get rehabContent =>
+      'Recovery exercises: phased training for injuries, cardiac rehab under medical supervision';
 
   @override
   String get basicArea => 'Seniors/Pregnant/Rehab';
@@ -441,13 +451,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setNickName => 'Set NickName';
 
   @override
-  String get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname => 'The nickname is used to hide your real name. Other users in the system can see your nickname.';
+  String
+  get theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname =>
+      'The nickname is used to hide your real name. Other users in the system can see your nickname.';
 
   @override
-  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter => 'The number of words should not be less than 3, please re-enter';
+  String get theNumberOfWordsShouldNotBeLessThan3PleaseReEnter =>
+      'The number of words should not be less than 3, please re-enter';
 
   @override
-  String get thereAreMoreThan10WordsPleaseReEnter => 'There are more than 10 words, please re-enter';
+  String get thereAreMoreThan10WordsPleaseReEnter =>
+      'There are more than 10 words, please re-enter';
 
   @override
   String get takePhoto => 'Take Photo';
@@ -529,4 +543,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deviceDisconnected => 'Device disconnected';
+
+  @override
+  String get deviceSearch => 'Device Search';
+
+  @override
+  String get scanning => 'Scanning';
+
+  @override
+  String get pleaseMakeSureDeviceOn =>
+      'Please make sure the device is turned on, Bluetooth is enabled';
+
+  @override
+  String get searchedDevices => 'Searched Devices';
+
+  @override
+  String get reScan => 'Re-scan';
+
+  @override
+  String get addDevice => 'Add Device';
+
+  @override
+  String get searchDevice => 'Search Device';
+
+  @override
+  String get connectDevice => 'Connect Device';
+
+  @override
+  String get deleteDevice => 'Delete Device';
+
+  @override
+  String get warningDeleteDevice => 'Warning: Delete the device from the list?';
 }
