@@ -601,27 +601,25 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   Expanded(
                     child: Container(
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text("$third", style: textStyle),
-                          ),
-                          SizedBox(height: 4.sp),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "$third",
+                              style: textStyle.copyWith(fontSize: 14.sp),
+                            ),
+                            SizedBox(height: 6.sp),
+                            Text(
                               type,
                               style: TextStyle(
-                                fontSize: 10.sp,
+                                fontSize: 8.sp,
                                 color: Colors.white,
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
