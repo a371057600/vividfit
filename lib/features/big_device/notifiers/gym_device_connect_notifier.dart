@@ -1,30 +1,33 @@
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/devices/device_whitelist.dart';
+import '../../../core/ftms/ftms_device_type.dart';
 import '../../../core/services/bluetooth_connection_service.dart';
 import '../../../core/services/bluetooth_connection_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/storage_service_provider.dart';
-import '../data/device_category.dart';
-import '../data/device_scan_constants.dart';
 import '../states/gym_device_connect_state.dart';
 
-class GymDeviceConnectNotifier extends Notifier<GymDeviceConnectState> {
+part 'gym_device_connect_notifier.g.dart';
+
+@Riverpod(keepAlive: true)
+class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   @override
   GymDeviceConnectState build() {
     final service = ref.watch(bluetoothConnectionServiceProvider);
     _storage = ref.watch(storageServiceProvider);
     _service = service;
-    _deviceCategory = DeviceCategory.bike;
+    _deviceCategory = FtmsDeviceType.indoorBike;
     _setupServiceCallbacks();
     return const GymDeviceConnectState();
   }
 
   late BluetoothConnectionService _service;
   late StorageService _storage;
-  DeviceCategory _deviceCategory = DeviceCategory.bike;
+  FtmsDeviceType _deviceCategory = FtmsDeviceType.indoorBike;
 
-  DeviceCategory get deviceCategory => _deviceCategory;
+  FtmsDeviceType get deviceCategory => _deviceCategory;
 
   void _setupServiceCallbacks() {
     _service.onDevicesUpdated = (names) {
@@ -46,12 +49,12 @@ class GymDeviceConnectNotifier extends Notifier<GymDeviceConnectState> {
     };
   }
 
-  void setDeviceCategory(DeviceCategory category) {
+  void setDeviceCategory(FtmsDeviceType category) {
     _deviceCategory = category;
   }
 
   Future<void> startDeviceScan() async {
-    final whitelist = DeviceScanConstants.whitelistFor(_deviceCategory);
+    final whitelist = DeviceWhitelist.forType(_deviceCategory);
     try {
       await _service.startScan(whitelist);
     } on BluetoothNotEnabledException {
@@ -66,19 +69,19 @@ class GymDeviceConnectNotifier extends Notifier<GymDeviceConnectState> {
 
   Future<void> _persistDeviceName(String name) async {
     switch (_deviceCategory) {
-      case DeviceCategory.bike:
+      case FtmsDeviceType.indoorBike:
         await _storage.setBikeMachineName(name);
         break;
-      case DeviceCategory.treadmill:
+      case FtmsDeviceType.treadmill:
         await _storage.setTreadmillName(name);
         break;
-      case DeviceCategory.elliptical:
+      case FtmsDeviceType.crossTrainer:
         await _storage.setEllipticalMachineName(name);
         break;
-      case DeviceCategory.rower:
+      case FtmsDeviceType.rower:
         await _storage.setRowerMachineName(name);
         break;
-      case DeviceCategory.strengthStation:
+      case FtmsDeviceType.strengthStation:
         await _storage.setStrengthStationName(name);
         break;
     }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 单车游戏页1（对应旧 big_device_bike_game.dart）
 class GymBikeGameScreen extends ConsumerWidget {
@@ -11,7 +12,7 @@ class GymBikeGameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Bike',
+      deviceTypeKey: 'bike',
       gameIndex: 1,
     );
   }
@@ -24,7 +25,7 @@ class GymBikeGame2Screen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Bike',
+      deviceTypeKey: 'bike',
       gameIndex: 2,
     );
   }
@@ -37,7 +38,7 @@ class GymBikeRealsceneScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Bike',
+      deviceTypeKey: 'bike',
       gameIndex: 0,
       isRealscene: true,
     );
@@ -51,7 +52,7 @@ class GymTreadmillGameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Treadmill',
+      deviceTypeKey: 'treadmill',
       gameIndex: 1,
     );
   }
@@ -64,7 +65,7 @@ class GymTreadmillGame2Screen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Treadmill',
+      deviceTypeKey: 'treadmill',
       gameIndex: 2,
     );
   }
@@ -77,7 +78,7 @@ class GymTreadmillRealsceneScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Treadmill',
+      deviceTypeKey: 'treadmill',
       gameIndex: 0,
       isRealscene: true,
     );
@@ -91,7 +92,7 @@ class GymEllipticalGameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Elliptical',
+      deviceTypeKey: 'elliptical',
       gameIndex: 1,
     );
   }
@@ -104,7 +105,7 @@ class GymEllipticalGame2Screen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Elliptical',
+      deviceTypeKey: 'elliptical',
       gameIndex: 2,
     );
   }
@@ -117,7 +118,7 @@ class GymEllipticalRealsceneScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Elliptical',
+      deviceTypeKey: 'elliptical',
       gameIndex: 0,
       isRealscene: true,
     );
@@ -131,7 +132,7 @@ class GymRowerGameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Rower',
+      deviceTypeKey: 'rower',
       gameIndex: 1,
     );
   }
@@ -144,7 +145,7 @@ class GymRowerGame2Screen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Rower',
+      deviceTypeKey: 'rower',
       gameIndex: 2,
     );
   }
@@ -157,7 +158,7 @@ class GymRowerRealsceneScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
-      deviceType: 'Rower',
+      deviceTypeKey: 'rower',
       gameIndex: 0,
       isRealscene: true,
     );
@@ -166,18 +167,30 @@ class GymRowerRealsceneScreen extends ConsumerWidget {
 
 /// 通用设备游戏界面组件
 class _DeviceGameScreen extends ConsumerWidget {
-  final String deviceType;
+  final String deviceTypeKey;
   final int gameIndex;
   final bool isRealscene;
 
   const _DeviceGameScreen({
-    required this.deviceType,
+    required this.deviceTypeKey,
     required this.gameIndex,
     this.isRealscene = false,
   });
 
+  String _resolveDeviceName(AppLocalizations l10n) {
+    return switch (deviceTypeKey) {
+      'bike' => l10n.spinBike,
+      'treadmill' => l10n.treadmillMachine,
+      'elliptical' => l10n.ellipticalMachine,
+      'rower' => l10n.rowingMachine,
+      _ => deviceTypeKey,
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final deviceName = _resolveDeviceName(l10n);
     // TODO: 实现游戏逻辑
     // - 游戏画面渲染
     // - 设备数据监听
@@ -204,7 +217,7 @@ class _DeviceGameScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: 20.h),
                       Text(
-                        '$deviceType ${isRealscene ? 'Realscene' : 'Game $gameIndex'}',
+                        '$deviceName ${isRealscene ? l10n.realscene : '${l10n.game} $gameIndex'}',
                         style: TextStyle(
                           color: FitTheme.textColor,
                           fontSize: 24.sp,
@@ -213,7 +226,7 @@ class _DeviceGameScreen extends ConsumerWidget {
                       ),
                       SizedBox(height: 10.h),
                       Text(
-                        'Game content placeholder',
+                        l10n.gameContentPlaceholder,
                         style: TextStyle(
                           color: FitTheme.textColor.withOpacity(0.7),
                           fontSize: 14.sp,
@@ -229,7 +242,7 @@ class _DeviceGameScreen extends ConsumerWidget {
               top: 20.h,
               left: 20.w,
               right: 20.w,
-              child: _buildTopDataBar(),
+              child: _buildTopDataBar(l10n),
             ),
             // 返回按钮
             Positioned(
@@ -237,7 +250,7 @@ class _DeviceGameScreen extends ConsumerWidget {
               right: 20.w,
               child: IconButton(
                 icon: Icon(Icons.close, color: Colors.white, size: 32.sp),
-                onPressed: () => _showExitDialog(context),
+                onPressed: () => _showExitDialog(context, l10n),
               ),
             ),
           ],
@@ -246,7 +259,7 @@ class _DeviceGameScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTopDataBar() {
+  Widget _buildTopDataBar(AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
       decoration: BoxDecoration(
@@ -256,11 +269,11 @@ class _DeviceGameScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildDataItem('Time', '00:00:00'),
-          _buildDataItem('Distance', '0.00 km'),
-          _buildDataItem('Calories', '0 kcal'),
-          _buildDataItem('Speed', '0.0 km/h'),
-          _buildDataItem('HeartRate', '-- bpm'),
+          _buildDataItem(l10n.time, '00:00:00'),
+          _buildDataItem(l10n.distance, '0.00 ${l10n.km}'),
+          _buildDataItem(l10n.calories, '0 ${l10n.kcalUnit}'),
+          _buildDataItem(l10n.speed, '0.0 ${l10n.kmh}'),
+          _buildDataItem(l10n.heartRate, '-- ${l10n.bpm}'),
         ],
       ),
     );
@@ -275,27 +288,27 @@ class _DeviceGameScreen extends ConsumerWidget {
     );
   }
 
-  void _showExitDialog(BuildContext context) {
+  void _showExitDialog(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey.shade900,
-        title: const Text('Exit Game', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to exit?',
+        title: Text(l10n.exitGame, style: TextStyle(color: Colors.white)),
+        content: Text(
+          l10n.areYouSureWantToExit,
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: const Text('Exit'),
+            child: Text(l10n.exit),
           ),
         ],
       ),

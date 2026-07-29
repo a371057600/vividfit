@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 课程详情页（对应旧 big_device_course_detail_screen.dart）
 class GymCourseDetailScreen extends ConsumerWidget {
@@ -10,6 +11,7 @@ class GymCourseDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     // TODO: 实现课程详情逻辑
     // - 课程图片展示
     // - 课程描述、建议、注意事项
@@ -59,8 +61,8 @@ class GymCourseDetailScreen extends ConsumerWidget {
                               color: FitTheme.backgroundColor,
                               borderRadius: BorderRadius.circular(30.r),
                             ),
-                            child: const Center(
-                              child: Text('Course Image'),
+                            child: Center(
+                              child: Text(l10n.courseImage),
                             ),
                           ),
                         ),
@@ -71,7 +73,7 @@ class GymCourseDetailScreen extends ConsumerWidget {
                             child: ListView(
                               children: [
                                 Text(
-                                  'Course Description',
+                                  l10n.courseDescription,
                                   style: TextStyle(
                                     color: FitTheme.textColor,
                                     fontSize: 18.sp,
@@ -80,7 +82,7 @@ class GymCourseDetailScreen extends ConsumerWidget {
                                 ),
                                 SizedBox(height: 10.h),
                                 Text(
-                                  'Course details placeholder',
+                                  l10n.courseDetailsPlaceholder,
                                   style: TextStyle(
                                     color: FitTheme.textColor,
                                     fontSize: 10.sp,
@@ -110,7 +112,7 @@ class GymCourseDetailScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(10.r),
                             ),
                             child: Center(
-                              child: Text('Action ${index + 1}'),
+                              child: Text('${l10n.action} ${index + 1}'),
                             ),
                           );
                         },
@@ -133,7 +135,7 @@ class GymCourseDetailScreen extends ConsumerWidget {
                           // TODO: 进入课程
                         },
                         child: Text(
-                          'Entry Course',
+                          l10n.entryCourse,
                           style: TextStyle(
                             color: FitTheme.textButtonColor,
                             fontSize: FitTheme.fonSizeBig,

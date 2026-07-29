@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 游戏选择页（对应旧 big_device_game_select.dart）
 class GymGameSelectScreen extends ConsumerStatefulWidget {
@@ -26,6 +27,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // TODO: 实现游戏选择逻辑
     // - 游戏列表展示
     // - 音乐播放控制
@@ -43,9 +45,9 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               width: double.maxFinite,
               child: Row(
                 children: [
-                  _buildLeftContainer(),
+                  _buildLeftContainer(l10n),
                   SizedBox(width: 10.w),
-                  Expanded(child: _buildRightContainer()),
+                  Expanded(child: _buildRightContainer(l10n)),
                 ],
               ),
             ),
@@ -64,7 +66,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
     );
   }
 
-  Widget _buildLeftContainer() {
+  Widget _buildLeftContainer(AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.only(top: 200.h),
       width: 0.5.sw,
@@ -74,8 +76,8 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildGameCard('Game 1'),
-              _buildGameCard('Game 2'),
+              _buildGameCard('${l10n.game} 1'),
+              _buildGameCard('${l10n.game} 2'),
             ],
           ),
           SizedBox(height: 40.h),
@@ -88,7 +90,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                 mainAxisSpacing: 10.h,
                 crossAxisSpacing: 10.w,
                 children: List.generate(6, (index) {
-                  return _buildMusicCard(index + 1);
+                  return _buildMusicCard(l10n, index + 1);
                 }),
               ),
             ),
@@ -117,7 +119,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
     );
   }
 
-  Widget _buildMusicCard(int index) {
+  Widget _buildMusicCard(AppLocalizations l10n, int index) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
@@ -125,14 +127,14 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
       ),
       child: Center(
         child: Text(
-          'Music $index',
+          '${l10n.music} $index',
           style: TextStyle(color: Colors.white, fontSize: 12.sp),
         ),
       ),
     );
   }
 
-  Widget _buildRightContainer() {
+  Widget _buildRightContainer(AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.only(top: 200.h, right: 100.w),
       child: Column(
@@ -172,9 +174,9 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildDataItem('Time', '00:00:00'),
-                _buildDataItem('Distance', '0.00 km'),
-                _buildDataItem('Calories', '0 kcal'),
+                _buildDataItem(l10n.time, '00:00:00'),
+                _buildDataItem(l10n.distance, '0.00 km'),
+                _buildDataItem(l10n.calories, '0 kcal'),
               ],
             ),
           ),
@@ -189,7 +191,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               ),
             ),
             onPressed: () {},
-            child: Text('START', style: TextStyle(fontSize: 20.sp)),
+            child: Text(l10n.start, style: TextStyle(fontSize: 20.sp)),
           ),
         ],
       ),

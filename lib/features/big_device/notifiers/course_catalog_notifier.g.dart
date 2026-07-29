@@ -54,7 +54,7 @@ final class CourseCatalogNotifierProvider
 }
 
 String _$courseCatalogNotifierHash() =>
-    r'913bb960bd7e5bc5509e885930afcf74e15c2f27';
+    r'0036fb29696130730003b66ba1372843f972478c';
 
 /// 课程目录 Notifier(Riverpod 3.0 代码生成)。
 ///

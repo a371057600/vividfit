@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'gym_course_home_state.dart';
@@ -9,14 +9,16 @@ part of 'gym_course_home_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$GymCourseHomeState {
 
 /// 当前选中的设备类型(对应旧 `newMainSelectType`)。
- DeviceCategory get selectedDeviceCategory;/// 5 张入口卡片数据(对应旧 `cardData`)。
- List<EntryCardData> get entryCards;/// 是否处于快速播放模式(对应旧 `isInQuickPlay`)。
+ FtmsDeviceType get selectedDeviceCategory;/// 5 张入口卡片数据(对应旧 `cardData`)。
+/// null 表示未初始化,build() 时填充默认卡片。
+ List<EntryCardData>? get entryCards;/// 是否处于快速播放模式(对应旧 `isInQuickPlay`)。
  bool get isInQuickPlay;/// 数据允许标志(对应旧 `dataAllowFlag`)。
  bool get dataAllowFlag;
 /// Create a copy of GymCourseHomeState
@@ -49,7 +51,7 @@ abstract mixin class $GymCourseHomeStateCopyWith<$Res>  {
   factory $GymCourseHomeStateCopyWith(GymCourseHomeState value, $Res Function(GymCourseHomeState) _then) = _$GymCourseHomeStateCopyWithImpl;
 @useResult
 $Res call({
- DeviceCategory selectedDeviceCategory, List<EntryCardData> entryCards, bool isInQuickPlay, bool dataAllowFlag
+ FtmsDeviceType selectedDeviceCategory, List<EntryCardData>? entryCards, bool isInQuickPlay, bool dataAllowFlag
 });
 
 
@@ -66,11 +68,11 @@ class _$GymCourseHomeStateCopyWithImpl<$Res>
 
 /// Create a copy of GymCourseHomeState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? selectedDeviceCategory = null,Object? entryCards = null,Object? isInQuickPlay = null,Object? dataAllowFlag = null,}) {
-  return _then(_self.copyWith(
+@pragma('vm:prefer-inline') @override $Res call({Object? selectedDeviceCategory = null,Object? entryCards = freezed,Object? isInQuickPlay = null,Object? dataAllowFlag = null,}) {
+  return _then(GymCourseHomeState(
 selectedDeviceCategory: null == selectedDeviceCategory ? _self.selectedDeviceCategory : selectedDeviceCategory // ignore: cast_nullable_to_non_nullable
-as DeviceCategory,entryCards: null == entryCards ? _self.entryCards : entryCards // ignore: cast_nullable_to_non_nullable
-as List<EntryCardData>,isInQuickPlay: null == isInQuickPlay ? _self.isInQuickPlay : isInQuickPlay // ignore: cast_nullable_to_non_nullable
+as FtmsDeviceType,entryCards: freezed == entryCards ? _self.entryCards : entryCards // ignore: cast_nullable_to_non_nullable
+as List<EntryCardData>?,isInQuickPlay: null == isInQuickPlay ? _self.isInQuickPlay : isInQuickPlay // ignore: cast_nullable_to_non_nullable
 as bool,dataAllowFlag: null == dataAllowFlag ? _self.dataAllowFlag : dataAllowFlag // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -157,7 +159,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( DeviceCategory selectedDeviceCategory,  List<EntryCardData> entryCards,  bool isInQuickPlay,  bool dataAllowFlag)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( FtmsDeviceType selectedDeviceCategory,  List<EntryCardData>? entryCards,  bool isInQuickPlay,  bool dataAllowFlag)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GymCourseHomeState() when $default != null:
 return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPlay,_that.dataAllowFlag);case _:
@@ -178,7 +180,7 @@ return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPla
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( DeviceCategory selectedDeviceCategory,  List<EntryCardData> entryCards,  bool isInQuickPlay,  bool dataAllowFlag)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( FtmsDeviceType selectedDeviceCategory,  List<EntryCardData>? entryCards,  bool isInQuickPlay,  bool dataAllowFlag)  $default,) {final _that = this;
 switch (_that) {
 case _GymCourseHomeState():
 return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPlay,_that.dataAllowFlag);case _:
@@ -198,7 +200,7 @@ return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPla
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( DeviceCategory selectedDeviceCategory,  List<EntryCardData> entryCards,  bool isInQuickPlay,  bool dataAllowFlag)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( FtmsDeviceType selectedDeviceCategory,  List<EntryCardData>? entryCards,  bool isInQuickPlay,  bool dataAllowFlag)?  $default,) {final _that = this;
 switch (_that) {
 case _GymCourseHomeState() when $default != null:
 return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPlay,_that.dataAllowFlag);case _:
@@ -213,18 +215,22 @@ return $default(_that.selectedDeviceCategory,_that.entryCards,_that.isInQuickPla
 
 
 class _GymCourseHomeState implements GymCourseHomeState {
-  const _GymCourseHomeState({this.selectedDeviceCategory = DeviceCategory.bike, final  List<EntryCardData> entryCards = const <EntryCardData>[], this.isInQuickPlay = false, this.dataAllowFlag = false}): _entryCards = entryCards;
+  const _GymCourseHomeState({this.selectedDeviceCategory = FtmsDeviceType.indoorBike,  List<EntryCardData>? entryCards, this.isInQuickPlay = false, this.dataAllowFlag = false}): _entryCards = entryCards;
   
 
 /// 当前选中的设备类型(对应旧 `newMainSelectType`)。
-@override@JsonKey() final  DeviceCategory selectedDeviceCategory;
+@override@JsonKey() final  FtmsDeviceType selectedDeviceCategory;
 /// 5 张入口卡片数据(对应旧 `cardData`)。
- final  List<EntryCardData> _entryCards;
+/// null 表示未初始化,build() 时填充默认卡片。
+ final  List<EntryCardData>? _entryCards;
 /// 5 张入口卡片数据(对应旧 `cardData`)。
-@override@JsonKey() List<EntryCardData> get entryCards {
+/// null 表示未初始化,build() 时填充默认卡片。
+@override List<EntryCardData>? get entryCards {
+  final value = _entryCards;
+  if (value == null) return null;
   if (_entryCards is EqualUnmodifiableListView) return _entryCards;
   // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_entryCards);
+  return EqualUnmodifiableListView(value);
 }
 
 /// 是否处于快速播放模式(对应旧 `isInQuickPlay`)。
@@ -262,7 +268,7 @@ abstract mixin class _$GymCourseHomeStateCopyWith<$Res> implements $GymCourseHom
   factory _$GymCourseHomeStateCopyWith(_GymCourseHomeState value, $Res Function(_GymCourseHomeState) _then) = __$GymCourseHomeStateCopyWithImpl;
 @override @useResult
 $Res call({
- DeviceCategory selectedDeviceCategory, List<EntryCardData> entryCards, bool isInQuickPlay, bool dataAllowFlag
+ FtmsDeviceType selectedDeviceCategory, List<EntryCardData>? entryCards, bool isInQuickPlay, bool dataAllowFlag
 });
 
 
@@ -279,11 +285,11 @@ class __$GymCourseHomeStateCopyWithImpl<$Res>
 
 /// Create a copy of GymCourseHomeState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? selectedDeviceCategory = null,Object? entryCards = null,Object? isInQuickPlay = null,Object? dataAllowFlag = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? selectedDeviceCategory = null,Object? entryCards = freezed,Object? isInQuickPlay = null,Object? dataAllowFlag = null,}) {
   return _then(_GymCourseHomeState(
 selectedDeviceCategory: null == selectedDeviceCategory ? _self.selectedDeviceCategory : selectedDeviceCategory // ignore: cast_nullable_to_non_nullable
-as DeviceCategory,entryCards: null == entryCards ? _self._entryCards : entryCards // ignore: cast_nullable_to_non_nullable
-as List<EntryCardData>,isInQuickPlay: null == isInQuickPlay ? _self.isInQuickPlay : isInQuickPlay // ignore: cast_nullable_to_non_nullable
+as FtmsDeviceType,entryCards: freezed == entryCards ? _self._entryCards : entryCards // ignore: cast_nullable_to_non_nullable
+as List<EntryCardData>?,isInQuickPlay: null == isInQuickPlay ? _self.isInQuickPlay : isInQuickPlay // ignore: cast_nullable_to_non_nullable
 as bool,dataAllowFlag: null == dataAllowFlag ? _self.dataAllowFlag : dataAllowFlag // ignore: cast_nullable_to_non_nullable
 as bool,
   ));

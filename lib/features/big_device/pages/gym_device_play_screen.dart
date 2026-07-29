@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 /// 设备运动播放页（对应旧 big_device_play_screen.dart）
-/// 
+///
 /// 支持 4 种设备类型：
 /// - Bike (单车)
 /// - Treadmill (跑步机)
@@ -14,6 +16,7 @@ class GymDevicePlayScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     // TODO: 实现运动播放逻辑
     // - 设备连接状态监听
     // - 运动数据展示（时间、距离、卡路里、心率等）
@@ -33,13 +36,13 @@ class GymDevicePlayScreen extends ConsumerWidget {
                 top: 40.h,
                 left: 140.w,
                 right: 20.w,
-                child: _buildTopDataBar(context),
+                child: _buildTopDataBar(context, l10n),
               ),
               // 左侧课程信息
               Positioned(
                 top: 50.h,
                 left: 20.w,
-                child: _buildLeftInfo(context),
+                child: _buildLeftInfo(context, l10n),
               ),
               // 中央动作展示区域
               Positioned(
@@ -49,8 +52,8 @@ class GymDevicePlayScreen extends ConsumerWidget {
                 right: 0,
                 child: Container(
                   color: Colors.grey.shade900,
-                  child: const Center(
-                    child: Text('Course Action Image'),
+                  child: Center(
+                    child: Text(l10n.courseActionImage),
                   ),
                 ),
               ),
@@ -67,7 +70,7 @@ class GymDevicePlayScreen extends ConsumerWidget {
                 right: 25.w,
                 child: IconButton(
                   icon: Icon(Icons.arrow_back, color: Colors.white, size: 24.sp),
-                  onPressed: () => _showExitDialog(context),
+                  onPressed: () => _showExitDialog(context, l10n),
                 ),
               ),
             ],
@@ -77,15 +80,15 @@ class GymDevicePlayScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTopDataBar(BuildContext context) {
+  Widget _buildTopDataBar(BuildContext context, AppLocalizations l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildDataItem(context, 'Time', '00:00:00'),
-        _buildDataItem(context, 'Distance', '0.00'),
-        _buildDataItem(context, 'Calories', '0.0'),
-        _buildDataItem(context, 'Speed', '0.0'),
-        _buildDataItem(context, 'HeartRate', '--'),
+        _buildDataItem(context, l10n.time, '00:00:00'),
+        _buildDataItem(context, l10n.distance, '0.00'),
+        _buildDataItem(context, l10n.calories, '0.0'),
+        _buildDataItem(context, l10n.speed, '0.0'),
+        _buildDataItem(context, l10n.heartRate, '--'),
       ],
     );
   }
@@ -109,14 +112,14 @@ class GymDevicePlayScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLeftInfo(BuildContext context) {
+  Widget _buildLeftInfo(BuildContext context, AppLocalizations l10n) {
     return Container(
       width: 140.w,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Course Title',
+            l10n.courseTitle,
             style: TextStyle(
               color: Colors.white,
               fontSize: 18.sp,
@@ -125,12 +128,12 @@ class GymDevicePlayScreen extends ConsumerWidget {
           ),
           SizedBox(height: 20.h),
           Text(
-            'Current Set: 1/10',
+            '${l10n.currentSet}: 1/10',
             style: TextStyle(color: Colors.white, fontSize: 12.sp),
           ),
           SizedBox(height: 10.h),
           Text(
-            'Action Name',
+            l10n.actionName,
             style: TextStyle(color: Colors.white, fontSize: 14.sp),
           ),
         ],
@@ -157,23 +160,23 @@ class GymDevicePlayScreen extends ConsumerWidget {
     );
   }
 
-  void _showExitDialog(BuildContext context) {
+  void _showExitDialog(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Notice'),
-        content: const Text('Confirm exit course?'),
+        title: Text(l10n.notice),
+        content: Text(l10n.confirmExitCourse),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: const Text('Confirm'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),

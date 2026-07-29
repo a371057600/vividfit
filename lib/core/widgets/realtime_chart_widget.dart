@@ -45,42 +45,17 @@ class _RealtimeChartWidgetState extends State<RealtimeChartWidget> {
   }
 
   void _updateYAxisConfig() {
-    // 多重防护：避免除零死循环导致 OOM
-    // 1. 确保 maxValue 在安全范围 [10, 200]
-    int safeMax = widget.maxValue;
-    if (safeMax <= 0) safeMax = 150;
-    if (safeMax < 10) safeMax = 10;
-    if (safeMax > 200) safeMax = 200;
-
+    final safeMax = widget.maxValue <= 0 ? 150 : widget.maxValue;
     double baseInterval = safeMax / 6;
     _yAxisInterval = baseInterval <= 0 ? 25 : baseInterval.ceilToDouble();
-    // 2. 确保 interval 至少为 1，防止步长为 0 死循环
-    if (_yAxisInterval < 1) _yAxisInterval = 1;
 
     _yAxisTitles = [];
-    final step = _yAxisInterval.toInt();
-    // 3. 最终防护：步长 <= 0 直接返回默认刻度
-    if (step <= 0) {
-      _yAxisTitles = [0, safeMax];
-      return;
-    }
-    // 4. 限制最大循环次数，防止异常值导致无限循环
-    int maxIterations = (safeMax / step).ceil() + 2;
-    if (maxIterations > 100) maxIterations = 100;
-    int count = 0;
-    for (int i = 0; i <= safeMax && count < maxIterations; i += step) {
+    for (int i = 0; i <= safeMax; i += _yAxisInterval.toInt()) {
       _yAxisTitles.add(i);
-      count++;
     }
-    if (_yAxisTitles.isEmpty) {
-      _yAxisTitles = [0, safeMax];
-    } else if (_yAxisTitles.last != safeMax) {
+    if (_yAxisTitles.last != safeMax) {
       _yAxisTitles.add(safeMax);
     }
-  }
-
-  String _formatToInt(double value) {
-    return value.round().toString();
   }
 
   @override
@@ -98,7 +73,6 @@ class _RealtimeChartWidgetState extends State<RealtimeChartWidget> {
       if (mounted) {
         setState(() {
           if (chartData.length >= 120) {
-            print("currentValue: ${widget.currentValue}");
             double intValue = double.parse(
               widget.currentValue.toStringAsFixed(1),
             );
@@ -122,11 +96,7 @@ class _RealtimeChartWidgetState extends State<RealtimeChartWidget> {
     final double chartWidth =
         widget.width ?? (MediaQuery.of(context).size.width * 0.9);
     final double chartHeight = chartWidth / 2;
-    // 与 _updateYAxisConfig 保持一致的安全范围
-    double safeMax = widget.maxValue.toDouble();
-    if (safeMax <= 0) safeMax = 150;
-    if (safeMax < 10) safeMax = 10;
-    if (safeMax > 200) safeMax = 200;
+    final safeMax = widget.maxValue <= 0 ? 150.0 : widget.maxValue.toDouble();
 
     return ConstrainedBox(
       constraints: BoxConstraints(

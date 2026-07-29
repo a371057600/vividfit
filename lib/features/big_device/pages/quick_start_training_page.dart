@@ -107,19 +107,22 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   // ==================== 跑道动画层 ====================
 
   Widget _buildMainWidget(QuickStartState state, double screenWidth, double screenHeight) {
-    // 跑道参数（1:1 还原旧代码参数）
-    final trackRadius = screenHeight * 0.3;
-    final trackLineLength = screenHeight * 0.7;
-    final trackWidth = 100.r;
-    final mainBallR = 38.r;
-    final npcBallR = 20.r;
+    // 跑道参数：左右预留更大空间给按钮列，避免重叠
+    const buttonReserve = 120.0; // 左右各预留120.w放按钮
+    final availableWidth = screenWidth - buttonReserve * 2;
+    final trackOuterH = screenHeight * 0.5;
+    final trackWidth = trackOuterH / 18; // 赛道线宽更细
+    final trackRadius = (trackOuterH - trackWidth) / 2;
+    final trackLineLength = availableWidth * 0.5; // 直线段更短，留出左右空间
+    final mainBallR = trackWidth * 0.45;
+    final npcBallR = trackWidth * 0.28;
 
     return Container(
       height: screenHeight,
       width: screenWidth,
       child: Column(
         children: [
-          // 顶部数据栏预留空间（1:1 还原旧代码高度 200.h）
+          // 顶部数据栏预留空间
           Container(
             margin: EdgeInsets.only(left: 45, top: 45, right: 45).r,
             alignment: Alignment.centerLeft,
@@ -128,7 +131,12 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           ),
           Expanded(
             child: Container(
-              margin: EdgeInsets.all(45).r,
+              margin: EdgeInsets.only(
+                left: buttonReserve.w,
+                right: buttonReserve.w,
+                top: 10.r,
+                bottom: 10.r,
+              ),
               alignment: Alignment.center,
               child: OvalTrackWidget(
                 radius: trackRadius,
@@ -527,7 +535,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
   }
 
-  /// 5 档控制按钮组件（1:1 还原旧 `_buildSizedLongButton`）。
+  /// 5 档控制按钮组件。
   Widget _buildLevelControlButton({
     required String first,
     required String second,
@@ -556,41 +564,43 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
 
     final textStyle = TextStyle(
-      fontSize: 18.sp,
-      height: 0.8,
+      fontSize: 13.sp,
+      height: 1.0,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
     );
 
-    Widget buildButton(String value, Function()? onTapCallback) {
-      return Expanded(
-        flex: 1,
+    Widget buildSmallButton(String value, Function()? onTapCallback) {
+      return SizedBox(
+        height: 40.h,
         child: InkWell(
           onTap: onTapCallback,
           child: Container(
             alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 4),
-            margin: EdgeInsets.only(top: 30, bottom: 30, right: 5, left: 5).r,
+            margin: EdgeInsets.symmetric(horizontal: 4.r),
             decoration: buttonDecoration,
-            child: Text("$value", style: textStyle),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(value, style: textStyle),
+            ),
           ),
         ),
       );
     }
 
     return SizedBox(
-      width: 70.w,
+      width: 75.w,
       height: MediaQuery.of(context).size.height,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          buildButton(first, onTap),
-          buildButton(second, onTap1),
+          buildSmallButton(first, onTap),
+          SizedBox(height: 8.h),
+          buildSmallButton(second, onTap1),
+          SizedBox(height: 8.h),
           Expanded(
-            flex: 3,
             child: Container(
-              margin: EdgeInsets.only(top: 30, bottom: 30, right: 5, left: 5).r,
+              margin: EdgeInsets.symmetric(horizontal: 4.r),
               decoration: buttonDecoration,
               child: Column(
                 children: [
@@ -603,7 +613,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.add,
-                          size: 30.sp,
+                          size: 22.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -612,19 +622,23 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   Expanded(
                     child: Container(
                       alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("$third", style: textStyle),
-                          SizedBox(height: 8.sp),
-                          Text(
-                            type,
-                            style: TextStyle(
-                              fontSize: 8.sp,
-                              color: Colors.white,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(third, style: textStyle),
+                            SizedBox(height: 2.sp),
+                            Text(
+                              type,
+                              style: TextStyle(
+                                fontSize: 6.sp,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -637,7 +651,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.remove,
-                          size: 30.sp,
+                          size: 22.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -647,8 +661,10 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               ),
             ),
           ),
-          buildButton(fourth, onTap4),
-          buildButton(fifth, onTap5),
+          SizedBox(height: 8.h),
+          buildSmallButton(fourth, onTap4),
+          SizedBox(height: 8.h),
+          buildSmallButton(fifth, onTap5),
         ],
       ),
     );
