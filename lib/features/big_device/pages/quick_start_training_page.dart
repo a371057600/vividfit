@@ -84,7 +84,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       child: Scaffold(
         body: Stack(
           children:
-              <Widget>[_buildMainWidget(state, screenHeight)] +
+              <Widget>[_buildMainWidget(state, screenWidth, screenHeight)] +
               _buildTopDataBarByDevice(state, screenWidth) +
               [
                 _buildControllerButtonByDevice(state, screenHeight),
@@ -106,7 +106,15 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   // ==================== 跑道动画层 ====================
 
-  Widget _buildMainWidget(QuickStartState state, double screenHeight) {
+  Widget _buildMainWidget(QuickStartState state, double screenWidth, double screenHeight) {
+    // 跑道参数（按设计图比例：外径占屏高约52%，线宽占外径约1/11，直线段占屏宽约50%）
+    final trackOuterH = screenHeight * 0.52;
+    final trackWidth = trackOuterH / 11;
+    final trackRadius = (trackOuterH - trackWidth) / 2;
+    final trackLineLength = screenWidth * 0.50;
+    final mainBallR = trackWidth * 0.55;
+    final npcBallR = trackWidth * 0.35;
+
     return Container(
       height: screenHeight,
       width: double.maxFinite,
@@ -115,7 +123,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           Container(
             margin: EdgeInsets.only(left: 45, top: 45, right: 45).r,
             alignment: Alignment.centerLeft,
-            height: 200.h,
+            height: screenHeight * 0.14,
             width: double.maxFinite,
           ),
           Expanded(
@@ -123,44 +131,44 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               margin: EdgeInsets.all(45).r,
               alignment: Alignment.center,
               child: OvalTrackWidget(
-                radius: screenHeight * 0.22,
-                lineLength: screenHeight * 0.5,
-                trackWidth: 30.r,
-                trackColor: const Color.fromARGB(255, 54, 54, 54),
+                radius: trackRadius,
+                lineLength: trackLineLength,
+                trackWidth: trackWidth,
+                trackColor: const Color.fromARGB(255, 30, 30, 30),
                 balls: [
                   TrackBallData(
-                    radius: 28.r,
+                    radius: mainBallR,
                     color: const Color.fromARGB(255, 255, 0, 0),
                     percentage: (state.sportDistance * 0.1) % 100,
                     showTrackLine: true,
                   ),
                   TrackBallData(
-                    radius: 15.r,
+                    radius: npcBallR,
                     color: Colors.white,
                     percentage: (state.npcTime * 1.2) % 100,
                   ),
                   TrackBallData(
-                    radius: 15.r,
+                    radius: npcBallR,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.06) % 100,
                   ),
                   TrackBallData(
-                    radius: 15.r,
+                    radius: npcBallR,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.5) % 100,
                   ),
                   TrackBallData(
-                    radius: 15.r,
+                    radius: npcBallR,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.8) % 100,
                   ),
                   TrackBallData(
-                    radius: 15.r,
+                    radius: npcBallR,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.6) % 100,
                   ),
                   TrackBallData(
-                    radius: 15.r,
+                    radius: npcBallR,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.3) % 100,
                   ),
@@ -536,7 +544,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   }) {
     final buttonDecoration = BoxDecoration(
       color: const Color.fromARGB(255, 25, 25, 25),
-      borderRadius: BorderRadius.circular(3),
+      borderRadius: BorderRadius.circular(4),
       border: Border.all(
         color: const Color.fromARGB(255, 106, 95, 95),
         width: 1,
@@ -544,7 +552,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
 
     final textStyle = TextStyle(
-      fontSize: 14.sp,
+      fontSize: 20.sp,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
@@ -557,7 +565,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           onTap: onTapCallback,
           child: Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.only(top: 15, bottom: 15, right: 5, left: 5).r,
+            margin: EdgeInsets.symmetric(vertical: 4.r, horizontal: 3.r),
             decoration: buttonDecoration,
             child: FittedBox(
               fit: BoxFit.scaleDown,
@@ -569,7 +577,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     }
 
     return SizedBox(
-      width: 70.w,
+      width: 80.w,
       height: MediaQuery.of(context).size.height,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -579,7 +587,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           Expanded(
             flex: 3,
             child: Container(
-              margin: EdgeInsets.only(top: 15, bottom: 15, right: 5, left: 5).r,
+              margin: EdgeInsets.symmetric(vertical: 4.r, horizontal: 3.r),
               decoration: buttonDecoration,
               child: Column(
                 children: [
@@ -592,7 +600,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.add,
-                          size: 30.sp,
+                          size: 28.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -610,11 +618,11 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                               "$third",
                               style: textStyle,
                             ),
-                            SizedBox(height: 6.sp),
+                            SizedBox(height: 4.sp),
                             Text(
                               type,
                               style: TextStyle(
-                                fontSize: 8.sp,
+                                fontSize: 9.sp,
                                 color: Colors.white,
                               ),
                             ),
@@ -632,7 +640,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.remove,
-                          size: 30.sp,
+                          size: 28.sp,
                           color: Colors.white,
                         ),
                       ),
