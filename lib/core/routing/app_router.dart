@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/auth/notifiers/auth_notifier_provider.dart';
+import '../../features/auth/notifiers/auth_notifier.dart';
 import '../../features/auth/pages/account_login_page.dart';
 import '../../features/auth/pages/email_login_page.dart';
 import '../../features/auth/pages/find_password_page.dart';
@@ -25,11 +25,15 @@ import '../../features/course/pages/course_detail_page.dart';
 import '../../features/course/pages/course_play_page.dart';
 import '../../features/big_device/pages/gym_device_entry_screen.dart';
 import '../../features/big_device/pages/gym_course_detail_screen.dart';
-import '../../features/big_device/pages/gym_course_list_screen.dart';
+import '../../features/big_device/pages/course_page_list.dart';
 import '../../features/big_device/pages/gym_device_play_screen.dart';
 import '../../features/big_device/pages/gym_game_select_screen.dart';
-import '../../features/big_device/pages/gym_quick_start_screen.dart';
+import '../../features/big_device/pages/quick_start_training_page.dart';
+import '../../l10n/app_localizations.dart';
 import '../../features/big_device/pages/gym_device_games.dart';
+import '../../core/ftms/ftms_device_type.dart';
+
+part 'app_router.g.dart';
 
 const _loginFlowRoutes = {
   '/login',
@@ -40,12 +44,13 @@ const _loginFlowRoutes = {
   '/find-password',
 };
 
-final appRouterProvider = Provider<GoRouter>((ref) {
+@Riverpod(keepAlive: true)
+GoRouter appRouter(Ref ref) {
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
-      final authState = ref.read(authNotifierProvider);
+      final authState = ref.read(authProvider);
       final isLoggedIn = authState.isAuthenticated;
       final location = state.matchedLocation;
       // splash 页总是允许显示,由其自行决定跳转
@@ -109,8 +114,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/placeholder',
         name: 'placeholder',
-        builder: (context, state) =>
-            const PlaceholderPage(targetName: 'Placeholder'),
+        builder: (context, state) {
+          final l10n = AppLocalizations.of(context)!;
+          return PlaceholderPage(targetName: l10n.placeholderTitle);
+        },
       ),
       GoRoute(
         path: '/user-settings',
@@ -170,7 +177,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/gym-course-list',
         name: 'gym-course-list',
-        builder: (context, state) => const GymCourseListScreen(),
+        builder: (context, state) {
+          final deviceType =
+              state.extra as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
+          return CoursePageList(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-course-detail',
@@ -190,7 +201,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/gym-quick-start',
         name: 'gym-quick-start',
-        builder: (context, state) => const GymQuickStartScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ??
+              FtmsDeviceType.indoorBike;
+          return QuickStartTrainingPage(deviceType: deviceType);
+        },
       ),
       // Big Device - Bike Games
       GoRoute(
@@ -258,10 +273,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-});
+}
 
 class _AuthRefreshListenable extends ChangeNotifier {
   _AuthRefreshListenable(Ref ref) {
-    ref.listen(authNotifierProvider, (_, __) => notifyListeners());
+    ref.listen(authProvider, (_, _) => notifyListeners());
   }
 }
