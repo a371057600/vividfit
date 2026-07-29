@@ -19,8 +19,22 @@ class CourseCatalogNotifier extends _$CourseCatalogNotifier {
   CourseCatalogState build() => const CourseCatalogState();
 
   /// 设置设备类型(对应旧 initData 的 newMainSelectType 赋值)。
+  ///
+  /// 同时根据设备类型设置分类 index(1:1 还原旧 `courseTypeSelect` 映射):
+  /// 单车=8, 跑步机=9, 椭圆机=10, 划船机=11, 力量站=12。
+  /// 旧项目注释: "12是划船, 9是动感单车, 10是跑步机, 11是椭圆机"。
   void setDeviceType(FtmsDeviceType type) {
-    state = state.copyWith(deviceType: type);
+    final categoryIndex = switch (type) {
+      FtmsDeviceType.indoorBike => 8,
+      FtmsDeviceType.treadmill => 9,
+      FtmsDeviceType.crossTrainer => 10,
+      FtmsDeviceType.rower => 11,
+      FtmsDeviceType.strengthStation => 12,
+    };
+    state = state.copyWith(
+      deviceType: type,
+      selectedCategoryIndex: categoryIndex,
+    );
   }
 
   /// 加载课程列表(对应旧 hc.getNewCourseList)。

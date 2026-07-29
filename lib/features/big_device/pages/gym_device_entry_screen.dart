@@ -81,7 +81,13 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    if (mounted) context.pop();
+    if (!mounted) return;
+    // 检查是否可 pop,不能 pop(栈底)则返回首页,避免 "popped last page" 错误
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/home-shell');
+    }
   }
 
   @override
@@ -330,12 +336,13 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     // === 守卫结束 ===
 
     // 跳转到对应子页面(1:1 还原旧 `_buildJumptoPage` 的 index 映射)
+    // 使用 push 而非 go,保留入口页在栈底,避免返回时"popped last page"错误
     switch (data.index) {
       case 0: // quickStart
-        context.go('/gym-quick-start', extra: deviceType);
+        context.push('/gym-quick-start', extra: deviceType);
         break;
       case 1: // courseTraining
-        context.go('/gym-course-list', extra: deviceType);
+        context.push('/gym-course-list', extra: deviceType);
         break;
       case 2: // realScene
         final realsceneRoute = switch (deviceType) {
@@ -345,13 +352,13 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
           FtmsDeviceType.rower => '/gym-rower-realscene',
           FtmsDeviceType.strengthStation => '/gym-bike-realscene',
         };
-        context.go(realsceneRoute);
+        context.push(realsceneRoute);
         break;
       case 3: // cityAdventure
         // 旧项目未实现跳转,暂不处理
         break;
       case 4: // recreationalFitness
-        context.go('/gym-game-select');
+        context.push('/gym-game-select');
         break;
       default:
         break;

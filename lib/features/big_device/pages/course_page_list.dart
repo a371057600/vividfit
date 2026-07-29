@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -27,11 +28,20 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
   @override
   void initState() {
     super.initState();
+    // 强制横屏(与入口页保持一致,避免竖屏导致布局崩溃)
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(courseCatalogProvider.notifier);
       notifier.setDeviceType(widget.deviceType);
       notifier.loadCourses();
     });
+  }
+
+  @override
+  void dispose() {
+    // 不恢复竖屏:返回到入口页时入口页仍保持横屏
+    // 竖屏恢复由入口页 dispose 负责(返回到首页时)
+    super.dispose();
   }
 
   @override
@@ -127,7 +137,13 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
           top: 50.h,
           left: 20.w,
           child: InkWell(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/big-device-entry');
+              }
+            },
             child: Icon(
               Icons.arrow_back_ios,
               color: FitTheme.textColor,
