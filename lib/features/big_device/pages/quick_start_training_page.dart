@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -544,7 +545,6 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
     final textStyle = TextStyle(
       fontSize: 18.sp,
-      height: 0.8,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
@@ -557,10 +557,12 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           onTap: onTapCallback,
           child: Container(
             alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 4),
-            margin: EdgeInsets.only(top: 30, bottom: 30, right: 5, left: 5).r,
+            margin: EdgeInsets.only(top: 15, bottom: 15, right: 5, left: 5).r,
             decoration: buttonDecoration,
-            child: Text("$value", style: textStyle),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text("$value", style: textStyle),
+            ),
           ),
         ),
       );
@@ -577,7 +579,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           Expanded(
             flex: 3,
             child: Container(
-              margin: EdgeInsets.only(top: 30, bottom: 30, right: 5, left: 5).r,
+              margin: EdgeInsets.only(top: 15, bottom: 15, right: 5, left: 5).r,
               decoration: buttonDecoration,
               child: Column(
                 children: [
@@ -599,16 +601,24 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   Expanded(
                     child: Container(
                       alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text("$third", style: textStyle),
-                          SizedBox(height: 8.sp),
-                          Text(
-                            type,
-                            style: TextStyle(
-                              fontSize: 8.sp,
-                              color: Colors.white,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text("$third", style: textStyle),
+                          ),
+                          SizedBox(height: 4.sp),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              type,
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ],
