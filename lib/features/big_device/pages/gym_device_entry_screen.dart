@@ -4,11 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+// ignore: unused_import
+import '../../../core/bluetooth/bluetooth_permission.dart';
 import '../../../core/constants/them_change.dart';
+import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/entry_card_data.dart';
-import '../notifiers/gym_course_home_notifier_provider.dart';
-import '../notifiers/gym_device_connect_notifier_provider.dart';
+import '../notifiers/gym_course_home_notifier.dart';
+import '../notifiers/gym_device_connect_notifier.dart';
 import '../states/gym_course_home_state.dart';
 import '../states/gym_device_connect_state.dart';
 import 'device_search_dialog.dart';
@@ -16,13 +19,15 @@ import 'device_search_dialog.dart';
 /// 大设备入口屏(1:1 还原旧 `big_device_first_screen.dart`)。
 ///
 /// 还原点:
-/// - initState:immersiveSticky + 支持横竖屏
+/// - initState:immersiveSticky + 强制横屏 landscapeLeft
 /// - dispose:恢复 manual overlays + 竖屏 portraitUp/Down
-/// - OrientationBuilder 区分横竖屏布局
 /// - AppBar 返回:haltSport + 0.5s delay + 恢复竖屏 + context.pop
 /// - AppBar 右侧"Device Connection"按钮:disconnectIfAny + startDeviceScan + showDialog
 /// - 5 张卡片 Row:_buildLandscapeCard 1:1(含 skewX 倾斜、反向倾斜、图片背景、icon、标题)
 /// - 标题:_buildHeaderTitle 1:1(无 TextShadow,字号 20.sp/14.sp)
+///
+/// 设备未连接时显示"Device Connection"按钮;已连接或搜索中时隐藏按钮。
+/// 卡片点击:未连接弹出搜索对话框;已连接仅 print 日志(功能待后续实现)。
 class GymDeviceEntryScreen extends ConsumerStatefulWidget {
   const GymDeviceEntryScreen({super.key, required this.deviceCategoryIndex});
 
@@ -38,20 +43,16 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
-          .read(gymCourseHomeNotifierProvider.notifier)
+          .read(gymCourseHomeProvider.notifier)
           .bootstrap(widget.deviceCategoryIndex);
       final category = ref
-          .read(gymCourseHomeNotifierProvider)
+          .read(gymCourseHomeProvider)
           .selectedDeviceCategory;
       ref
-          .read(gymDeviceConnectNotifierProvider.notifier)
+          .read(gymDeviceConnectProvider.notifier)
           .setDeviceCategory(category);
     });
   }
@@ -86,145 +87,88 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
   @override
   Widget build(BuildContext context) {
     final tr = AppLocalizations.of(context)!;
-    final homeState = ref.watch(gymCourseHomeNotifierProvider);
-    final connectState = ref.watch(gymDeviceConnectNotifierProvider);
-    final connectNotifier =
-        ref.read(gymDeviceConnectNotifierProvider.notifier);
+    final homeState = ref.watch(gymCourseHomeProvider);
+    final homeNotifier = ref.read(gymCourseHomeProvider.notifier);
+    final connectState = ref.watch(gymDeviceConnectProvider);
+    final connectNotifier = ref.read(gymDeviceConnectProvider.notifier);
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return OrientationBuilder(
-      builder: (context, orientation) {
-        final isLandscape = orientation == Orientation.landscape;
-
-        final appBar = AppBar(
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: FitTheme.backgroundColor,
+        appBar: AppBar(
           backgroundColor: FitTheme.backgroundColor,
           elevation: 0,
           actionsPadding: EdgeInsets.only(right: 45.w),
-          actions: (!connectState.isEquipmentConnected &&
-                  !connectState.isSearching)
-              ? [
-                  InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      connectNotifier.disconnectIfAny();
-                      if (!connectState.isSearching) {
-                        connectNotifier.startDeviceScan();
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) => const DeviceSearchDialog(),
-                        );
-                      }
-                    },
-                    child: Text(
-                      tr.deviceConnection,
-                      style: TextStyle(
-                        color: FitTheme.textColor,
-                        fontSize: FitTheme.fonSizeBig,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ]
-              : null,
+          actions: [
+            InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const DeviceSearchDialog(),
+                );
+                Future.delayed(
+                  const Duration(seconds: 5, milliseconds: 500),
+                  () {
+                    Navigator.pop(context);
+                  },
+                );
+              },
+              child: Text(
+                tr.deviceConnection,
+                style: TextStyle(
+                  color: FitTheme.textColor,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+
           leadingWidth: 50.w,
           leading: IconButton(
             highlightColor: Colors.transparent,
             splashColor: Colors.transparent,
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: FitTheme.textColor,
-            ),
+            icon: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
             onPressed: () async {
               await connectNotifier.haltSport();
               await _restoreOrientationAndPop();
             },
           ),
-        );
-
-        return SafeArea(
-          child: Scaffold(
-            backgroundColor: FitTheme.backgroundColor,
-            appBar: isLandscape ? null : appBar,
-            bottomNavigationBar: isLandscape ? appBar : null,
-            body: isLandscape
-                ? _buildLandscapeBody(homeState, tr, connectState)
-                : _buildPortraitBody(homeState, tr, connectState),
+        ),
+        body: Container(
+          width: screenWidth,
+          margin: EdgeInsets.only(left: 85, right: 45).r,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              _buildHeaderTitle(homeState, tr),
+              SizedBox(height: 30.h),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: homeNotifier.resolvedEntryCards
+                      .map(
+                        (data) => _buildLandscapeCard(data, tr, connectState),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
           ),
-        );
-      },
-    );
-  }
-
-  /// 横屏布局:1:1 还原旧 `big_device_first_screen.dart` body。
-  Widget _buildLandscapeBody(
-    GymCourseHomeState homeState,
-    AppLocalizations tr,
-    GymDeviceConnectState connectState,
-  ) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      margin: EdgeInsets.only(left: 85, right: 45).r,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _buildHeaderTitle(homeState, tr),
-          SizedBox(height: 50.h),
-          SizedBox(
-            height: 880.h,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: homeState.entryCards
-                  .map((data) =>
-                      _buildLandscapeCard(data, tr, connectState))
-                  .toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 竖屏布局:适配增强。
-  Widget _buildPortraitBody(
-    GymCourseHomeState homeState,
-    AppLocalizations tr,
-    GymDeviceConnectState connectState,
-  ) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(height: 40.h),
-          _buildHeaderTitle(homeState, tr),
-          SizedBox(height: 50.h),
-          SizedBox(
-            width: 750.w,
-            height: 1000.h,
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 24.w,
-              runSpacing: 24.h,
-              children: homeState.entryCards
-                  .map((data) =>
-                      _buildPortraitCard(data, tr, connectState))
-                  .toList(),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   /// 1:1 还原旧 `_titleWidget()`。
-  Widget _buildHeaderTitle(
-    GymCourseHomeState homeState,
-    AppLocalizations tr,
-  ) {
-    final titleKey =
-        ref.read(gymCourseHomeNotifierProvider.notifier).deviceTitleKey;
-    final englishTitle =
-        ref.read(gymCourseHomeNotifierProvider.notifier).deviceEnglishTitle;
+  Widget _buildHeaderTitle(GymCourseHomeState homeState, AppLocalizations tr) {
+    final titleKey = ref
+        .read(gymCourseHomeProvider.notifier)
+        .deviceTitleKey;
 
     return Column(
       children: [
@@ -237,7 +181,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
           ),
         ),
         Text(
-          englishTitle,
+          _deviceSubtitle(tr, titleKey),
           style: TextStyle(
             color: FitTheme.textColor,
             fontSize: 14.sp,
@@ -248,13 +192,13 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     );
   }
 
-  /// 横屏卡片:1:1 还原旧 `_singleSelectBtn(Map<String, dynamic> data)`。
+  /// 1:1 还原旧 `_singleSelectBtn(Map<String, dynamic> data)`。
   Widget _buildLandscapeCard(
     EntryCardData data,
     AppLocalizations tr,
     GymDeviceConnectState connectState,
   ) {
-    final homeNotifier = ref.read(gymCourseHomeNotifierProvider.notifier);
+    final homeNotifier = ref.read(gymCourseHomeProvider.notifier);
 
     return Transform(
       transform: Matrix4.skewX(-0.1),
@@ -263,15 +207,17 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
         onTap: () => _handleCardTap(data, connectState),
         child: Container(
           width: 120.w,
+          margin: EdgeInsets.only(bottom: 30.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30.r),
               bottomRight: Radius.circular(30.r),
             ),
+            // color: Colors.red,
           ),
           child: Stack(
             children: [
-              // 背景图片 - 动态获取
+              // 背景图片
               Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -297,19 +243,17 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
                 origin: Offset(0, 40.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  // height: 420.h,
                   children: [
-                    SizedBox(height: 460.h),
+                    // SizedBox(height: 380.h),
                     // 图标
                     Container(
                       margin: EdgeInsets.only(left: 0.w),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.r),
                       ),
-                      child: Icon(
-                        data.icon,
-                        color: Colors.white,
-                        size: 20.sp,
-                      ),
+                      child: Icon(data.icon, color: Colors.white, size: 20.sp),
                     ),
                     SizedBox(height: 5.h),
                     // 标题
@@ -326,12 +270,12 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
                       ),
                     ),
                     SizedBox(height: 5.h),
-                    // 英文标题
+                    // 副标题
                     Container(
                       margin: EdgeInsets.only(left: 0.w),
                       width: 80.w,
                       child: Text(
-                        data.englishTitle,
+                        _cardSubtitle(tr, data.titleKey),
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 8.sp,
@@ -350,118 +294,68 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     );
   }
 
-  /// 竖屏卡片:适配增强。
-  Widget _buildPortraitCard(
-    EntryCardData data,
-    AppLocalizations tr,
-    GymDeviceConnectState connectState,
-  ) {
-    final homeNotifier = ref.read(gymCourseHomeNotifierProvider.notifier);
-    final cardWidth = 200.w;
-    final cardHeight = 500.h;
-
-    return Transform(
-      transform: Matrix4.skewX(-0.1),
-      origin: const Offset(0, 0),
-      child: InkWell(
-        onTap: () => _handleCardTap(data, connectState),
-        child: SizedBox(
-          width: cardWidth,
-          height: cardHeight,
-          child: Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(
-                      homeNotifier.resolveCardImage(data.index),
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(100.r),
-                    bottomRight: Radius.circular(100.r),
-                    topRight: Radius.circular(40.r),
-                    bottomLeft: Radius.circular(40.r),
-                  ),
-                  color: data.color,
-                ),
-              ),
-              Transform(
-                transform: Matrix4.skewX(0.15),
-                origin: Offset(0, 40.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: cardHeight * 0.52),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        data.icon,
-                        color: Colors.white,
-                        size: 20.sp,
-                      ),
-                    ),
-                    SizedBox(height: 5.h),
-                    SizedBox(
-                      width: cardWidth * 0.8,
-                      child: Text(
-                        _tr(tr, data.titleKey),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 5.h),
-                    SizedBox(
-                      width: cardWidth * 0.67,
-                      child: Text(
-                        data.englishTitle,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8.sp,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 15.h),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 卡片点击:未连接时弹出搜索对话框;已连接仅日志。
+  /// 卡片点击:按 index 跳转到对应子页面。
+  ///
+  /// TODO(正式版): 恢复蓝牙连接守卫。当前为页面排布预览阶段,临时移除
+  /// "必须连接蓝牙才能进入"的限制。恢复时将下方守卫代码解注,并删除跳转 switch。
   void _handleCardTap(
     EntryCardData data,
     GymDeviceConnectState connectState,
-  ) {
-    final connectNotifier =
-        ref.read(gymDeviceConnectNotifierProvider.notifier);
-    if (!connectState.isEquipmentConnected) {
-      connectNotifier.disconnectIfAny();
-      if (!connectState.isSearching) {
-        connectNotifier.startDeviceScan();
-      }
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const DeviceSearchDialog(),
-      );
-      return;
+  ) async {
+    final deviceType = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
+
+    // === 临时移除蓝牙连接守卫(正式版恢复) ===
+    // if (!connectState.isEquipmentConnected) {
+    //   await BluetoothPermission.ensureInformedAndRequest(context);
+    //   if (!await BluetoothPermission.isAdapterOn()) {
+    //     if (mounted) {
+    //       final tr = AppLocalizations.of(context)!;
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         SnackBar(content: Text(tr.pleaseOpenBluetooth)),
+    //       );
+    //     }
+    //     return;
+    //   }
+    //   connectNotifier.disconnectIfAny();
+    //   if (!connectState.isSearching) {
+    //     connectNotifier.startDeviceScan();
+    //   }
+    //   showDialog(
+    //     context: context,
+    //     barrierDismissible: false,
+    //     builder: (_) => const DeviceSearchDialog(),
+    //   );
+    //   return;
+    // }
+    // === 守卫结束 ===
+
+    // 跳转到对应子页面(1:1 还原旧 `_buildJumptoPage` 的 index 映射)
+    switch (data.index) {
+      case 0: // quickStart
+        context.go('/gym-quick-start', extra: deviceType);
+        break;
+      case 1: // courseTraining
+        context.go('/gym-course-list', extra: deviceType);
+        break;
+      case 2: // realScene
+        final realsceneRoute = switch (deviceType) {
+          FtmsDeviceType.indoorBike => '/gym-bike-realscene',
+          FtmsDeviceType.treadmill => '/gym-treadmill-realscene',
+          FtmsDeviceType.crossTrainer => '/gym-elliptical-realscene',
+          FtmsDeviceType.rower => '/gym-rower-realscene',
+          FtmsDeviceType.strengthStation => '/gym-bike-realscene',
+        };
+        context.go(realsceneRoute);
+        break;
+      case 3: // cityAdventure
+        // 旧项目未实现跳转,暂不处理
+        break;
+      case 4: // recreationalFitness
+        context.go('/gym-game-select');
+        break;
+      default:
+        break;
     }
-    print(
-        '[GymDeviceEntryScreen] card ${data.index} tapped, device connected');
   }
 
   /// 按 key 取 l10n 字符串的统一入口(替代旧 `"...".tr`)。
@@ -478,6 +372,30 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
       'cityAdventure' => tr.cityAdventure,
       'recreationalFitness' => tr.recreationalFitness,
       'pleaseConnectDevice' => tr.pleaseConnectDevice,
+      _ => key,
+    };
+  }
+
+  /// 按 key 取设备副标题 l10n 字符串。
+  String _deviceSubtitle(AppLocalizations tr, String key) {
+    return switch (key) {
+      'spinBike' => tr.spinBikeSubtitle,
+      'treadmillMachine' => tr.treadmillMachineSubtitle,
+      'ellipticalMachine' => tr.ellipticalMachineSubtitle,
+      'rowingMachine' => tr.rowingMachineSubtitle,
+      'strengthStation' => tr.strengthStationSubtitle,
+      _ => key,
+    };
+  }
+
+  /// 按 key 取卡片副标题 l10n 字符串。
+  String _cardSubtitle(AppLocalizations tr, String key) {
+    return switch (key) {
+      'quickStart' => tr.quickStartSubtitle,
+      'courseTraining' => tr.courseTrainingSubtitle,
+      'realScene' => tr.realSceneSubtitle,
+      'cityAdventure' => tr.cityAdventureSubtitle,
+      'recreationalFitness' => tr.recreationalFitnessSubtitle,
       _ => key,
     };
   }
