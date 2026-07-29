@@ -195,5 +195,91 @@
   "searchDevice": "搜索设备",
   "connectDevice": "连接设备",
   "deleteDevice": "删除设备",
-  "warningDeleteDevice": "警告:从列表中删除该设备?"
+  "warningDeleteDevice": "警告:从列表中删除该设备?",
+
+  "coursePlayPlaceholder": "课程播放占位",
+  "courseTitle": "课程标题",
+  "courseEndedPlaceholder": "课程结束",
+  "keyPoint": "动作要点",
+  "deviceSkipping": "跳绳",
+  "deviceGrip": "握力器",
+  "deviceDumbbell": "哑铃",
+  "deviceAdjDumbbell": "可调哑铃",
+  "devicePushUp": "俯卧撑",
+  "deviceKettlebell": "壶铃",
+  "deviceGame": "游戏",
+  "music": "音乐",
+  "time": "时间",
+  "distance": "距离",
+  "calories": "卡路里",
+  "heartRate": "心率",
+  "speed": "速度",
+  "courseActionImage": "课程动作图片",
+  "currentSet": "当前组",
+  "actionName": "动作名称",
+  "confirmExitCourse": "确认退出课程?",
+  "trackAnimation": "轨道动画",
+  "noDevicesFound": "未发现设备",
+  "courseImage": "课程图片",
+  "courseDetailsPlaceholder": "课程详情占位",
+  "entryCourse": "进入课程",
+  "courseList": "课程列表",
+  "realscene": "实景",
+  "gameContentPlaceholder": "游戏内容占位",
+  "exitGame": "退出游戏",
+  "areYouSureWantToExit": "确认退出?",
+  "exit": "退出",
+  "start": "开始",
+  "km": "公里",
+  "kcalUnit": "千卡",
+  "kmh": "公里/小时",
+  "bpm": "次/分",
+  "defaultNickName": "用户",
+  "logout": "退出登录",
+  "confirmLogout": "确定要退出登录吗？",
+
+  "placeholderTitle": "占位页面",
+
+  "spinBikeSubtitle": "智能健身车",
+  "treadmillMachineSubtitle": "跑步机",
+  "ellipticalMachineSubtitle": "椭圆机",
+  "rowingMachineSubtitle": "划船机",
+  "strengthStationSubtitle": "力量站",
+
+  "quickStartSubtitle": "快速开始",
+  "courseTrainingSubtitle": "课程训练",
+  "realSceneSubtitle": "实景模式",
+  "cityAdventureSubtitle": "城市探险",
+  "recreationalFitnessSubtitle": "趣味健身",
+
+  "coachMichael": "迈克尔",
+  "coachVicky": "维姬",
+  "coachFiona": "菲奥娜",
+  "coachPaul": "保罗",
+  "coachLucy": "露西",
+  "coachJack": "杰克",
+  "coachCarol": "卡罗尔",
+
+  "copyrightInfo": "东莞全创光电实业有限公司 版权所有 @2022-2024",
+
+  "networkError": "网络错误: {message}",
+  "@networkError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+
+  "devOneClickLogin": "DEV 一键登录",
+
+  "permissionRequestInstructions": "权限申请说明",
+  "permissionDialogMessage": "   '位置权限'与'附近的设备'：当您使用蓝牙配对等功能时，我们需要向您申请并获取该权限,以便完成蓝牙设备的配对使用.如果您不同意此权限，这可能会影响到健身怪兽的正常使用.您可以随时访问系统设置来管理您的系统权限,如果拒绝,48小时内不会再进行提醒.\n     本说明,来自于《用户协议和隐私政策》第6条 应用隐私权限.",
+  "agree": "同意",
+  "disagree": "不同意",
+
+  "pleaseResumeTheMachine": "请在机器端恢复运动",
+  "deviceInMotionPleaseStop": "设备正在运动中，请先停止设备再启动快速开始",
+
+  "noDataTapToRetry": "如果没有数据，点击我"
 }

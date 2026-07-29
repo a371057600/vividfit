@@ -1208,6 +1208,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Warning: Delete the device from the list?'**
   String get warningDeleteDevice;
+
+  /// No description provided for @coursePlayPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Play Placeholder'**
+  String get coursePlayPlaceholder;
+
+  /// No description provided for @courseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Title'**
+  String get courseTitle;
+
+  /// No description provided for @courseEndedPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Ended'**
+  String get courseEndedPlaceholder;
+
+  /// No description provided for @keyPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Point'**
+  String get keyPoint;
+
+  /// No description provided for @deviceSkipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipping'**
+  String get deviceSkipping;
+
+  /// No description provided for @deviceGrip.
+  ///
+  /// In en, this message translates to:
+  /// **'Grip'**
+  String get deviceGrip;
+
+  /// No description provided for @deviceDumbbell.
+  ///
+  /// In en, this message translates to:
+  /// **'Dumbbell'**
+  String get deviceDumbbell;
+
+  /// No description provided for @deviceAdjDumbbell.
+  ///
+  /// In en, this message translates to:
+  /// **'Adj-Dumbbell'**
+  String get deviceAdjDumbbell;
+
+  /// No description provided for @devicePushUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Push-up'**
+  String get devicePushUp;
+
+  /// No description provided for @deviceKettlebell.
+  ///
+  /// In en, this message translates to:
+  /// **'Kettlebell'**
+  String get deviceKettlebell;
+
+  /// No description provided for @deviceGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Game'**
+  String get deviceGame;
+
+  /// No description provided for @music.
+  ///
+  /// In en, this message translates to:
+  /// **'Music'**
+  String get music;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @distance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get distance;
+
+  /// No description provided for @calories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get calories;
+
+  /// No description provided for @heartRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Heart Rate'**
+  String get heartRate;
+
+  /// No description provided for @speed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed'**
+  String get speed;
+
+  /// No description provided for @courseActionImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Action Image'**
+  String get courseActionImage;
+
+  /// No description provided for @currentSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Set'**
+  String get currentSet;
+
+  /// No description provided for @actionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Action Name'**
+  String get actionName;
+
+  /// No description provided for @confirmExitCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm exit course?'**
+  String get confirmExitCourse;
+
+  /// No description provided for @trackAnimation.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Animation'**
+  String get trackAnimation;
+
+  /// No description provided for @noDevicesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No devices found'**
+  String get noDevicesFound;
+
+  /// No description provided for @courseImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Image'**
+  String get courseImage;
+
+  /// No description provided for @courseDetailsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Course details placeholder'**
+  String get courseDetailsPlaceholder;
+
+  /// No description provided for @entryCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry Course'**
+  String get entryCourse;
+
+  /// No description provided for @courseList.
+  ///
+  /// In en, this message translates to:
+  /// **'Course List'**
+  String get courseList;
+
+  /// No description provided for @realscene.
+  ///
+  /// In en, this message translates to:
+  /// **'Realscene'**
+  String get realscene;
+
+  /// No description provided for @gameContentPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Game content placeholder'**
+  String get gameContentPlaceholder;
+
+  /// No description provided for @exitGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Game'**
+  String get exitGame;
+
+  /// No description provided for @areYouSureWantToExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to exit?'**
+  String get areYouSureWantToExit;
+
+  /// No description provided for @exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'START'**
+  String get start;
+
+  /// No description provided for @km.
+  ///
+  /// In en, this message translates to:
+  /// **'km'**
+  String get km;
+
+  /// No description provided for @kcalUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get kcalUnit;
+
+  /// No description provided for @kmh.
+  ///
+  /// In en, this message translates to:
+  /// **'km/h'**
+  String get kmh;
+
+  /// No description provided for @bpm.
+  ///
+  /// In en, this message translates to:
+  /// **'bpm'**
+  String get bpm;
+
+  /// No description provided for @defaultNickName.
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get defaultNickName;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
+
+  /// No description provided for @confirmLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get confirmLogout;
+
+  /// No description provided for @placeholderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Placeholder'**
+  String get placeholderTitle;
+
+  /// No description provided for @spinBikeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Bike'**
+  String get spinBikeSubtitle;
+
+  /// No description provided for @treadmillMachineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Treadmill'**
+  String get treadmillMachineSubtitle;
+
+  /// No description provided for @ellipticalMachineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Elliptical Trainer'**
+  String get ellipticalMachineSubtitle;
+
+  /// No description provided for @rowingMachineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rowing Machine'**
+  String get rowingMachineSubtitle;
+
+  /// No description provided for @strengthStationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength Station'**
+  String get strengthStationSubtitle;
+
+  /// No description provided for @quickStartSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Start'**
+  String get quickStartSubtitle;
+
+  /// No description provided for @courseTrainingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Training'**
+  String get courseTrainingSubtitle;
+
+  /// No description provided for @realSceneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Real Scene'**
+  String get realSceneSubtitle;
+
+  /// No description provided for @cityAdventureSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'City Adventure'**
+  String get cityAdventureSubtitle;
+
+  /// No description provided for @recreationalFitnessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recreational Fitness'**
+  String get recreationalFitnessSubtitle;
+
+  /// No description provided for @coachMichael.
+  ///
+  /// In en, this message translates to:
+  /// **'Michael'**
+  String get coachMichael;
+
+  /// No description provided for @coachVicky.
+  ///
+  /// In en, this message translates to:
+  /// **'Vicky'**
+  String get coachVicky;
+
+  /// No description provided for @coachFiona.
+  ///
+  /// In en, this message translates to:
+  /// **'Fiona'**
+  String get coachFiona;
+
+  /// No description provided for @coachPaul.
+  ///
+  /// In en, this message translates to:
+  /// **'Paul'**
+  String get coachPaul;
+
+  /// No description provided for @coachLucy.
+  ///
+  /// In en, this message translates to:
+  /// **'Lucy'**
+  String get coachLucy;
+
+  /// No description provided for @coachJack.
+  ///
+  /// In en, this message translates to:
+  /// **'Jack'**
+  String get coachJack;
+
+  /// No description provided for @coachCarol.
+  ///
+  /// In en, this message translates to:
+  /// **'Carol'**
+  String get coachCarol;
+
+  /// No description provided for @copyrightInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Dongguan Quanchuang Optoelectronics Industrial Co., Ltd. All Rights Reserved @2022-2024'**
+  String get copyrightInfo;
+
+  /// No description provided for @networkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error: {message}'**
+  String networkError(String message);
+
+  /// No description provided for @devOneClickLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'DEV One-Click Login'**
+  String get devOneClickLogin;
+
+  /// No description provided for @permissionRequestInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission Request Instructions'**
+  String get permissionRequestInstructions;
+
+  /// No description provided for @permissionDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'   \'Location Permission\' and \'Nearby Device Permission\': When you use Bluetooth pairing and other functions, we need to request and obtain this permission to complete the pairing and use of Bluetooth devices. If you do not agree to this permission, it may affect the normal use of Fitness Monster. You can access system settings at any time to manage your system permissions. If refused, no reminder will be given within 48 hours.\n     This notice comes from Article 6 of the \"User Agreement and Privacy Policy\".'**
+  String get permissionDialogMessage;
+
+  /// No description provided for @agree.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree'**
+  String get agree;
+
+  /// No description provided for @disagree.
+  ///
+  /// In en, this message translates to:
+  /// **'Disagree'**
+  String get disagree;
+
+  /// No description provided for @pleaseResumeTheMachine.
+  ///
+  /// In en, this message translates to:
+  /// **'Please resume the machine'**
+  String get pleaseResumeTheMachine;
+
+  /// No description provided for @deviceInMotionPleaseStop.
+  ///
+  /// In en, this message translates to:
+  /// **'The device is in motion, please stop the device before starting quick start'**
+  String get deviceInMotionPleaseStop;
+
+  /// No description provided for @noDataTapToRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'No data? Tap to retry'**
+  String get noDataTapToRetry;
 }
 
 class _AppLocalizationsDelegate

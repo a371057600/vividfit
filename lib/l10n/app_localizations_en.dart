@@ -577,4 +577,213 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get warningDeleteDevice => 'Warning: Delete the device from the list?';
+
+  @override
+  String get coursePlayPlaceholder => 'Course Play Placeholder';
+
+  @override
+  String get courseTitle => 'Course Title';
+
+  @override
+  String get courseEndedPlaceholder => 'Course Ended';
+
+  @override
+  String get keyPoint => 'Key Point';
+
+  @override
+  String get deviceSkipping => 'Skipping';
+
+  @override
+  String get deviceGrip => 'Grip';
+
+  @override
+  String get deviceDumbbell => 'Dumbbell';
+
+  @override
+  String get deviceAdjDumbbell => 'Adj-Dumbbell';
+
+  @override
+  String get devicePushUp => 'Push-up';
+
+  @override
+  String get deviceKettlebell => 'Kettlebell';
+
+  @override
+  String get deviceGame => 'Game';
+
+  @override
+  String get music => 'Music';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get distance => 'Distance';
+
+  @override
+  String get calories => 'Calories';
+
+  @override
+  String get heartRate => 'Heart Rate';
+
+  @override
+  String get speed => 'Speed';
+
+  @override
+  String get courseActionImage => 'Course Action Image';
+
+  @override
+  String get currentSet => 'Current Set';
+
+  @override
+  String get actionName => 'Action Name';
+
+  @override
+  String get confirmExitCourse => 'Confirm exit course?';
+
+  @override
+  String get trackAnimation => 'Track Animation';
+
+  @override
+  String get noDevicesFound => 'No devices found';
+
+  @override
+  String get courseImage => 'Course Image';
+
+  @override
+  String get courseDetailsPlaceholder => 'Course details placeholder';
+
+  @override
+  String get entryCourse => 'Entry Course';
+
+  @override
+  String get courseList => 'Course List';
+
+  @override
+  String get realscene => 'Realscene';
+
+  @override
+  String get gameContentPlaceholder => 'Game content placeholder';
+
+  @override
+  String get exitGame => 'Exit Game';
+
+  @override
+  String get areYouSureWantToExit => 'Are you sure you want to exit?';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String get start => 'START';
+
+  @override
+  String get km => 'km';
+
+  @override
+  String get kcalUnit => 'kcal';
+
+  @override
+  String get kmh => 'km/h';
+
+  @override
+  String get bpm => 'bpm';
+
+  @override
+  String get defaultNickName => 'User';
+
+  @override
+  String get logout => 'Log Out';
+
+  @override
+  String get confirmLogout => 'Are you sure you want to log out?';
+
+  @override
+  String get placeholderTitle => 'Placeholder';
+
+  @override
+  String get spinBikeSubtitle => 'Smart Bike';
+
+  @override
+  String get treadmillMachineSubtitle => 'Treadmill';
+
+  @override
+  String get ellipticalMachineSubtitle => 'Elliptical Trainer';
+
+  @override
+  String get rowingMachineSubtitle => 'Rowing Machine';
+
+  @override
+  String get strengthStationSubtitle => 'Strength Station';
+
+  @override
+  String get quickStartSubtitle => 'Quick Start';
+
+  @override
+  String get courseTrainingSubtitle => 'Course Training';
+
+  @override
+  String get realSceneSubtitle => 'Real Scene';
+
+  @override
+  String get cityAdventureSubtitle => 'City Adventure';
+
+  @override
+  String get recreationalFitnessSubtitle => 'Recreational Fitness';
+
+  @override
+  String get coachMichael => 'Michael';
+
+  @override
+  String get coachVicky => 'Vicky';
+
+  @override
+  String get coachFiona => 'Fiona';
+
+  @override
+  String get coachPaul => 'Paul';
+
+  @override
+  String get coachLucy => 'Lucy';
+
+  @override
+  String get coachJack => 'Jack';
+
+  @override
+  String get coachCarol => 'Carol';
+
+  @override
+  String get copyrightInfo =>
+      'Dongguan Quanchuang Optoelectronics Industrial Co., Ltd. All Rights Reserved @2022-2024';
+
+  @override
+  String networkError(String message) {
+    return 'Network error: $message';
+  }
+
+  @override
+  String get devOneClickLogin => 'DEV One-Click Login';
+
+  @override
+  String get permissionRequestInstructions => 'Permission Request Instructions';
+
+  @override
+  String get permissionDialogMessage =>
+      '   \'Location Permission\' and \'Nearby Device Permission\': When you use Bluetooth pairing and other functions, we need to request and obtain this permission to complete the pairing and use of Bluetooth devices. If you do not agree to this permission, it may affect the normal use of Fitness Monster. You can access system settings at any time to manage your system permissions. If refused, no reminder will be given within 48 hours.\n     This notice comes from Article 6 of the \"User Agreement and Privacy Policy\".';
+
+  @override
+  String get agree => 'Agree';
+
+  @override
+  String get disagree => 'Disagree';
+
+  @override
+  String get pleaseResumeTheMachine => 'Please resume the machine';
+
+  @override
+  String get deviceInMotionPleaseStop =>
+      'The device is in motion, please stop the device before starting quick start';
+
+  @override
+  String get noDataTapToRetry => 'No data? Tap to retry';
 }

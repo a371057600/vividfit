@@ -565,4 +565,211 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get warningDeleteDevice => '警告:从列表中删除该设备?';
+
+  @override
+  String get coursePlayPlaceholder => '课程播放占位';
+
+  @override
+  String get courseTitle => '课程标题';
+
+  @override
+  String get courseEndedPlaceholder => '课程结束';
+
+  @override
+  String get keyPoint => '动作要点';
+
+  @override
+  String get deviceSkipping => '跳绳';
+
+  @override
+  String get deviceGrip => '握力器';
+
+  @override
+  String get deviceDumbbell => '哑铃';
+
+  @override
+  String get deviceAdjDumbbell => '可调哑铃';
+
+  @override
+  String get devicePushUp => '俯卧撑';
+
+  @override
+  String get deviceKettlebell => '壶铃';
+
+  @override
+  String get deviceGame => '游戏';
+
+  @override
+  String get music => '音乐';
+
+  @override
+  String get time => '时间';
+
+  @override
+  String get distance => '距离';
+
+  @override
+  String get calories => '卡路里';
+
+  @override
+  String get heartRate => '心率';
+
+  @override
+  String get speed => '速度';
+
+  @override
+  String get courseActionImage => '课程动作图片';
+
+  @override
+  String get currentSet => '当前组';
+
+  @override
+  String get actionName => '动作名称';
+
+  @override
+  String get confirmExitCourse => '确认退出课程?';
+
+  @override
+  String get trackAnimation => '轨道动画';
+
+  @override
+  String get noDevicesFound => '未发现设备';
+
+  @override
+  String get courseImage => '课程图片';
+
+  @override
+  String get courseDetailsPlaceholder => '课程详情占位';
+
+  @override
+  String get entryCourse => '进入课程';
+
+  @override
+  String get courseList => '课程列表';
+
+  @override
+  String get realscene => '实景';
+
+  @override
+  String get gameContentPlaceholder => '游戏内容占位';
+
+  @override
+  String get exitGame => '退出游戏';
+
+  @override
+  String get areYouSureWantToExit => '确认退出?';
+
+  @override
+  String get exit => '退出';
+
+  @override
+  String get start => '开始';
+
+  @override
+  String get km => '公里';
+
+  @override
+  String get kcalUnit => '千卡';
+
+  @override
+  String get kmh => '公里/小时';
+
+  @override
+  String get bpm => '次/分';
+
+  @override
+  String get defaultNickName => '用户';
+
+  @override
+  String get logout => '退出登录';
+
+  @override
+  String get confirmLogout => '确定要退出登录吗？';
+
+  @override
+  String get placeholderTitle => '占位页面';
+
+  @override
+  String get spinBikeSubtitle => '智能健身车';
+
+  @override
+  String get treadmillMachineSubtitle => '跑步机';
+
+  @override
+  String get ellipticalMachineSubtitle => '椭圆机';
+
+  @override
+  String get rowingMachineSubtitle => '划船机';
+
+  @override
+  String get strengthStationSubtitle => '力量站';
+
+  @override
+  String get quickStartSubtitle => '快速开始';
+
+  @override
+  String get courseTrainingSubtitle => '课程训练';
+
+  @override
+  String get realSceneSubtitle => '实景模式';
+
+  @override
+  String get cityAdventureSubtitle => '城市探险';
+
+  @override
+  String get recreationalFitnessSubtitle => '趣味健身';
+
+  @override
+  String get coachMichael => '迈克尔';
+
+  @override
+  String get coachVicky => '维姬';
+
+  @override
+  String get coachFiona => '菲奥娜';
+
+  @override
+  String get coachPaul => '保罗';
+
+  @override
+  String get coachLucy => '露西';
+
+  @override
+  String get coachJack => '杰克';
+
+  @override
+  String get coachCarol => '卡罗尔';
+
+  @override
+  String get copyrightInfo => '东莞全创光电实业有限公司 版权所有 @2022-2024';
+
+  @override
+  String networkError(String message) {
+    return '网络错误: $message';
+  }
+
+  @override
+  String get devOneClickLogin => 'DEV 一键登录';
+
+  @override
+  String get permissionRequestInstructions => '权限申请说明';
+
+  @override
+  String get permissionDialogMessage =>
+      '   \'位置权限\'与\'附近的设备\'：当您使用蓝牙配对等功能时，我们需要向您申请并获取该权限,以便完成蓝牙设备的配对使用.如果您不同意此权限，这可能会影响到健身怪兽的正常使用.您可以随时访问系统设置来管理您的系统权限,如果拒绝,48小时内不会再进行提醒.\n     本说明,来自于《用户协议和隐私政策》第6条 应用隐私权限.';
+
+  @override
+  String get agree => '同意';
+
+  @override
+  String get disagree => '不同意';
+
+  @override
+  String get pleaseResumeTheMachine => '请在机器端恢复运动';
+
+  @override
+  String get deviceInMotionPleaseStop => '设备正在运动中，请先停止设备再启动快速开始';
+
+  @override
+  String get noDataTapToRetry => '如果没有数据，点击我';
 }
