@@ -66,7 +66,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   void dispose() {
     _controller.dispose();
     _audioPlayer.stop();
-    _audioPlayer.dispose(); // 修复旧代码内存泄漏（旧代码此处被注释）
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -107,24 +107,24 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   // ==================== 跑道动画层 ====================
 
   Widget _buildMainWidget(QuickStartState state, double screenWidth, double screenHeight) {
-    // 跑道参数（按设计图比例：外径占屏高约52%，线宽占外径约1/11，直线段占屏宽约50%）
-    final trackOuterH = screenHeight * 0.52;
-    final trackWidth = trackOuterH / 11;
-    final trackRadius = (trackOuterH - trackWidth) / 2;
-    final trackLineLength = screenWidth * 0.50;
-    final mainBallR = trackWidth * 0.55;
-    final npcBallR = trackWidth * 0.35;
+    // 跑道参数（1:1 还原旧代码参数）
+    final trackRadius = screenHeight * 0.3;
+    final trackLineLength = screenHeight * 0.7;
+    final trackWidth = 100.r;
+    final mainBallR = 38.r;
+    final npcBallR = 20.r;
 
     return Container(
       height: screenHeight,
-      width: double.maxFinite,
+      width: screenWidth,
       child: Column(
         children: [
+          // 顶部数据栏预留空间（1:1 还原旧代码高度 200.h）
           Container(
             margin: EdgeInsets.only(left: 45, top: 45, right: 45).r,
             alignment: Alignment.centerLeft,
-            height: screenHeight * 0.14,
-            width: double.maxFinite,
+            height: 200.h,
+            width: screenWidth,
           ),
           Expanded(
             child: Container(
@@ -134,7 +134,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                 radius: trackRadius,
                 lineLength: trackLineLength,
                 trackWidth: trackWidth,
-                trackColor: const Color.fromARGB(255, 30, 30, 30),
+                trackColor: const Color.fromARGB(255, 54, 54, 54),
                 balls: [
                   TrackBallData(
                     radius: mainBallR,
@@ -218,6 +218,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           ),
           _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
         ];
+        break;
       case FtmsDeviceType.treadmill:
         margin = EdgeInsets.only(top: 25.h, right: 20.w, left: 100.w);
         mainAxisAlignment = MainAxisAlignment.spaceBetween;
@@ -238,6 +239,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           ),
           _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
         ];
+        break;
       case FtmsDeviceType.crossTrainer:
         margin = EdgeInsets.only(top: 25.h, right: 80.w, left: 50.w);
         mainAxisAlignment = MainAxisAlignment.spaceAround;
@@ -262,6 +264,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           ),
           _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
         ];
+        break;
       case FtmsDeviceType.rower:
         margin = EdgeInsets.only(left: 150.w, top: 25.h, right: 100.w);
         mainAxisAlignment = MainAxisAlignment.spaceBetween;
@@ -283,6 +286,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           ),
           _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
         ];
+        break;
       case FtmsDeviceType.strengthStation:
         return [Container()];
     }
@@ -544,7 +548,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   }) {
     final buttonDecoration = BoxDecoration(
       color: const Color.fromARGB(255, 25, 25, 25),
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(3),
       border: Border.all(
         color: const Color.fromARGB(255, 106, 95, 95),
         width: 1,
@@ -552,7 +556,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
 
     final textStyle = TextStyle(
-      fontSize: 20.sp,
+      fontSize: 18.sp,
+      height: 0.8,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
@@ -565,19 +570,17 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           onTap: onTapCallback,
           child: Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.symmetric(vertical: 4.r, horizontal: 3.r),
+            padding: EdgeInsets.only(bottom: 4),
+            margin: EdgeInsets.only(top: 30, bottom: 30, right: 5, left: 5).r,
             decoration: buttonDecoration,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text("$value", style: textStyle),
-            ),
+            child: Text("$value", style: textStyle),
           ),
         ),
       );
     }
 
     return SizedBox(
-      width: 80.w,
+      width: 70.w,
       height: MediaQuery.of(context).size.height,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -587,7 +590,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           Expanded(
             flex: 3,
             child: Container(
-              margin: EdgeInsets.symmetric(vertical: 4.r, horizontal: 3.r),
+              margin: EdgeInsets.only(top: 30, bottom: 30, right: 5, left: 5).r,
               decoration: buttonDecoration,
               child: Column(
                 children: [
@@ -600,7 +603,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.add,
-                          size: 28.sp,
+                          size: 30.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -609,25 +612,19 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   Expanded(
                     child: Container(
                       alignment: Alignment.center,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "$third",
-                              style: textStyle,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("$third", style: textStyle),
+                          SizedBox(height: 8.sp),
+                          Text(
+                            type,
+                            style: TextStyle(
+                              fontSize: 8.sp,
+                              color: Colors.white,
                             ),
-                            SizedBox(height: 4.sp),
-                            Text(
-                              type,
-                              style: TextStyle(
-                                fontSize: 9.sp,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -640,7 +637,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.remove,
-                          size: 28.sp,
+                          size: 30.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -672,12 +669,17 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       case FtmsDeviceType.crossTrainer:
         maxValue = 150;
         currentValue = state.sportCadence + 0.0;
+        break;
       case FtmsDeviceType.treadmill:
-        maxValue = (state.maxSpeed / 100).round();
+        // 跑步机：当maxSpeed未初始化（默认0）时使用默认值20；有值时FTMS原始值需除以100
+        final rawMax = state.maxSpeed;
+        maxValue = rawMax <= 0 ? 20 : (rawMax / 100).round().clamp(10, 30);
         currentValue = state.sportSpeed;
+        break;
       case FtmsDeviceType.rower:
         maxValue = 150;
         currentValue = state.sportStrokeRate + 0.0;
+        break;
       case FtmsDeviceType.strengthStation:
         return Container();
     }
