@@ -544,7 +544,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
 
     final textStyle = TextStyle(
-      fontSize: 18.sp,
+      fontSize: 14.sp,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
@@ -608,7 +608,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                           children: [
                             Text(
                               "$third",
-                              style: textStyle.copyWith(fontSize: 14.sp),
+                              style: textStyle,
                             ),
                             SizedBox(height: 6.sp),
                             Text(
