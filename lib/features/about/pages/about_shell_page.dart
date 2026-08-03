@@ -7,8 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../auth/notifiers/auth_notifier_provider.dart';
-import '../notifiers/user_settings_notifier_provider.dart';
+import '../../auth/notifiers/auth_notifier.dart';
+import '../notifiers/user_settings_notifier.dart';
 
 class AboutShellPage extends ConsumerStatefulWidget {
   const AboutShellPage({super.key});
@@ -28,20 +28,12 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     "icon_shop1",
   ];
 
-  final List<String> iconTitle = [
-    "运动设置",
-    "账号安全",
-    "软件更新",
-    "用户隐私政策",
-    "关于",
-    "重新登录",
-    "数据采集",
-  ];
+
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(userSettingsNotifierProvider);
+    final state = ref.watch(userSettingsProvider);
 
     return SafeArea(
       child: Scaffold(
@@ -396,8 +388,8 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     WidgetRef ref,
     AppLocalizations l10n,
   ) {
-    final state = ref.watch(userSettingsNotifierProvider);
-    final notifier = ref.read(userSettingsNotifierProvider.notifier);
+    final state = ref.watch(userSettingsProvider);
+    final notifier = ref.read(userSettingsProvider.notifier);
 
     return Card(
       margin: const EdgeInsets.only(left: 25, right: 25, bottom: 25).r,
@@ -410,22 +402,22 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildCharacterRadio(0, "Michael", state, notifier),
-                _buildCharacterRadio(1, "Vicky", state, notifier),
-                _buildCharacterRadio(2, "Fiona", state, notifier),
+                _buildCharacterRadio(0, l10n.coachMichael, state, notifier),
+                _buildCharacterRadio(1, l10n.coachVicky, state, notifier),
+                _buildCharacterRadio(2, l10n.coachFiona, state, notifier),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                _buildCharacterRadio(3, "Paul", state, notifier),
-                _buildCharacterRadio(4, "Lucy", state, notifier),
-                _buildCharacterRadio(5, "Jack", state, notifier),
+                _buildCharacterRadio(3, l10n.coachPaul, state, notifier),
+                _buildCharacterRadio(4, l10n.coachLucy, state, notifier),
+                _buildCharacterRadio(5, l10n.coachJack, state, notifier),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: [_buildCharacterRadio(6, "Carol", state, notifier)],
+              children: [_buildCharacterRadio(6, l10n.coachCarol, state, notifier)],
             ),
           ],
         ),
@@ -479,7 +471,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "退出登录",
+                    l10n.logout,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: FitTheme.textColor,
@@ -490,7 +482,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
                   ),
                   SizedBox(height: 20.h),
                   Text(
-                    "确定要退出登录吗？",
+                    l10n.confirmLogout,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: FitTheme.textColor,
@@ -532,7 +524,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
                           onPressed: () async {
                             Navigator.of(context).pop();
                             final authNotifier = ref.read(
-                              authNotifierProvider.notifier,
+                              authProvider.notifier,
                             );
                             await authNotifier.logout();
                             if (context.mounted) {

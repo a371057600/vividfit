@@ -1,10 +1,13 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/storage_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../states/goal_setting_state.dart';
 
-class GoalSettingNotifier extends Notifier<GoalSettingState> {
+part 'goal_setting_notifier.g.dart';
+
+@riverpod
+class GoalSettingNotifier extends _$GoalSettingNotifier {
   @override
   GoalSettingState build() {
     _storage = ref.watch(storageServiceProvider);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 
 /// 开屏页(用 go_router 的 splash 路由实现,1:1 复刻旧 AnimatedSplashScreen 视觉)。
 ///
@@ -41,7 +41,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
     await Future.delayed(const Duration(milliseconds: 1000));
     if (!mounted || _navigated) return;
     _navigated = true;
-    final isLoggedIn = ref.read(authNotifierProvider).isAuthenticated;
+    final isLoggedIn = ref.read(authProvider).isAuthenticated;
     if (mounted) {
       context.go(isLoggedIn ? '/home-shell' : '/login');
     }
@@ -50,7 +50,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
   @override
   Widget build(BuildContext context) {
     final languageNum = ref.watch(
-      authNotifierProvider.select((s) => s.languageNum),
+      authProvider.select((s) => s.languageNum),
     );
     final size = MediaQuery.of(context).size;
     return FadeTransition(

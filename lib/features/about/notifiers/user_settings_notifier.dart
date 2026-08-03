@@ -1,8 +1,11 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../states/user_settings_state.dart';
 
-class UserSettingsNotifier extends Notifier<UserSettingsState> {
+part 'user_settings_notifier.g.dart';
+
+@Riverpod(keepAlive: true)
+class UserSettingsNotifier extends _$UserSettingsNotifier {
   @override
   UserSettingsState build() {
     return const UserSettingsState();

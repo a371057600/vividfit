@@ -1,9 +1,12 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../data/models/course_list.dart';
 import '../states/course_list_state.dart';
 
-class CourseListNotifier extends Notifier<CourseListState> {
+part 'course_list_notifier.g.dart';
+
+@riverpod
+class CourseListNotifier extends _$CourseListNotifier {
   @override
   CourseListState build() {
     return const CourseListState();

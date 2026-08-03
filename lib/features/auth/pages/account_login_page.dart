@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 账号密码登录页(1:1 复刻旧项目 NewAccountLoginScreen)。
@@ -19,7 +19,7 @@ class AccountLoginPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final showPassword =
-        ref.watch(authNotifierProvider.select((s) => s.showPassword));
+        ref.watch(authProvider.select((s) => s.showPassword));
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -49,7 +49,7 @@ class AccountLoginPage extends ConsumerWidget {
                     hintStyle: const TextStyle(color: Colors.white),
                   ),
                   onChanged: (value) =>
-                      ref.read(authNotifierProvider.notifier).setEmailAccount(value),
+                      ref.read(authProvider.notifier).setEmailAccount(value),
                 ),
                 TextField(
                   obscureText: showPassword,
@@ -57,7 +57,7 @@ class AccountLoginPage extends ConsumerWidget {
                   decoration: InputDecoration(
                     suffix: InkWell(
                       onTap: () => ref
-                          .read(authNotifierProvider.notifier)
+                          .read(authProvider.notifier)
                           .toggleShowPassword(),
                       child: SizedBox(
                         height: 50.r,
@@ -81,12 +81,12 @@ class AccountLoginPage extends ConsumerWidget {
                     hintStyle: const TextStyle(color: Colors.white),
                   ),
                   onChanged: (value) =>
-                      ref.read(authNotifierProvider.notifier).setPassword(value),
+                      ref.read(authProvider.notifier).setPassword(value),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () =>
-                      ref.read(authNotifierProvider.notifier).login(),
+                      ref.read(authProvider.notifier).login(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FitTheme.buttonColor,
                   ),

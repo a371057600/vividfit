@@ -8,7 +8,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../about/pages/about_shell_page.dart';
 import '../../big_device/pages/device_search_screen.dart';
 import '../../course/pages/course_list_page.dart';
-import '../notifiers/home_notifier_provider.dart';
+import '../notifiers/home_notifier.dart';
 import 'home_tab_screen.dart';
 
 /// 主页外壳(1:1 复刻旧 MyHomePage)。
@@ -18,8 +18,8 @@ class HomeShellScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(homeNotifierProvider);
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final state = ref.watch(homeProvider);
+    final notifier = ref.read(homeProvider.notifier);
     return PopScope(
       canPop: false,
       child: SafeArea(

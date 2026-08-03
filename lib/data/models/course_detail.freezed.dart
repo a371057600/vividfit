@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'course_detail.dart';
@@ -9,6 +9,7 @@ part of 'course_detail.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -66,7 +67,7 @@ class _$CourseDetailCopyWithImpl<$Res>
 /// Create a copy of CourseDetail
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? code = freezed,Object? msg = freezed,Object? data = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CourseDetail(
 code: freezed == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String?,msg: freezed == msg ? _self.msg : msg // ignore: cast_nullable_to_non_nullable
 as String?,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
@@ -211,7 +212,7 @@ return $default(_that.code,_that.msg,_that.data);case _:
 @JsonSerializable()
 
 class _CourseDetail implements CourseDetail {
-  const _CourseDetail({this.code, this.msg, final  List<CourseAction>? data}): _data = data;
+  const _CourseDetail({this.code, this.msg,  List<CourseAction>? data}): _data = data;
   factory _CourseDetail.fromJson(Map<String, dynamic> json) => _$CourseDetailFromJson(json);
 
 @override final  String? code;
@@ -343,7 +344,7 @@ class _$CourseActionCopyWithImpl<$Res>
 /// Create a copy of CourseAction
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? actionId = freezed,Object? actionType = freezed,Object? video = freezed,Object? cover = freezed,Object? actionName = freezed,Object? actionVoice = freezed,Object? actionIntroduce = freezed,Object? actionIntroduceVoice = freezed,Object? targetAmount = freezed,Object? during = freezed,Object? sets = freezed,Object? speed = freezed,Object? picturesList = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CourseAction(
 actionId: freezed == actionId ? _self.actionId : actionId // ignore: cast_nullable_to_non_nullable
 as int?,actionType: freezed == actionType ? _self.actionType : actionType // ignore: cast_nullable_to_non_nullable
 as int?,video: freezed == video ? _self.video : video // ignore: cast_nullable_to_non_nullable
@@ -666,7 +667,7 @@ class _$ActionPicturesCopyWithImpl<$Res>
 /// Create a copy of ActionPictures
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? actionId = freezed,Object? actionPictureName = freezed,Object? actionPictureHash = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(ActionPictures(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,actionId: freezed == actionId ? _self.actionId : actionId // ignore: cast_nullable_to_non_nullable
 as int?,actionPictureName: freezed == actionPictureName ? _self.actionPictureName : actionPictureName // ignore: cast_nullable_to_non_nullable

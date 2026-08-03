@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 邮箱验证码登录-输入邮箱页(1:1 复刻旧项目 NewEmailLoginScreen)。
@@ -20,9 +20,9 @@ class EmailLoginPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final reGetCode2 =
-        ref.watch(authNotifierProvider.select((s) => s.reGetCode2));
+        ref.watch(authProvider.select((s) => s.reGetCode2));
     final countdown =
-        ref.watch(authNotifierProvider.select((s) => s.countdown));
+        ref.watch(authProvider.select((s) => s.countdown));
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -47,18 +47,18 @@ class EmailLoginPage extends ConsumerWidget {
                     hintStyle: const TextStyle(color: Colors.grey),
                   ),
                   onChanged: (value) => ref
-                      .read(authNotifierProvider.notifier)
+                      .read(authProvider.notifier)
                       .setEmailAccount(value),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    final state = ref.read(authNotifierProvider);
+                    final state = ref.read(authProvider);
                     if (state.ishasInternet &&
                         state.emailAccount.isNotEmpty &&
                         state.reGetCode2) {
                       final ok = await ref
-                          .read(authNotifierProvider.notifier)
+                          .read(authProvider.notifier)
                           .sendEmailCaptcha();
                       if (ok && context.mounted) {
                         // 旧 Get.off(GetCode):替换当前页,返回时回到入口。

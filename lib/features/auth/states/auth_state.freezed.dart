@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'auth_state.dart';
@@ -9,29 +9,13 @@ part of 'auth_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AuthState {
 
-// ---- 通用 ----
- bool get isLoading; bool get isAuthenticated; bool get agreedToPrivacy; String? get accessToken; int? get userId; FitUserInfo? get userInfo; String? get errorMessage;// ---- 表单字段(对应旧 .obs 变量)----
- String get emailAccount;// 邮箱/账号(bindingAccount)
- String get password;// 密码
- String get changepassword;// 新密码(找回密码用)
- String get countryCode;// 国家码 "86"
- int get phoneNumber;// 手机号
- String get captcha;// 验证码
- String get wechatCode;// 微信 code(预留)
-// ---- 倒计时 ----
- int get countdown;// 倒计时秒数
- bool get reGetCode;// 可重新获取验证码
- bool get reGetCode2;// 可重新获取验证码(备用标志)
-// ---- UI 状态 ----
- bool get showPassword;// 是否隐藏密码(true=隐藏)
- int get loginType;// 登录类型:1=手机 2=邮箱
- bool get ishasInternet;// 是否有网络
- int get languageNum;
+ bool get isLoading; bool get isAuthenticated; bool get agreedToPrivacy; String? get accessToken; int? get userId; FitUserInfo? get userInfo; String? get errorMessage; String get emailAccount; String get password; String get changepassword; String get countryCode; int get phoneNumber; String get captcha; String get wechatCode; int get countdown; bool get reGetCode; bool get reGetCode2; bool get showPassword; int get loginType; bool get ishasInternet; int get languageNum;
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -80,7 +64,7 @@ class _$AuthStateCopyWithImpl<$Res>
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? isLoading = null,Object? isAuthenticated = null,Object? agreedToPrivacy = null,Object? accessToken = freezed,Object? userId = freezed,Object? userInfo = freezed,Object? errorMessage = freezed,Object? emailAccount = null,Object? password = null,Object? changepassword = null,Object? countryCode = null,Object? phoneNumber = null,Object? captcha = null,Object? wechatCode = null,Object? countdown = null,Object? reGetCode = null,Object? reGetCode2 = null,Object? showPassword = null,Object? loginType = null,Object? ishasInternet = null,Object? languageNum = null,}) {
-  return _then(_self.copyWith(
+  return _then(AuthState(
 isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,isAuthenticated: null == isAuthenticated ? _self.isAuthenticated : isAuthenticated // ignore: cast_nullable_to_non_nullable
 as bool,agreedToPrivacy: null == agreedToPrivacy ? _self.agreedToPrivacy : agreedToPrivacy // ignore: cast_nullable_to_non_nullable
@@ -255,10 +239,9 @@ return $default(_that.isLoading,_that.isAuthenticated,_that.agreedToPrivacy,_tha
 
 
 class _AuthState implements AuthState {
-  const _AuthState({this.isLoading = false, this.isAuthenticated = false, this.agreedToPrivacy = false, this.accessToken, this.userId, this.userInfo, this.errorMessage, this.emailAccount = '', this.password = '', this.changepassword = '', this.countryCode = '', this.phoneNumber = 0, this.captcha = '', this.wechatCode = '', this.countdown = 60, this.reGetCode = true, this.reGetCode2 = true, this.showPassword = true, this.loginType = 0, this.ishasInternet = false, this.languageNum = 1});
+  const _AuthState({this.isLoading = false, this.isAuthenticated = false, this.agreedToPrivacy = false, this.accessToken, this.userId, this.userInfo, this.errorMessage, this.emailAccount = '', this.password = '', this.changepassword = '', this.countryCode = '', this.phoneNumber = 0, this.captcha = '', this.wechatCode = '', this.countdown = 60, this.reGetCode = true, this.reGetCode2 = true, this.showPassword = true, this.loginType = 0, this.ishasInternet = false, this.languageNum = 0});
   
 
-// ---- 通用 ----
 @override@JsonKey() final  bool isLoading;
 @override@JsonKey() final  bool isAuthenticated;
 @override@JsonKey() final  bool agreedToPrivacy;
@@ -266,35 +249,19 @@ class _AuthState implements AuthState {
 @override final  int? userId;
 @override final  FitUserInfo? userInfo;
 @override final  String? errorMessage;
-// ---- 表单字段(对应旧 .obs 变量)----
 @override@JsonKey() final  String emailAccount;
-// 邮箱/账号(bindingAccount)
 @override@JsonKey() final  String password;
-// 密码
 @override@JsonKey() final  String changepassword;
-// 新密码(找回密码用)
 @override@JsonKey() final  String countryCode;
-// 国家码 "86"
 @override@JsonKey() final  int phoneNumber;
-// 手机号
 @override@JsonKey() final  String captcha;
-// 验证码
 @override@JsonKey() final  String wechatCode;
-// 微信 code(预留)
-// ---- 倒计时 ----
 @override@JsonKey() final  int countdown;
-// 倒计时秒数
 @override@JsonKey() final  bool reGetCode;
-// 可重新获取验证码
 @override@JsonKey() final  bool reGetCode2;
-// 可重新获取验证码(备用标志)
-// ---- UI 状态 ----
 @override@JsonKey() final  bool showPassword;
-// 是否隐藏密码(true=隐藏)
 @override@JsonKey() final  int loginType;
-// 登录类型:1=手机 2=邮箱
 @override@JsonKey() final  bool ishasInternet;
-// 是否有网络
 @override@JsonKey() final  int languageNum;
 
 /// Create a copy of AuthState

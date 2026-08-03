@@ -7,7 +7,6 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/goal_setting_notifier.dart';
-import '../notifiers/goal_setting_notifier_provider.dart';
 
 /// 运动目标设置页(1:1 复刻旧 GoalSettingScreen)。
 class GoalSettingPage extends ConsumerWidget {
@@ -16,8 +15,8 @@ class GoalSettingPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(goalSettingNotifierProvider);
-    final notifier = ref.read(goalSettingNotifierProvider.notifier);
+    final state = ref.watch(goalSettingProvider);
+    final notifier = ref.read(goalSettingProvider.notifier);
 
     // 运动类型名(3 个)
     final sportTypes = [l10n.aerobic, l10n.anaerobic, l10n.rehab];
@@ -131,8 +130,8 @@ class GoalSettingPage extends ConsumerWidget {
     List<String> sportTypes, List<List<String>> sportSubs,
     List<String> sportContents, List<List<String>> sportAreas,
   ) {
-    final state = ref.watch(goalSettingNotifierProvider);
-    final notifier = ref.read(goalSettingNotifierProvider.notifier);
+    final state = ref.watch(goalSettingProvider);
+    final notifier = ref.read(goalSettingProvider.notifier);
     final firstIdx = state.sportTypeSelectIndex;
     final secondIdx = state.sportTypeSelectIndex2;
     return Container(

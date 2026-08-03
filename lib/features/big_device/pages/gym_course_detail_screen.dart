@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 课程详情页（对应旧 big_device_course_detail_screen.dart）
 class GymCourseDetailScreen extends ConsumerWidget {
-  const GymCourseDetailScreen({super.key});
+  final String courseId;
+  final FtmsDeviceType deviceType;
+
+  const GymCourseDetailScreen({
+    super.key,
+    required this.courseId,
+    required this.deviceType,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -132,7 +141,10 @@ class GymCourseDetailScreen extends ConsumerWidget {
                           minimumSize: Size(300.w, 80.h),
                         ),
                         onPressed: () {
-                          // TODO: 进入课程
+                          context.push('/gym-device-play', extra: {
+                            'courseId': courseId,
+                            'deviceType': deviceType,
+                          });
                         },
                         child: Text(
                           l10n.entryCourse,

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'user_info.dart';
@@ -9,14 +9,14 @@ part of 'user_info.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$FitUserInfo {
 
- int? get id; String? get nickName; bool? get sex;// true = 男
- String? get birthday; int? get height; int? get weight; String? get headImage; String? get mailAddress; String? get phoneNumber; String? get phoneArea; String? get createTime; bool? get disabled; bool? get hasPsw;
+ int? get id; String? get nickName; bool? get sex; String? get birthday; int? get height; int? get weight; String? get headImage; String? get mailAddress; String? get phoneNumber; String? get phoneArea; String? get createTime; bool? get disabled; bool? get hasPsw;
 /// Create a copy of FitUserInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -67,7 +67,7 @@ class _$FitUserInfoCopyWithImpl<$Res>
 /// Create a copy of FitUserInfo
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? nickName = freezed,Object? sex = freezed,Object? birthday = freezed,Object? height = freezed,Object? weight = freezed,Object? headImage = freezed,Object? mailAddress = freezed,Object? phoneNumber = freezed,Object? phoneArea = freezed,Object? createTime = freezed,Object? disabled = freezed,Object? hasPsw = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(FitUserInfo(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,nickName: freezed == nickName ? _self.nickName : nickName // ignore: cast_nullable_to_non_nullable
 as String?,sex: freezed == sex ? _self.sex : sex // ignore: cast_nullable_to_non_nullable
@@ -228,7 +228,6 @@ class _FitUserInfo implements FitUserInfo {
 @override final  int? id;
 @override final  String? nickName;
 @override final  bool? sex;
-// true = 男
 @override final  String? birthday;
 @override final  int? height;
 @override final  int? weight;

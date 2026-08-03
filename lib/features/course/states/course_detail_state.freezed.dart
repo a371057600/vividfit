@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'course_detail_state.dart';
@@ -9,6 +9,7 @@ part of 'course_detail_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -80,7 +81,7 @@ class _$CourseDetailStateCopyWithImpl<$Res>
 /// Create a copy of CourseDetailState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? courseDetail = freezed,Object? courseCover = null,Object? courseId = null,Object? courseTitle = null,Object? interactiveEquipment = null,Object? version = null,Object? proposal = null,Object? describe = null,Object? carefulthing = null,Object? isNeedUpdate = null,Object? isDownloading = null,Object? downloadProgress = null,Object? playWithDevice = null,Object? isActionDataLoading = null,Object? courseIndex = null,Object? selectedActionIndex = null,Object? isPlaying = null,Object? pictureIndex = null,Object? totalPictureIndex = null,Object? pictureFileNameList = null,Object? pictureNamePath = null,}) {
-  return _then(_self.copyWith(
+  return _then(CourseDetailState(
 courseDetail: freezed == courseDetail ? _self.courseDetail : courseDetail // ignore: cast_nullable_to_non_nullable
 as CourseDetail?,courseCover: null == courseCover ? _self.courseCover : courseCover // ignore: cast_nullable_to_non_nullable
 as String,courseId: null == courseId ? _self.courseId : courseId // ignore: cast_nullable_to_non_nullable
@@ -255,7 +256,7 @@ return $default(_that.courseDetail,_that.courseCover,_that.courseId,_that.course
 
 
 class _CourseDetailState implements CourseDetailState {
-  const _CourseDetailState({this.courseDetail, this.courseCover = '', this.courseId = '', this.courseTitle = '', this.interactiveEquipment = 0, this.version = 0, this.proposal = '', this.describe = '', this.carefulthing = '', this.isNeedUpdate = true, this.isDownloading = false, this.downloadProgress = 0.0, this.playWithDevice = false, this.isActionDataLoading = false, this.courseIndex = 0, this.selectedActionIndex = 0, this.isPlaying = false, this.pictureIndex = 0, this.totalPictureIndex = 0, final  List<String> pictureFileNameList = const [], this.pictureNamePath = ''}): _pictureFileNameList = pictureFileNameList;
+  const _CourseDetailState({this.courseDetail, this.courseCover = '', this.courseId = '', this.courseTitle = '', this.interactiveEquipment = 0, this.version = 0, this.proposal = '', this.describe = '', this.carefulthing = '', this.isNeedUpdate = true, this.isDownloading = false, this.downloadProgress = 0.0, this.playWithDevice = false, this.isActionDataLoading = false, this.courseIndex = 0, this.selectedActionIndex = 0, this.isPlaying = false, this.pictureIndex = 0, this.totalPictureIndex = 0,  List<String> pictureFileNameList = const [], this.pictureNamePath = ''}): _pictureFileNameList = pictureFileNameList;
   
 
 /// 课程动作详情

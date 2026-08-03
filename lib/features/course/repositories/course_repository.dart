@@ -37,7 +37,7 @@ class CourseRepository {
     // );
     // return CourseList.fromJson(res);
 
-    // 假数据占位
+    // 假数据占位（文本留空，由UI层根据空值显示本地化占位文本）
     return CourseList(
       code: '200',
       data: CourseListData(
@@ -45,11 +45,11 @@ class CourseRepository {
           6,
           (index) => CourseItem(
             id: index + 1,
-            title: 'Course ${index + 1}',
+            title: '',
             cover: '',
-            describe: 'Course description placeholder',
-            proposal: 'Course proposal placeholder',
-            carefulthing: 'Be careful',
+            describe: '',
+            proposal: '',
+            carefulthing: '',
             during: 600,
             level: 1,
             interactiveEquipment: 1,
@@ -73,7 +73,7 @@ class CourseRepository {
     // );
     // return CourseDetail.fromJson(res);
 
-    // 假数据占位
+    // 假数据占位（文本留空，由UI层根据空值显示本地化占位文本）
     return CourseDetail(
       code: '200',
       data: List.generate(
@@ -81,8 +81,8 @@ class CourseRepository {
         (index) => CourseAction(
           actionId: index,
           actionType: index == 0 ? -1 : 0,
-          actionName: 'Action ${index + 1}',
-          actionIntroduce: 'Action introduction placeholder',
+          actionName: '',
+          actionIntroduce: '',
           during: 30,
           speed: 30,
           picturesList: ActionPictures(

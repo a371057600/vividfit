@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/storage_service_provider.dart';
@@ -12,7 +12,10 @@ import '../repositories/auth_repository.dart';
 import '../states/auth_state.dart';
 import 'auth_repository_provider.dart';
 
-class AuthNotifier extends Notifier<AuthState> {
+part 'auth_notifier.g.dart';
+
+@Riverpod(keepAlive: true)
+class AuthNotifier extends _$AuthNotifier {
   @override
   AuthState build() {
     _repository = ref.watch(authRepositoryProvider);
@@ -102,7 +105,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error: $e',
+        errorMessage: _localizedNetworkError(e),
       );
       return false;
     }
@@ -135,7 +138,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error: $e',
+        errorMessage: _localizedNetworkError(e),
       );
       return false;
     }
@@ -150,12 +153,12 @@ class AuthNotifier extends Notifier<AuthState> {
       await _persistSession(response);
       return true;
     } else if (code == '400') {
-      state = state.copyWith(errorMessage: 'Incorrect verification code.');
+      state = state.copyWith(errorMessage: _localizedIncorrectCode());
       return false;
     } else if (code == '402' || code == '403' || code == '412') {
       return false;
     } else {
-      state = state.copyWith(errorMessage: 'Incorrect verification code.');
+      state = state.copyWith(errorMessage: _localizedIncorrectCode());
       return false;
     }
   }
@@ -202,7 +205,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error: $e',
+        errorMessage: _localizedNetworkError(e),
       );
       return false;
     }
@@ -228,7 +231,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error: $e',
+        errorMessage: _localizedNetworkError(e),
       );
       return false;
     }
@@ -291,7 +294,7 @@ class AuthNotifier extends Notifier<AuthState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Network error: $e',
+        errorMessage: _localizedNetworkError(e),
       );
       return false;
     }
@@ -312,5 +315,17 @@ class AuthNotifier extends Notifier<AuthState> {
       accessToken: 'dev_token',
       userId: 1,
     );
+  }
+
+  /// 根据当前语言设置返回本地化的网络错误提示。
+  String _localizedNetworkError(Object e) {
+    final isCn = state.languageNum == 0 || state.languageNum == 2;
+    return isCn ? '网络错误: $e' : 'Network error: $e';
+  }
+
+  /// 根据当前语言设置返回本地化的验证码错误提示。
+  String _localizedIncorrectCode() {
+    final isCn = state.languageNum == 0 || state.languageNum == 2;
+    return isCn ? '验证码错误' : 'Incorrect verification code.';
   }
 }

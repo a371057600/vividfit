@@ -1,9 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/network/network_providers.dart';
 import '../repositories/auth_repository.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
+part 'auth_repository_provider.g.dart';
+
+@Riverpod(keepAlive: true)
+AuthRepository authRepository(Ref ref) {
   final api = ref.watch(apiClientProvider);
   return AuthRepository(api);
-});
+}

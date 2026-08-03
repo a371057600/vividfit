@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/network/api_response_extension.dart';
 import '../../../data/models/login_response.dart';
 
 class AuthRepository {
@@ -19,20 +18,20 @@ class AuthRepository {
     required String account,
     required String password,
   }) async {
-    final response = await _api.post<LoginResponse>(
+    final response = await _api.postRaw<LoginResponse>(
       ApiConstants.pwdLoginUrl,
       queryParameters: {'password': password, 'bindingAccount': account},
       options: _publicOptions,
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    return response.getOrThrow();
+    return response;
   }
 
   Future<LoginResponse> emailCaptchaLogin({
     required String mailAddress,
     required String code,
   }) async {
-    final response = await _api.post<LoginResponse>(
+    final response = await _api.postRaw<LoginResponse>(
       ApiConstants.mailLoginUrl,
       queryParameters: {
         'mailAddress': mailAddress,
@@ -42,7 +41,7 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    return response.getOrThrow();
+    return response;
   }
 
   Future<LoginResponse> phoneCaptchaLogin({
@@ -50,7 +49,7 @@ class AuthRepository {
     required String phoneNumber,
     required String code,
   }) async {
-    final response = await _api.post<LoginResponse>(
+    final response = await _api.postRaw<LoginResponse>(
       ApiConstants.phoneLoginUrl,
       queryParameters: {
         'areaCode': areaCode,
@@ -61,11 +60,11 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    return response.getOrThrow();
+    return response;
   }
 
   Future<bool> sendEmailCaptcha(String mailAddress) async {
-    final response = await _api.get<Map<String, dynamic>>(
+    final response = await _api.getRaw<Map<String, dynamic>>(
       ApiConstants.sendMailNumberUrl,
       queryParameters: {
         'mailAddress': mailAddress,
@@ -75,14 +74,14 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => json as Map<String, dynamic>,
     );
-    return response.isSuccess;
+    return response['code']?.toString() == '200';
   }
 
   Future<bool> sendPhoneCaptcha({
     required String areaCode,
     required String phoneNumber,
   }) async {
-    final response = await _api.get<Map<String, dynamic>>(
+    final response = await _api.getRaw<Map<String, dynamic>>(
       ApiConstants.sendPhoneNumberUrl,
       queryParameters: {
         'areaCode': areaCode,
@@ -93,14 +92,14 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => json as Map<String, dynamic>,
     );
-    return response.isSuccess;
+    return response['code']?.toString() == '200';
   }
 
   Future<bool> checkCaptcha({
     required String target,
     required String code,
   }) async {
-    final response = await _api.get<Map<String, dynamic>>(
+    final response = await _api.getRaw<Map<String, dynamic>>(
       ApiConstants.checkNumberUrl,
       queryParameters: {
         'target': target,
@@ -110,18 +109,18 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => json as Map<String, dynamic>,
     );
-    return response.isSuccess;
+    return response['code']?.toString() == '200';
   }
 
   Future<int?> checkBindMail(String mailAddress) async {
-    final response = await _api.get<Map<String, dynamic>>(
+    final response = await _api.getRaw<Map<String, dynamic>>(
       ApiConstants.checkBindMailUrl,
       queryParameters: {'mailAddress': mailAddress},
       options: _publicOptions,
       parser: (json) => json as Map<String, dynamic>,
     );
-    if (!response.isSuccess) return null;
-    final data = response.data?['data'];
+    if (response['code']?.toString() != '200') return null;
+    final data = response['data'];
     if (data is Map && data['id'] is int) return data['id'] as int;
     return null;
   }
@@ -130,12 +129,12 @@ class AuthRepository {
     required int userId,
     required String newPassword,
   }) async {
-    final response = await _api.put<Map<String, dynamic>>(
+    final response = await _api.putRaw<Map<String, dynamic>>(
       ApiConstants.updatePwdUrl,
       queryParameters: {'userId': userId, 'newPassword': newPassword},
       options: _publicOptions,
       parser: (json) => json as Map<String, dynamic>,
     );
-    return response.isSuccess;
+    return response['code']?.toString() == '200';
   }
 }

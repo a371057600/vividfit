@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'new_main_data.dart';
@@ -9,6 +9,7 @@ part of 'new_main_data.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -66,7 +67,7 @@ class _$FitMainDataCopyWithImpl<$Res>
 /// Create a copy of FitMainData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? animationIndex2 = null,Object? recordDate = null,Object? triCycleCalorie = null,Object? goalCalorie = null,Object? triCycleDuration = null,Object? goalDuration = null,Object? triCycleStrength = null,Object? goalStrength = null,Object? todayCount = null,Object? bodyWeight = null,Object? bodyBmi = null,Object? bodyHeight = null,Object? isLoading = null,Object? isLoading2 = null,}) {
-  return _then(_self.copyWith(
+  return _then(FitMainData(
 animationIndex2: null == animationIndex2 ? _self.animationIndex2 : animationIndex2 // ignore: cast_nullable_to_non_nullable
 as int,recordDate: null == recordDate ? _self.recordDate : recordDate // ignore: cast_nullable_to_non_nullable
 as String,triCycleCalorie: null == triCycleCalorie ? _self.triCycleCalorie : triCycleCalorie // ignore: cast_nullable_to_non_nullable

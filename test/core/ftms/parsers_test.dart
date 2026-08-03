@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vividfit_v2/core/ftms/ftms_device_data.dart';
 import 'package:vividfit_v2/core/ftms/parsers/indoor_bike_parser.dart';
 import 'package:vividfit_v2/core/ftms/parsers/treadmill_parser.dart';
 import 'package:vividfit_v2/core/ftms/parsers/cross_trainer_parser.dart';
@@ -59,12 +58,7 @@ void main() {
     });
 
     test('仅解析瞬时速度和踏频', () {
-      // flags: bit0=0(moreData), bit2=1(instCadence) => 0x0005
-      final data = Uint8List.fromList([
-        0x05, 0x00, // flags = 0x0005 (bit0=1? 不对)
-      ]);
-      // 等等，0x0005 = bit0=1, bit2=1，所以 moreData=false
-      // 我们需要 bit0=0, bit2=1 => 0x0004
+      // flags: bit0=0(moreData), bit2=1(instCadence) => 0x0004
       final data2 = Uint8List.fromList([
         0x04, 0x00, // flags = 0x0004 (bit0=0, bit2=1)
         0x88, 0x02, // instSpeed = 648 * 0.01 = 6.48 km/h

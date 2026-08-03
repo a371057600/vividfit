@@ -1,11 +1,13 @@
+import 'package:dio/dio.dart';
+
 class ApiResponse<T> {
   final String code;
-  final String? message;
+  final String? msg;
   final T? data;
 
   const ApiResponse({
     required this.code,
-    this.message,
+    this.msg,
     this.data,
   });
 
@@ -15,14 +17,29 @@ class ApiResponse<T> {
   ) {
     return ApiResponse(
       code: json['code']?.toString() ?? '',
-      message: json['message']?.toString(),
+      msg: json['msg']?.toString(),
       data: json['data'] != null ? parser(json['data']) : null,
     );
   }
+}
 
+extension ApiResponseExtension on ApiResponse {
   bool get isSuccess => code == '200';
 
-  @override
-  String toString() =>
-      'ApiResponse(code: $code, message: $message, data: $data)';
+  String get message => msg ?? '';
+
+  void assertSuccess() {
+    if (!isSuccess) {
+      throw DioException(
+        requestOptions: RequestOptions(),
+        response: Response(
+          requestOptions: RequestOptions(),
+          statusCode: int.tryParse(code),
+          data: {'code': code, 'msg': msg},
+        ),
+        type: DioExceptionType.badResponse,
+        error: msg ?? 'Unknown error',
+      );
+    }
+  }
 }

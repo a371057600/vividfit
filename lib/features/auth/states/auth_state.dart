@@ -35,6 +35,6 @@ abstract class AuthState with _$AuthState {
     @Default(true) bool showPassword, // 是否隐藏密码(true=隐藏)
     @Default(0) int loginType, // 登录类型:1=手机 2=邮箱
     @Default(false) bool ishasInternet, // 是否有网络
-    @Default(1) int languageNum, // 0=简中 1=英 2=繁中(决定登录入口显示与服务器)
+    @Default(0) int languageNum, // 0=简中 1=英 2=繁中(决定登录入口显示与服务器)
   }) = _AuthState;
 }

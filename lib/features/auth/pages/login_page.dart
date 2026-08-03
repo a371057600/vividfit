@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 登录入口选择页(1:1 复刻旧项目 NewLoginScreen)。
@@ -33,7 +33,7 @@ class LoginPage extends ConsumerWidget {
   }
 
   void _ensureAgreed(BuildContext context, WidgetRef ref, VoidCallback go) {
-    final agreed = ref.read(authNotifierProvider).agreedToPrivacy;
+    final agreed = ref.read(authProvider).agreedToPrivacy;
     if (agreed) {
       go();
     } else {
@@ -47,9 +47,9 @@ class LoginPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final languageNum =
-        ref.watch(authNotifierProvider.select((s) => s.languageNum));
+        ref.watch(authProvider.select((s) => s.languageNum));
     final agreed =
-        ref.watch(authNotifierProvider.select((s) => s.agreedToPrivacy));
+        ref.watch(authProvider.select((s) => s.agreedToPrivacy));
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -210,11 +210,15 @@ class LoginPage extends ConsumerWidget {
                           SizedBox(height: 20.r),
                           TextButton.icon(
                             onPressed: () async {
-                              await ref.read(authNotifierProvider.notifier).devLogin();
+                              await ref.read(authProvider.notifier).devLogin();
                               if (context.mounted) context.go('/home-shell');
                             },
                             icon: const Icon(Icons.developer_board, color: Colors.orange),
-                            label: const Text('DEV 一键登录', style: TextStyle(color: Colors.orange)),
+                            label: Text(l10n.devOneClickLogin, style: const TextStyle(color: Colors.orange)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => context.go('/api-test'),
+                            child: const Text('API 测试页'),
                           ),
                         ],
                       ],
@@ -240,7 +244,7 @@ class LoginPage extends ConsumerWidget {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      onTap: () => ref.read(authNotifierProvider.notifier).togglePrivacyAgreement(),
+      onTap: () => ref.read(authProvider.notifier).togglePrivacyAgreement(),
       child: SizedBox(
         width: 680.w,
         height: 130.h,

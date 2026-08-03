@@ -20,14 +20,15 @@ abstract class CourseListState with _$CourseListState {
     @Default(true) bool isFirstIn,
 
     /// 设备名称列表（用于左侧分类展示）
+    /// 注意：实际显示文本在UI层通过AppLocalizations获取，此处仅保留空占位。
     @Default([
-      'Skipping',
-      'Grip',
-      'Dumbbell',
-      'Adj-Dumbbell',
-      'Push-up',
-      'Kettlebell',
-      'Game',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
     ])
     List<String> showDeviceNameList,
 

@@ -82,20 +82,21 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     return PopScope(
       canPop: false,
       child: Scaffold(
+        backgroundColor: const Color(0xFF0F0F0F),
         body: Stack(
           children:
               <Widget>[_buildMainWidget(state, screenWidth, screenHeight)] +
               _buildTopDataBarByDevice(state, screenWidth) +
               [
-                _buildControllerButtonByDevice(state, screenHeight),
+                _buildControllerButtonByDevice(state),
                 _buildRealtimeChartByDevice(state, screenWidth, screenHeight),
                 if (!state.isPaused) _buildPlayButton(state, tr),
                 if (state.isPaused)
                   _buildPauseWidget(tr, screenHeight, screenWidth),
                 _buildBackButton(state),
                 Positioned(
-                  left: 50.w,
-                  top: 50.h,
+                  left: 20.w,
+                  top: 30.h,
                   child: _buildMusicButton(state),
                 ),
               ],
@@ -106,17 +107,11 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   // ==================== 跑道动画层 ====================
 
-  Widget _buildMainWidget(QuickStartState state, double screenWidth, double screenHeight) {
-    // 跑道参数：左右预留更大空间给按钮列，避免重叠
-    const buttonReserve = 120.0; // 左右各预留120.w放按钮
-    final availableWidth = screenWidth - buttonReserve * 2;
-    final trackOuterH = screenHeight * 0.5;
-    final trackWidth = trackOuterH / 18; // 赛道线宽更细
-    final trackRadius = (trackOuterH - trackWidth) / 2;
-    final trackLineLength = availableWidth * 0.5; // 直线段更短，留出左右空间
-    final mainBallR = trackWidth * 0.45;
-    final npcBallR = trackWidth * 0.28;
-
+  Widget _buildMainWidget(
+    QuickStartState state,
+    double screenWidth,
+    double screenHeight,
+  ) {
     return Container(
       height: screenHeight,
       width: screenWidth,
@@ -124,59 +119,54 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         children: [
           // 顶部数据栏预留空间
           Container(
-            margin: EdgeInsets.only(left: 45, top: 45, right: 45).r,
+            margin: EdgeInsets.only(left: 20.w, top: 10.h, right: 30.w),
             alignment: Alignment.centerLeft,
-            height: 200.h,
+            height: 150.h,
             width: screenWidth,
           ),
           Expanded(
             child: Container(
-              margin: EdgeInsets.only(
-                left: buttonReserve.w,
-                right: buttonReserve.w,
-                top: 10.r,
-                bottom: 10.r,
-              ),
+              margin: EdgeInsets.only(top: 0, bottom: 100).r,
               alignment: Alignment.center,
               child: OvalTrackWidget(
-                radius: trackRadius,
-                lineLength: trackLineLength,
-                trackWidth: trackWidth,
+                radius: screenHeight * 0.25,
+                lineLength: screenHeight * 0.7,
+                trackWidth: 45.r,
                 trackColor: const Color.fromARGB(255, 54, 54, 54),
                 balls: [
                   TrackBallData(
-                    radius: mainBallR,
+                    radius: 20.r,
                     color: const Color.fromARGB(255, 255, 0, 0),
                     percentage: (state.sportDistance * 0.1) % 100,
                     showTrackLine: true,
                   ),
                   TrackBallData(
-                    radius: npcBallR,
+                    radius: 13.r,
                     color: Colors.white,
                     percentage: (state.npcTime * 1.2) % 100,
                   ),
                   TrackBallData(
-                    radius: npcBallR,
+                    radius: 13.r,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.06) % 100,
                   ),
                   TrackBallData(
-                    radius: npcBallR,
+                    radius: 13.r,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.5) % 100,
                   ),
                   TrackBallData(
-                    radius: npcBallR,
+                    radius: 13.r,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.8) % 100,
                   ),
                   TrackBallData(
-                    radius: npcBallR,
+                    radius: 13.r,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.6) % 100,
                   ),
                   TrackBallData(
-                    radius: npcBallR,
+                    radius: 13.r,
                     color: Colors.white,
                     percentage: (state.npcTime * 0.3) % 100,
                   ),
@@ -197,13 +187,13 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   ) {
     final notifier = ref.read(quickStartProvider.notifier);
     late List<_MetricConfig> metrics;
-    late EdgeInsets margin;
+    late EdgeInsets padding;
     late MainAxisAlignment mainAxisAlignment;
     late double containerWidth;
 
     switch (widget.deviceType) {
       case FtmsDeviceType.indoorBike:
-        margin = EdgeInsets.only(top: 25.h, right: 20.w, left: 100.w);
+        padding = EdgeInsets.only(top: 30.h, right: 50.w, left: 50.w);
         mainAxisAlignment = MainAxisAlignment.spaceBetween;
         containerWidth = screenWidth;
         metrics = [
@@ -228,7 +218,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         ];
         break;
       case FtmsDeviceType.treadmill:
-        margin = EdgeInsets.only(top: 25.h, right: 20.w, left: 100.w);
+        padding = EdgeInsets.only(top: 30.h, right: 50.w, left: 50.w);
         mainAxisAlignment = MainAxisAlignment.spaceBetween;
         containerWidth = screenWidth;
         metrics = [
@@ -249,7 +239,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         ];
         break;
       case FtmsDeviceType.crossTrainer:
-        margin = EdgeInsets.only(top: 25.h, right: 80.w, left: 50.w);
+        padding = EdgeInsets.only(top: 30.h, right: 80.w, left: 60.w);
         mainAxisAlignment = MainAxisAlignment.spaceAround;
         containerWidth = screenWidth;
         metrics = [
@@ -274,9 +264,9 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         ];
         break;
       case FtmsDeviceType.rower:
-        margin = EdgeInsets.only(left: 150.w, top: 25.h, right: 100.w);
+        padding = EdgeInsets.only(left: 120.w, top: 30.h, right: 50.w);
         mainAxisAlignment = MainAxisAlignment.spaceBetween;
-        containerWidth = screenWidth - 200.w;
+        containerWidth = screenWidth - 170.w;
         metrics = [
           _MetricConfig(
             SportMetricIcons.byIndex(0),
@@ -300,15 +290,17 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     }
 
     return [
-      Container(
-        margin: margin,
-        width: containerWidth,
-        height: 200.h,
-        child: Row(
-          mainAxisAlignment: mainAxisAlignment,
-          children: metrics
-              .map((m) => _buildMetricItem(m.iconPath, m.value))
-              .toList(),
+      Padding(
+        padding: padding,
+        child: Container(
+          width: containerWidth,
+          height: 80.h,
+          child: Row(
+            mainAxisAlignment: mainAxisAlignment,
+            children: metrics
+                .map((m) => _buildMetricItem(m.iconPath, m.value))
+                .toList(),
+          ),
         ),
       ),
     ];
@@ -318,19 +310,20 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     return Expanded(
       child: Container(
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              height: 30,
+              height: 24.sp,
               child: Image.asset(imagePath, fit: BoxFit.fill),
             ),
-            Container(width: 5.w),
+            Container(width: 3.w),
             Container(
-              width: 60.w,
+              width: 50.w,
               child: Text(
                 dataString,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 25,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w500,
                   fontFamily: AppFonts.bebas,
                   color: Colors.white,
@@ -345,27 +338,24 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   // ==================== 控制按钮层 ====================
 
-  Widget _buildControllerButtonByDevice(
-    QuickStartState state,
-    double screenHeight,
-  ) {
+  Widget _buildControllerButtonByDevice(QuickStartState state) {
     switch (widget.deviceType) {
       case FtmsDeviceType.indoorBike:
       case FtmsDeviceType.crossTrainer:
       case FtmsDeviceType.rower:
-        return _buildBikeController(state, screenHeight);
+        return _buildBikeController(state);
       case FtmsDeviceType.treadmill:
-        return _buildTreadmillController(state, screenHeight);
+        return _buildTreadmillController(state);
       case FtmsDeviceType.strengthStation:
         return Container();
     }
   }
 
-  Widget _buildBikeController(QuickStartState state, double screenHeight) {
+  Widget _buildBikeController(QuickStartState state) {
     return Container(
       margin: EdgeInsets.only(top: 200.h, left: 40.w, right: 40.w),
       width: MediaQuery.of(context).size.width,
-      height: screenHeight,
+      height: MediaQuery.of(context).size.height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -411,7 +401,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               ref.read(quickStartProvider.notifier).longPressEnd();
             },
           ),
-          Spacer(),
+          const Spacer(),
           if (state.hasInclinationSupport)
             _buildLevelControlButton(
               first: (state.buttonInclinationList[3]).toStringAsFixed(1),
@@ -448,11 +438,11 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
   }
 
-  Widget _buildTreadmillController(QuickStartState state, double screenHeight) {
+  Widget _buildTreadmillController(QuickStartState state) {
     return Container(
       margin: EdgeInsets.only(top: 200.h, left: 40.w, right: 40.w),
       width: MediaQuery.of(context).size.width,
-      height: screenHeight,
+      height: MediaQuery.of(context).size.height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -487,7 +477,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                 n.numberButton(state.buttonInclinationList[0], 1);
               },
             ),
-          Spacer(),
+          const Spacer(),
           _buildLevelControlButton(
             first: (state.buttonSpeedList[3]).toStringAsFixed(1),
             second: (state.buttonSpeedList[2]).toStringAsFixed(1),
@@ -535,7 +525,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
   }
 
-  /// 5 档控制按钮组件。
+  /// 5 档控制按钮组件（完全还原旧版尺寸）。
   Widget _buildLevelControlButton({
     required String first,
     required String second,
@@ -564,43 +554,41 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
 
     final textStyle = TextStyle(
-      fontSize: 13.sp,
-      height: 1.0,
+      fontSize: 18.sp,
+      height: 0.8,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
     );
 
-    Widget buildSmallButton(String value, Function()? onTapCallback) {
-      return SizedBox(
-        height: 40.h,
+    Widget buildButton(String value, Function()? onTapCallback) {
+      return Expanded(
+        flex: 1,
         child: InkWell(
           onTap: onTapCallback,
           child: Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.symmetric(horizontal: 4.r),
+            padding: EdgeInsets.only(bottom: 4),
+            margin: EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r,
             decoration: buttonDecoration,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(value, style: textStyle),
-            ),
+            child: Text(value, style: textStyle),
           ),
         ),
       );
     }
 
     return SizedBox(
-      width: 75.w,
+      width: 70.w,
       height: MediaQuery.of(context).size.height,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          buildSmallButton(first, onTap),
-          SizedBox(height: 8.h),
-          buildSmallButton(second, onTap1),
-          SizedBox(height: 8.h),
+          buildButton(first, onTap),
+          buildButton(second, onTap1),
           Expanded(
+            flex: 3,
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 4.r),
+              margin: EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r,
               decoration: buttonDecoration,
               child: Column(
                 children: [
@@ -613,7 +601,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.add,
-                          size: 22.sp,
+                          size: 30.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -622,23 +610,19 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   Expanded(
                     child: Container(
                       alignment: Alignment.center,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(third, style: textStyle),
-                            SizedBox(height: 2.sp),
-                            Text(
-                              type,
-                              style: TextStyle(
-                                fontSize: 6.sp,
-                                color: Colors.white,
-                              ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(third, style: textStyle),
+                          SizedBox(height: 8.sp),
+                          Text(
+                            type,
+                            style: TextStyle(
+                              fontSize: 8.sp,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -651,7 +635,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.remove,
-                          size: 22.sp,
+                          size: 30.sp,
                           color: Colors.white,
                         ),
                       ),
@@ -661,10 +645,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               ),
             ),
           ),
-          SizedBox(height: 8.h),
-          buildSmallButton(fourth, onTap4),
-          SizedBox(height: 8.h),
-          buildSmallButton(fifth, onTap5),
+          buildButton(fourth, onTap4),
+          buildButton(fifth, onTap5),
         ],
       ),
     );
@@ -702,7 +684,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
     return Positioned(
       left: screenWidth * 0.5 - screenWidth * 0.2,
-      top: screenHeight * 0.5,
+      top: screenHeight * 0.42,
       child: Container(
         height: screenHeight / 4,
         width: screenWidth * 0.4,
@@ -792,8 +774,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   Widget _buildBackButton(QuickStartState state) {
     return Positioned(
-      right: 20.w,
-      top: 50.h,
+      right: 30.w,
+      top: 30.h,
       child: InkWell(
         onTap: () {
           final notifier = ref.read(quickStartProvider.notifier);

@@ -7,7 +7,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 手机验证码登录-输入手机号页(1:1 复刻旧项目 NewPhoneLoginScreen)。
@@ -63,10 +63,10 @@ class PhoneLoginPage extends ConsumerWidget {
                   initialCountryCode: 'CN',
                   onChanged: (phone) {
                     ref
-                        .read(authNotifierProvider.notifier)
+                        .read(authProvider.notifier)
                         .setCountryCode(phone.countryCode.replaceFirst('+', ''));
                     ref
-                        .read(authNotifierProvider.notifier)
+                        .read(authProvider.notifier)
                         .setPhoneNumber(int.tryParse(phone.number) ?? 0);
                   },
                   onCountryChanged: (country) {},
@@ -74,10 +74,10 @@ class PhoneLoginPage extends ConsumerWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    final state = ref.read(authNotifierProvider);
+                    final state = ref.read(authProvider);
                     if (state.ishasInternet && state.phoneNumber != 0) {
                       final ok = await ref
-                          .read(authNotifierProvider.notifier)
+                          .read(authProvider.notifier)
                           .sendPhoneCaptcha();
                       if (ok && context.mounted) {
                         context.pushReplacement('/get-code');

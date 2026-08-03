@@ -31,6 +31,7 @@ import '../../features/big_device/pages/gym_game_select_screen.dart';
 import '../../features/big_device/pages/quick_start_training_page.dart';
 import '../../l10n/app_localizations.dart';
 import '../../features/big_device/pages/gym_device_games.dart';
+import '../../features/dev/api_test_page.dart';
 import '../../core/ftms/ftms_device_type.dart';
 
 part 'app_router.g.dart';
@@ -44,10 +45,16 @@ const _loginFlowRoutes = {
   '/find-password',
 };
 
+// 测试用免登录路由
+const _testRoutes = {
+  '/gym-device-play',
+  '/gym-course-detail',
+};
+
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: '/gym-device-play', // TODO: 临时修改为测试页面，测试完成后改回 '/splash'
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
       final authState = ref.read(authProvider);
@@ -55,6 +62,8 @@ GoRouter appRouter(Ref ref) {
       final location = state.matchedLocation;
       // splash 页总是允许显示,由其自行决定跳转
       if (location == '/splash') return null;
+      // 测试页面免登录
+      if (_testRoutes.contains(location)) return null;
       final inLoginFlow = _loginFlowRoutes.contains(location);
       if (isLoggedIn && inLoginFlow) return '/home-shell';
       if (!isLoggedIn && !inLoginFlow) return '/login';
@@ -186,17 +195,31 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/gym-course-detail',
         name: 'gym-course-detail',
-        builder: (context, state) => const GymCourseDetailScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final courseId = extra?['courseId'] as String? ?? '';
+          final deviceType = extra?['deviceType'] as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
+          return GymCourseDetailScreen(courseId: courseId, deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-device-play',
         name: 'gym-device-play',
-        builder: (context, state) => const GymDevicePlayScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final courseId = extra?['courseId'] as String? ?? '';
+          final deviceType = extra?['deviceType'] as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
+          return GymDevicePlayScreen(courseId: courseId, deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-game-select',
         name: 'gym-game-select',
-        builder: (context, state) => const GymGameSelectScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ??
+              FtmsDeviceType.indoorBike;
+          return GymGameSelectScreen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-quick-start',
@@ -211,65 +234,106 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/gym-bike-game',
         name: 'gym-bike-game',
-        builder: (context, state) => const GymBikeGameScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
+          return GymBikeGameScreen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-bike-game2',
         name: 'gym-bike-game2',
-        builder: (context, state) => const GymBikeGame2Screen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
+          return GymBikeGame2Screen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-bike-realscene',
         name: 'gym-bike-realscene',
-        builder: (context, state) => const GymBikeRealsceneScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
+          return GymBikeRealsceneScreen(deviceType: deviceType);
+        },
       ),
       // Big Device - Treadmill Games
       GoRoute(
         path: '/gym-treadmill-game',
         name: 'gym-treadmill-game',
-        builder: (context, state) => const GymTreadmillGameScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.treadmill;
+          return GymTreadmillGameScreen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-treadmill-game2',
         name: 'gym-treadmill-game2',
-        builder: (context, state) => const GymTreadmillGame2Screen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.treadmill;
+          return GymTreadmillGame2Screen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-treadmill-realscene',
         name: 'gym-treadmill-realscene',
-        builder: (context, state) => const GymTreadmillRealsceneScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.treadmill;
+          return GymTreadmillRealsceneScreen(deviceType: deviceType);
+        },
       ),
       // Big Device - Elliptical Games
       GoRoute(
         path: '/gym-elliptical-game',
         name: 'gym-elliptical-game',
-        builder: (context, state) => const GymEllipticalGameScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.crossTrainer;
+          return GymEllipticalGameScreen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-elliptical-game2',
         name: 'gym-elliptical-game2',
-        builder: (context, state) => const GymEllipticalGame2Screen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.crossTrainer;
+          return GymEllipticalGame2Screen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-elliptical-realscene',
         name: 'gym-elliptical-realscene',
-        builder: (context, state) => const GymEllipticalRealsceneScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.crossTrainer;
+          return GymEllipticalRealsceneScreen(deviceType: deviceType);
+        },
       ),
       // Big Device - Rower Games
       GoRoute(
         path: '/gym-rower-game',
         name: 'gym-rower-game',
-        builder: (context, state) => const GymRowerGameScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.rower;
+          return GymRowerGameScreen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-rower-game2',
         name: 'gym-rower-game2',
-        builder: (context, state) => const GymRowerGame2Screen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.rower;
+          return GymRowerGame2Screen(deviceType: deviceType);
+        },
       ),
       GoRoute(
         path: '/gym-rower-realscene',
         name: 'gym-rower-realscene',
-        builder: (context, state) => const GymRowerRealsceneScreen(),
+        builder: (context, state) {
+          final deviceType = state.extra as FtmsDeviceType? ?? FtmsDeviceType.rower;
+          return GymRowerRealsceneScreen(deviceType: deviceType);
+        },
+      ),
+      GoRoute(
+        path: '/api-test',
+        name: 'api-test',
+        builder: (context, state) => const ApiTestPage(),
       ),
     ],
   );

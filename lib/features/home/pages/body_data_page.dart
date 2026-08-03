@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/body_data_notifier_provider.dart';
+import '../notifiers/body_data_notifier.dart';
 
 /// 身体数据页(1:1 复刻旧 NewBodyDataScreen)。
 class BodyDataPage extends ConsumerWidget {
@@ -23,8 +23,8 @@ class BodyDataPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(bodyDataNotifierProvider);
-    final notifier = ref.read(bodyDataNotifierProvider.notifier);
+    final state = ref.watch(bodyDataProvider);
+    final notifier = ref.read(bodyDataProvider.notifier);
     return SafeArea(
       child: PopScope(
         canPop: false,
@@ -135,8 +135,8 @@ class BodyDataPage extends ConsumerWidget {
 
   // ---- 性别选择底部弹窗(选中后立即关闭)----
   void _sexPickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    final notifier = ref.read(bodyDataNotifierProvider.notifier);
-    final currentSex = ref.read(bodyDataNotifierProvider).sexValue;
+    final notifier = ref.read(bodyDataProvider.notifier);
+    final currentSex = ref.read(bodyDataProvider).sexValue;
     void select(bool male, BuildContext ctx) {
       notifier.setSex(male);
       Navigator.pop(ctx);
@@ -219,8 +219,8 @@ class BodyDataPage extends ConsumerWidget {
 
   // ---- 生日选择底部弹窗 ----
   void _datePickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    final notifier = ref.read(bodyDataNotifierProvider.notifier);
-    final state = ref.read(bodyDataNotifierProvider);
+    final notifier = ref.read(bodyDataProvider.notifier);
+    final state = ref.read(bodyDataProvider);
     showModalBottomSheet(
       context: context,
       backgroundColor: FitTheme.backgroundColor,
@@ -290,8 +290,8 @@ class BodyDataPage extends ConsumerWidget {
 
   // ---- 身高选择底部弹窗(100~240 cm)----
   void _heightPickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    final notifier = ref.read(bodyDataNotifierProvider.notifier);
-    final initial = ref.read(bodyDataNotifierProvider).heightPosition;
+    final notifier = ref.read(bodyDataProvider.notifier);
+    final initial = ref.read(bodyDataProvider).heightPosition;
     showModalBottomSheet(
       context: context,
       backgroundColor: FitTheme.backgroundColor,
@@ -347,8 +347,8 @@ class BodyDataPage extends ConsumerWidget {
 
   // ---- 体重选择底部弹窗(40~200 kg)----
   void _weightPickerBottom(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    final notifier = ref.read(bodyDataNotifierProvider.notifier);
-    final initial = ref.read(bodyDataNotifierProvider).weightPosition;
+    final notifier = ref.read(bodyDataProvider.notifier);
+    final initial = ref.read(bodyDataProvider).weightPosition;
     showModalBottomSheet(
       context: context,
       backgroundColor: FitTheme.backgroundColor,

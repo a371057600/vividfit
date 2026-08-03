@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'course_list_state.dart';
@@ -9,6 +9,7 @@ part of 'course_list_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -19,6 +20,7 @@ mixin _$CourseListState {
  Map<int, CourseList> get courseDataMap;/// 是否正在加载
  bool get isLoading;/// 是否首次进入
  bool get isFirstIn;/// 设备名称列表（用于左侧分类展示）
+/// 注意：实际显示文本在UI层通过AppLocalizations获取，此处仅保留空占位。
  List<String> get showDeviceNameList;/// 是否允许跳转到游戏页面（防重复点击）
  bool get allowToGamePage;
 /// Create a copy of CourseListState
@@ -69,7 +71,7 @@ class _$CourseListStateCopyWithImpl<$Res>
 /// Create a copy of CourseListState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? deviceType = null,Object? courseDataMap = null,Object? isLoading = null,Object? isFirstIn = null,Object? showDeviceNameList = null,Object? allowToGamePage = null,}) {
-  return _then(_self.copyWith(
+  return _then(CourseListState(
 deviceType: null == deviceType ? _self.deviceType : deviceType // ignore: cast_nullable_to_non_nullable
 as int,courseDataMap: null == courseDataMap ? _self.courseDataMap : courseDataMap // ignore: cast_nullable_to_non_nullable
 as Map<int, CourseList>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
@@ -217,7 +219,7 @@ return $default(_that.deviceType,_that.courseDataMap,_that.isLoading,_that.isFir
 
 
 class _CourseListState implements CourseListState {
-  const _CourseListState({this.deviceType = 0, final  Map<int, CourseList> courseDataMap = const {}, this.isLoading = true, this.isFirstIn = true, final  List<String> showDeviceNameList = const ['Skipping', 'Grip', 'Dumbbell', 'Adj-Dumbbell', 'Push-up', 'Kettlebell', 'Game'], this.allowToGamePage = true}): _courseDataMap = courseDataMap,_showDeviceNameList = showDeviceNameList;
+  const _CourseListState({this.deviceType = 0,  Map<int, CourseList> courseDataMap = const {}, this.isLoading = true, this.isFirstIn = true,  List<String> showDeviceNameList = const ['', '', '', '', '', '', ''], this.allowToGamePage = true}): _courseDataMap = courseDataMap,_showDeviceNameList = showDeviceNameList;
   
 
 /// 当前选中的设备类型索引(0-6)
@@ -236,8 +238,10 @@ class _CourseListState implements CourseListState {
 /// 是否首次进入
 @override@JsonKey() final  bool isFirstIn;
 /// 设备名称列表（用于左侧分类展示）
+/// 注意：实际显示文本在UI层通过AppLocalizations获取，此处仅保留空占位。
  final  List<String> _showDeviceNameList;
 /// 设备名称列表（用于左侧分类展示）
+/// 注意：实际显示文本在UI层通过AppLocalizations获取，此处仅保留空占位。
 @override@JsonKey() List<String> get showDeviceNameList {
   if (_showDeviceNameList is EqualUnmodifiableListView) return _showDeviceNameList;
   // ignore: implicit_dynamic_type

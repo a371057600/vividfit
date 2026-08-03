@@ -73,7 +73,7 @@ class _CoursePlayPageState extends ConsumerState<CoursePlayPage> {
                   color: const Color.fromARGB(255, 40, 40, 40),
                   child: Center(
                     child: Text(
-                      'Course Play Placeholder',
+                      l10n.coursePlayPlaceholder,
                       style: TextStyle(
                         color: FitTheme.textColor,
                         fontSize: 20.sp,
@@ -144,7 +144,7 @@ class _CoursePlayPageState extends ConsumerState<CoursePlayPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Course Title',
+                    l10n.courseTitle,
                     style: TextStyle(
                       color: FitTheme.textColor,
                       fontWeight: FontWeight.bold,
@@ -214,7 +214,7 @@ class _CoursePlayPageState extends ConsumerState<CoursePlayPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Course Ended (Placeholder)',
+              l10n.courseEndedPlaceholder,
               style: TextStyle(
                 color: FitTheme.textColor,
                 fontSize: 24.sp,

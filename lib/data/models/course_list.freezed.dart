@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'course_list.dart';
@@ -9,6 +9,7 @@ part of 'course_list.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -66,7 +67,7 @@ class _$CourseListCopyWithImpl<$Res>
 /// Create a copy of CourseList
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? code = freezed,Object? data = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CourseList(
 code: freezed == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String?,data: freezed == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
 as CourseListData?,
@@ -356,7 +357,7 @@ class _$CourseListDataCopyWithImpl<$Res>
 /// Create a copy of CourseListData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? dataList = freezed,Object? currentPageNum = freezed,Object? totalElements = freezed,Object? totalPages = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CourseListData(
 dataList: freezed == dataList ? _self.dataList : dataList // ignore: cast_nullable_to_non_nullable
 as List<CourseItem>?,currentPageNum: freezed == currentPageNum ? _self.currentPageNum : currentPageNum // ignore: cast_nullable_to_non_nullable
 as int?,totalElements: freezed == totalElements ? _self.totalElements : totalElements // ignore: cast_nullable_to_non_nullable
@@ -502,7 +503,7 @@ return $default(_that.dataList,_that.currentPageNum,_that.totalElements,_that.to
 @JsonSerializable()
 
 class _CourseListData implements CourseListData {
-  const _CourseListData({final  List<CourseItem>? dataList, this.currentPageNum, this.totalElements, this.totalPages}): _dataList = dataList;
+  const _CourseListData({ List<CourseItem>? dataList, this.currentPageNum, this.totalElements, this.totalPages}): _dataList = dataList;
   factory _CourseListData.fromJson(Map<String, dynamic> json) => _$CourseListDataFromJson(json);
 
  final  List<CourseItem>? _dataList;
@@ -636,7 +637,7 @@ class _$CourseItemCopyWithImpl<$Res>
 /// Create a copy of CourseItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? title = freezed,Object? cover = freezed,Object? describe = freezed,Object? proposal = freezed,Object? people = freezed,Object? carefulthing = freezed,Object? expectCalorie = freezed,Object? during = freezed,Object? level = freezed,Object? tags = freezed,Object? interactiveEquipment = freezed,Object? createTime = freezed,Object? courseBgm = freezed,Object? version = freezed,Object? timing = freezed,Object? collect = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(CourseItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,title: freezed == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String?,cover: freezed == cover ? _self.cover : cover // ignore: cast_nullable_to_non_nullable
@@ -795,7 +796,7 @@ return $default(_that.id,_that.title,_that.cover,_that.describe,_that.proposal,_
 @JsonSerializable()
 
 class _CourseItem implements CourseItem {
-  const _CourseItem({this.id, this.title, this.cover, this.describe, this.proposal, this.people, this.carefulthing, this.expectCalorie, this.during, this.level, final  List<String>? tags, this.interactiveEquipment, this.createTime, this.courseBgm, this.version, this.timing, this.collect}): _tags = tags;
+  const _CourseItem({this.id, this.title, this.cover, this.describe, this.proposal, this.people, this.carefulthing, this.expectCalorie, this.during, this.level,  List<String>? tags, this.interactiveEquipment, this.createTime, this.courseBgm, this.version, this.timing, this.collect}): _tags = tags;
   factory _CourseItem.fromJson(Map<String, dynamic> json) => _$CourseItemFromJson(json);
 
 @override final  int? id;

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'ftms_device_data.dart';
@@ -9,49 +9,13 @@ part of 'ftms_device_data.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FtmsDeviceData {
 
-// ---- 通用速度/距离 ----
- double? get instSpeed;// 瞬时速度(km/h)
- double? get avgSpeed;// 平均速度(km/h)
- int? get distTotal;// 总距离(米)
-// ---- 踏频/步频/桨频 ----
- double? get instCadence;// 瞬时踏频(rpm,单车/椭圆机)
- double? get avgCadence;// 平均踏频(rpm)
- int? get stepsPerMin;// 步频(椭圆机)
- int? get avgStepRate;// 平均步频(椭圆机)
- int? get strideCountTotal;// 总步数(椭圆机)
- double? get strokesPerMin;// 桨频(spm,划船机)
- int? get strokeCountTotal;// 总桨次(划船机)
- double? get avgStrokeRate;// 平均桨频(spm)
-// ---- 阻力/坡度/功率 ----
- double? get resistanceLvl;// 阻力等级
- double? get inclineAngle;// 坡度(百分比)
- double? get rampAngle;// 坡度角度(度)
- int? get elevationGainPos;// 正海拔增益(米)
- int? get elevationGainNeg;// 负海拔增益(米)
- int? get instPower;// 瞬时功率(瓦)
- int? get avgPower;// 平均功率(瓦)
- int? get forceOnBelt;// 皮带受力(牛,跑步机)
-// ---- 能耗/心率/代谢 ----
- int? get energyTotal;// 总能耗(千卡)
- int? get energyPerHr;// 每小时能耗(千卡)
- int? get energyPerMin;// 每分钟能耗(千卡)
- int? get hr;// 心率(bpm)
- double? get met;// 代谢当量
-// ---- 时间 ----
- int? get timeElapsed;// 已运动时长(秒)
- int? get timeRemaining;// 剩余时间(秒)
-// ---- 配速 ----
- double? get instPace;// 瞬时配速
- double? get avgPace;// 平均配速
-// ---- 椭圆机特有 ----
- int? get movementDirection;// 运动方向(0=向前/1=向后)
-// ---- 设备状态 ----
- int get machineState;
+ double? get instSpeed; double? get avgSpeed; int? get distTotal; double? get instCadence; double? get avgCadence; int? get stepsPerMin; int? get avgStepRate; int? get strideCountTotal; double? get strokesPerMin; int? get strokeCountTotal; double? get avgStrokeRate; double? get resistanceLvl; double? get inclineAngle; double? get rampAngle; int? get elevationGainPos; int? get elevationGainNeg; int? get instPower; int? get avgPower; int? get forceOnBelt; int? get energyTotal; int? get energyPerHr; int? get energyPerMin; int? get hr; double? get met; int? get timeElapsed; int? get timeRemaining; double? get instPace; double? get avgPace; int? get movementDirection; int get machineState;
 /// Create a copy of FtmsDeviceData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -100,7 +64,7 @@ class _$FtmsDeviceDataCopyWithImpl<$Res>
 /// Create a copy of FtmsDeviceData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? instSpeed = freezed,Object? avgSpeed = freezed,Object? distTotal = freezed,Object? instCadence = freezed,Object? avgCadence = freezed,Object? stepsPerMin = freezed,Object? avgStepRate = freezed,Object? strideCountTotal = freezed,Object? strokesPerMin = freezed,Object? strokeCountTotal = freezed,Object? avgStrokeRate = freezed,Object? resistanceLvl = freezed,Object? inclineAngle = freezed,Object? rampAngle = freezed,Object? elevationGainPos = freezed,Object? elevationGainNeg = freezed,Object? instPower = freezed,Object? avgPower = freezed,Object? forceOnBelt = freezed,Object? energyTotal = freezed,Object? energyPerHr = freezed,Object? energyPerMin = freezed,Object? hr = freezed,Object? met = freezed,Object? timeElapsed = freezed,Object? timeRemaining = freezed,Object? instPace = freezed,Object? avgPace = freezed,Object? movementDirection = freezed,Object? machineState = null,}) {
-  return _then(_self.copyWith(
+  return _then(FtmsDeviceData(
 instSpeed: freezed == instSpeed ? _self.instSpeed : instSpeed // ignore: cast_nullable_to_non_nullable
 as double?,avgSpeed: freezed == avgSpeed ? _self.avgSpeed : avgSpeed // ignore: cast_nullable_to_non_nullable
 as double?,distTotal: freezed == distTotal ? _self.distTotal : distTotal // ignore: cast_nullable_to_non_nullable
@@ -275,72 +239,35 @@ class _FtmsDeviceData implements FtmsDeviceData {
   const _FtmsDeviceData({this.instSpeed, this.avgSpeed, this.distTotal, this.instCadence, this.avgCadence, this.stepsPerMin, this.avgStepRate, this.strideCountTotal, this.strokesPerMin, this.strokeCountTotal, this.avgStrokeRate, this.resistanceLvl, this.inclineAngle, this.rampAngle, this.elevationGainPos, this.elevationGainNeg, this.instPower, this.avgPower, this.forceOnBelt, this.energyTotal, this.energyPerHr, this.energyPerMin, this.hr, this.met, this.timeElapsed, this.timeRemaining, this.instPace, this.avgPace, this.movementDirection, this.machineState = 0});
   
 
-// ---- 通用速度/距离 ----
 @override final  double? instSpeed;
-// 瞬时速度(km/h)
 @override final  double? avgSpeed;
-// 平均速度(km/h)
 @override final  int? distTotal;
-// 总距离(米)
-// ---- 踏频/步频/桨频 ----
 @override final  double? instCadence;
-// 瞬时踏频(rpm,单车/椭圆机)
 @override final  double? avgCadence;
-// 平均踏频(rpm)
 @override final  int? stepsPerMin;
-// 步频(椭圆机)
 @override final  int? avgStepRate;
-// 平均步频(椭圆机)
 @override final  int? strideCountTotal;
-// 总步数(椭圆机)
 @override final  double? strokesPerMin;
-// 桨频(spm,划船机)
 @override final  int? strokeCountTotal;
-// 总桨次(划船机)
 @override final  double? avgStrokeRate;
-// 平均桨频(spm)
-// ---- 阻力/坡度/功率 ----
 @override final  double? resistanceLvl;
-// 阻力等级
 @override final  double? inclineAngle;
-// 坡度(百分比)
 @override final  double? rampAngle;
-// 坡度角度(度)
 @override final  int? elevationGainPos;
-// 正海拔增益(米)
 @override final  int? elevationGainNeg;
-// 负海拔增益(米)
 @override final  int? instPower;
-// 瞬时功率(瓦)
 @override final  int? avgPower;
-// 平均功率(瓦)
 @override final  int? forceOnBelt;
-// 皮带受力(牛,跑步机)
-// ---- 能耗/心率/代谢 ----
 @override final  int? energyTotal;
-// 总能耗(千卡)
 @override final  int? energyPerHr;
-// 每小时能耗(千卡)
 @override final  int? energyPerMin;
-// 每分钟能耗(千卡)
 @override final  int? hr;
-// 心率(bpm)
 @override final  double? met;
-// 代谢当量
-// ---- 时间 ----
 @override final  int? timeElapsed;
-// 已运动时长(秒)
 @override final  int? timeRemaining;
-// 剩余时间(秒)
-// ---- 配速 ----
 @override final  double? instPace;
-// 瞬时配速
 @override final  double? avgPace;
-// 平均配速
-// ---- 椭圆机特有 ----
 @override final  int? movementDirection;
-// 运动方向(0=向前/1=向后)
-// ---- 设备状态 ----
 @override@JsonKey() final  int machineState;
 
 /// Create a copy of FtmsDeviceData

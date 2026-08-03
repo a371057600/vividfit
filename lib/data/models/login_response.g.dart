@@ -27,7 +27,18 @@ _LoginData _$LoginDataFromJson(Map<String, dynamic> json) => _LoginData(
       ? null
       : FitUserInfo.fromJson(json['userInfo'] as Map<String, dynamic>),
   token: json['token'] as String?,
+  thirdPartInfos: (json['thirdPartInfos'] as List<dynamic>?)
+      ?.map((e) => ThirdPartyUser.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  vipInfo: json['vipInfo'] == null
+      ? null
+      : VipInfo.fromJson(json['vipInfo'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$LoginDataToJson(_LoginData instance) =>
-    <String, dynamic>{'userInfo': instance.userInfo, 'token': instance.token};
+    <String, dynamic>{
+      'userInfo': instance.userInfo,
+      'token': instance.token,
+      'thirdPartInfos': instance.thirdPartInfos,
+      'vipInfo': instance.vipInfo,
+    };

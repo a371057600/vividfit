@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/user_settings_notifier_provider.dart';
+import '../notifiers/user_settings_notifier.dart';
 
 class UserSettingsPage extends ConsumerWidget {
   const UserSettingsPage({super.key});
@@ -17,8 +17,8 @@ class UserSettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(userSettingsNotifierProvider);
-    final notifier = ref.read(userSettingsNotifierProvider.notifier);
+    final state = ref.watch(userSettingsProvider);
+    final notifier = ref.read(userSettingsProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(

@@ -39,7 +39,7 @@ void main() async {
 
   // 1:1 复刻旧 localeListResolutionCallback:按系统语言写 languageNum/country/countryCode。
   final locale = PlatformDispatcher.instance.locale;
-  int languageNum = 1; // 默认英语
+  int languageNum = 0; // 默认简中
   String country = '';
   String countryCode = '';
   if (locale.languageCode == 'zh') {

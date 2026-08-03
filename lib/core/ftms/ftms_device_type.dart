@@ -82,5 +82,5 @@ extension FtmsDeviceTypeConfig on FtmsDeviceType {
 
   /// 是否支持阻力控制。
   bool get supportsResistanceControl =>
-      this != FtmsDeviceType.treadmill || this == FtmsDeviceType.strengthStation;
+      this != FtmsDeviceType.treadmill;
 }

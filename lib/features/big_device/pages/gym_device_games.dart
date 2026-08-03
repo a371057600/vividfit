@@ -3,37 +3,43 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// 单车游戏页1（对应旧 big_device_bike_game.dart）
 class GymBikeGameScreen extends ConsumerWidget {
-  const GymBikeGameScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymBikeGameScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'bike',
       gameIndex: 1,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 单车游戏页2（对应旧 bike_device_bike_game2.dart）
 class GymBikeGame2Screen extends ConsumerWidget {
-  const GymBikeGame2Screen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymBikeGame2Screen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'bike',
       gameIndex: 2,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 单车实景页（对应旧 big_device_realscene_screen.dart - bike）
 class GymBikeRealsceneScreen extends ConsumerWidget {
-  const GymBikeRealsceneScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymBikeRealsceneScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,39 +47,45 @@ class GymBikeRealsceneScreen extends ConsumerWidget {
       deviceTypeKey: 'bike',
       gameIndex: 0,
       isRealscene: true,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 跑步机游戏页1（对应旧 big_device_treadmill_game.dart）
 class GymTreadmillGameScreen extends ConsumerWidget {
-  const GymTreadmillGameScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymTreadmillGameScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'treadmill',
       gameIndex: 1,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 跑步机游戏页2（对应旧 big_device_treadmill_game2.dart）
 class GymTreadmillGame2Screen extends ConsumerWidget {
-  const GymTreadmillGame2Screen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymTreadmillGame2Screen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'treadmill',
       gameIndex: 2,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 跑步机实景页（对应旧 big_device_realscene_screen.dart - treadmill）
 class GymTreadmillRealsceneScreen extends ConsumerWidget {
-  const GymTreadmillRealsceneScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymTreadmillRealsceneScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -81,39 +93,45 @@ class GymTreadmillRealsceneScreen extends ConsumerWidget {
       deviceTypeKey: 'treadmill',
       gameIndex: 0,
       isRealscene: true,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 椭圆机游戏页1（对应旧 big_device_cross_trainer_game.dart）
 class GymEllipticalGameScreen extends ConsumerWidget {
-  const GymEllipticalGameScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymEllipticalGameScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'elliptical',
       gameIndex: 1,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 椭圆机游戏页2（对应旧 big_device_cross_trainer_game2.dart）
 class GymEllipticalGame2Screen extends ConsumerWidget {
-  const GymEllipticalGame2Screen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymEllipticalGame2Screen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'elliptical',
       gameIndex: 2,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 椭圆机实景页（对应旧 big_device_realscene_screen.dart - cross_trainer）
 class GymEllipticalRealsceneScreen extends ConsumerWidget {
-  const GymEllipticalRealsceneScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymEllipticalRealsceneScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -121,39 +139,45 @@ class GymEllipticalRealsceneScreen extends ConsumerWidget {
       deviceTypeKey: 'elliptical',
       gameIndex: 0,
       isRealscene: true,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 划船机游戏页1（对应旧 big_device_rower_game.dart）
 class GymRowerGameScreen extends ConsumerWidget {
-  const GymRowerGameScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymRowerGameScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'rower',
       gameIndex: 1,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 划船机游戏页2（对应旧 big_device_rower_game2.dart）
 class GymRowerGame2Screen extends ConsumerWidget {
-  const GymRowerGame2Screen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymRowerGame2Screen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return _DeviceGameScreen(
       deviceTypeKey: 'rower',
       gameIndex: 2,
+      deviceType: deviceType,
     );
   }
 }
 
 /// 划船机实景页（对应旧 big_device_realscene_screen.dart - rower）
 class GymRowerRealsceneScreen extends ConsumerWidget {
-  const GymRowerRealsceneScreen({super.key});
+  final FtmsDeviceType deviceType;
+  const GymRowerRealsceneScreen({super.key, required this.deviceType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -161,6 +185,7 @@ class GymRowerRealsceneScreen extends ConsumerWidget {
       deviceTypeKey: 'rower',
       gameIndex: 0,
       isRealscene: true,
+      deviceType: deviceType,
     );
   }
 }
@@ -170,10 +195,12 @@ class _DeviceGameScreen extends ConsumerWidget {
   final String deviceTypeKey;
   final int gameIndex;
   final bool isRealscene;
+  final FtmsDeviceType deviceType;
 
   const _DeviceGameScreen({
     required this.deviceTypeKey,
     required this.gameIndex,
+    required this.deviceType,
     this.isRealscene = false,
   });
 
@@ -191,10 +218,6 @@ class _DeviceGameScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final deviceName = _resolveDeviceName(l10n);
-    // TODO: 实现游戏逻辑
-    // - 游戏画面渲染
-    // - 设备数据监听
-    // - 游戏控制
 
     return PopScope(
       canPop: false,

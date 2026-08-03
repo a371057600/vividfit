@@ -142,7 +142,7 @@ class AboutInfoPage extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          "Dongguan Quanchuang Optoelectronics Industrial Co., Ltd. All Rights Reserved @2022-2024",
+                          l10n.copyrightInfo,
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey,

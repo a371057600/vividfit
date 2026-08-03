@@ -6,8 +6,8 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
+import '../../../l10n/app_localizations.dart';
 import '../notifiers/course_list_notifier.dart';
-import '../notifiers/course_list_notifier_provider.dart';
 import '../states/course_list_state.dart';
 
 /// 课程列表页（1:1 还原原 new_course_list_homepage.dart，纯 UI 假页面）。
@@ -50,10 +50,25 @@ class CourseListPage extends ConsumerWidget {
     'images/newUIScreen/courseImage/zombie_screen.jpg',
   ];
 
+  /// 根据索引获取本地化设备名称
+  String _deviceName(AppLocalizations l10n, int index) {
+    return switch (index) {
+      0 => l10n.deviceSkipping,
+      1 => l10n.deviceGrip,
+      2 => l10n.deviceDumbbell,
+      3 => l10n.deviceAdjDumbbell,
+      4 => l10n.devicePushUp,
+      5 => l10n.deviceKettlebell,
+      6 => l10n.deviceGame,
+      _ => '',
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(courseListNotifierProvider);
-    final notifier = ref.read(courseListNotifierProvider.notifier);
+    final state = ref.watch(courseListProvider);
+    final notifier = ref.read(courseListProvider.notifier);
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       color: FitTheme.secondbackGround,
@@ -66,7 +81,7 @@ class CourseListPage extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 20, top: 25).r,
               width: 195.w,
               height: 1400.h,
-              child: _buildLeftContent(state, notifier),
+              child: _buildLeftContent(state, notifier, l10n),
             ),
             Expanded(
               child: Container(
@@ -88,7 +103,7 @@ class CourseListPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildLeftContent(CourseListState state, CourseListNotifier notifier) {
+  Widget _buildLeftContent(CourseListState state, CourseListNotifier notifier, AppLocalizations l10n) {
     return ListView.builder(
       itemCount: state.showDeviceNameList.length,
       itemBuilder: (_, index) {
@@ -117,7 +132,7 @@ class CourseListPage extends ConsumerWidget {
                 SizedBox(width: 5.w),
                 Expanded(
                   child: Text(
-                    state.showDeviceNameList[index],
+                    _deviceName(l10n, index),
                     overflow: TextOverflow.clip,
                     maxLines: 2,
                     style: TextStyle(

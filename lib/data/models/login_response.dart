@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'network/third_party_user.dart';
 import 'user_info.dart';
+import 'network/vip_info.dart';
 
 part 'login_response.freezed.dart';
 part 'login_response.g.dart';
@@ -24,6 +26,8 @@ abstract class LoginData with _$LoginData {
   const factory LoginData({
     FitUserInfo? userInfo,
     String? token,
+    List<ThirdPartyUser>? thirdPartInfos,
+    VipInfo? vipInfo,
   }) = _LoginData;
 
   factory LoginData.fromJson(Map<String, dynamic> json) =>

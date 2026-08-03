@@ -12,7 +12,7 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../data/models/course_detail.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/course_detail_notifier_provider.dart';
+import '../notifiers/course_detail_notifier.dart';
 import '../states/course_detail_state.dart';
 
 /// 课程详情页（1:1 还原原 new_course_detail_screen.dart）。
@@ -43,7 +43,7 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
       final extra = GoRouterState.of(context).extra;
       if (extra is Map<String, dynamic>) {
         ref
-            .read(courseDetailNotifierProvider.notifier)
+            .read(courseDetailProvider.notifier)
             .initFromArguments(extra);
       }
     });
@@ -59,7 +59,7 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(courseDetailNotifierProvider);
+    final state = ref.watch(courseDetailProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -171,7 +171,7 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
                 TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildActionList(state),
+                    _buildActionList(state, l10n),
                     _buildDescription(state, l10n),
                   ],
                 ),
@@ -243,13 +243,13 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
     );
   }
 
-  Widget _buildActionList(CourseDetailState state) {
+  Widget _buildActionList(CourseDetailState state, AppLocalizations l10n) {
     final data = state.courseDetail?.data ?? [];
     final displayCount = data.isEmpty
         ? 0
-        : ref.read(courseDetailNotifierProvider.notifier).areAllElementsSame()
-            ? 2
-            : data.length;
+        : ref.read(courseDetailProvider.notifier).areAllElementsSame()
+        ? 2
+        : data.length;
 
     return SizedBox(
       height: 600,
@@ -264,7 +264,7 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
           return InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onTap: () => _showActionBottomSheet(action, index),
+            onTap: () => _showActionBottomSheet(action, index, l10n),
             child: Container(
               height: 82,
               width: MediaQuery.of(context).size.width,
@@ -286,23 +286,19 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
                           child: CachedNetworkImage(
                             imageUrl:
                                 action.cover != null && action.cover!.isNotEmpty
-                                    ? 'https://www.ucfitness.club/api/picture/path/${action.cover}'
-                                    : '',
+                                ? 'https://www.ucfitness.club/api/picture/path/${action.cover}'
+                                : '',
                             errorWidget: (context, url, error) =>
                                 const Icon(Icons.error),
-                            progressIndicatorBuilder: (
-                              context,
-                              url,
-                              downloadProgress,
-                            ) =>
-                                Container(
-                              margin: const EdgeInsets.all(15),
-                              child: CircularProgressIndicator(
-                                value: downloadProgress.progress,
-                                backgroundColor: FitTheme.backgroundColor,
-                                color: Colors.blue,
-                              ),
-                            ),
+                            progressIndicatorBuilder:
+                                (context, url, downloadProgress) => Container(
+                                  margin: const EdgeInsets.all(15),
+                                  child: CircularProgressIndicator(
+                                    value: downloadProgress.progress,
+                                    backgroundColor: FitTheme.backgroundColor,
+                                    color: Colors.blue,
+                                  ),
+                                ),
                           ),
                         ),
                       ),
@@ -451,7 +447,7 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
                 ),
               ),
               onPressed: () {
-                ref.read(courseDetailNotifierProvider.notifier).startAction();
+                ref.read(courseDetailProvider.notifier).startAction();
               },
               child: Text(
                 state.isNeedUpdate ? l10n.download : l10n.play,
@@ -461,15 +457,17 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
     );
   }
 
-  void _showActionBottomSheet(CourseAction action, int index) {
+  void _showActionBottomSheet(
+    CourseAction action,
+    int index,
+    AppLocalizations l10n,
+  ) {
     // TODO: 实现动作详情底部弹窗（ImageAnimation 等）
     showModalBottomSheet(
       context: context,
       isDismissible: false,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height - 60,
@@ -507,7 +505,7 @@ class _CourseDetailPageState extends ConsumerState<CourseDetailPage>
                         height: 20,
                       ),
                       Text(
-                        'Key Point',
+                        l10n.keyPoint,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

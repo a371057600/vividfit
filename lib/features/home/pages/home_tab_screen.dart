@@ -8,7 +8,7 @@ import 'package:step_progress_indicator/step_progress_indicator.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/home_notifier_provider.dart';
+import '../notifiers/home_notifier.dart';
 
 /// 主页主屏(1:1 复刻旧 NewMainSportScreen)。
 class HomeTabScreen extends ConsumerWidget {
@@ -88,7 +88,7 @@ class HomeTabScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: FitTheme.backgroundColor,
       body: RefreshIndicator(
-        onRefresh: () => ref.read(homeNotifierProvider.notifier).refresh(),
+        onRefresh: () => ref.read(homeProvider.notifier).refresh(),
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -166,7 +166,7 @@ class HomeTabScreen extends ConsumerWidget {
   }
 
   Widget _buildCharacterImage(WidgetRef ref) {
-    final state = ref.watch(homeNotifierProvider);
+    final state = ref.watch(homeProvider);
     const characters = [
       'xinxin',
       'rubby',
@@ -189,7 +189,7 @@ class HomeTabScreen extends ConsumerWidget {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 onTap: () =>
-                    ref.read(homeNotifierProvider.notifier).touchCharacter(),
+                    ref.read(homeProvider.notifier).touchCharacter(),
                 child: ExtendedImage.asset(
                   'images/newUIScreen/HomePageAnimation/$character/1.png',
                   repeat: ImageRepeat.noRepeat,
@@ -210,7 +210,7 @@ class HomeTabScreen extends ConsumerWidget {
   }
 
   Widget _buildRingLabel(WidgetRef ref, int index) {
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final notifier = ref.read(homeProvider.notifier);
     final l10n = AppLocalizations.of(ref.context)!;
     final label = _ringLabels[index] == 'timeMin'
         ? l10n.timeMin
@@ -262,7 +262,7 @@ class HomeTabScreen extends ConsumerWidget {
   }
 
   Widget _buildThreeRings(WidgetRef ref) {
-    final m = ref.watch(homeNotifierProvider).mainData;
+    final m = ref.watch(homeProvider).mainData;
     final outColor = m.triCycleDuration / m.goalDuration / 60 > 1
         ? FitTheme.threeRingsColorbackGroundOutSide2
         : FitTheme.threeRingsColorbackGroundOutSide;
@@ -385,7 +385,7 @@ class HomeTabScreen extends ConsumerWidget {
   }
 
   Widget _buildStepBar(WidgetRef ref) {
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final notifier = ref.read(homeProvider.notifier);
     final l10n = AppLocalizations.of(ref.context)!;
     return Container(
       decoration: BoxDecoration(
@@ -515,13 +515,13 @@ class HomeTabScreen extends ConsumerWidget {
         width: MediaQuery.of(context).size.width,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: order.map((i) => _funcEntry(context, l10n, i)).toList(),
+          children: order.map((i) => _funcEntry(context, ref, l10n, i)).toList(),
         ),
       ),
     );
   }
 
-  Widget _funcEntry(BuildContext context, AppLocalizations l10n, int index) {
+  Widget _funcEntry(BuildContext context, WidgetRef ref, AppLocalizations l10n, int index) {
     final label = _funcEntryKeys[index] == 'courses'
         ? l10n.courses
         : _funcEntryKeys[index] == 'ranks'
@@ -536,7 +536,15 @@ class HomeTabScreen extends ConsumerWidget {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
-      onTap: () => context.push('/placeholder'),
+      onTap: () {
+        if (_funcEntryKeys[index] == 'courses') {
+          // 课程入口：切换到底部导航第二个 Tab
+          ref.read(homeProvider.notifier).changePage(1);
+        } else {
+          // 其他入口：跳转到占位页（后续可隐藏或迁移）
+          context.push('/placeholder');
+        }
+      },
       child: SizedBox(
         width: 130.w,
         child: Column(
@@ -571,7 +579,7 @@ class HomeTabScreen extends ConsumerWidget {
   // ---- BMI 卡 ----
   Widget _buildBmiCard(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final notifier = ref.read(homeProvider.notifier);
     final bmiIdx = notifier.bmiIndex();
     final weightLabels = [
       l10n.underWeight,
@@ -633,7 +641,7 @@ class HomeTabScreen extends ConsumerWidget {
     int bmiIdx,
     List<String> weightLabels,
   ) {
-    final state = ref.watch(homeNotifierProvider);
+    final state = ref.watch(homeProvider);
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       child: Row(
@@ -753,7 +761,7 @@ class HomeTabScreen extends ConsumerWidget {
 
   // ---- 卡片网格 ----
   Widget _buildCardGrid(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final notifier = ref.read(homeProvider.notifier);
     final count = notifier.isCn ? 10 : 8;
     return Container(
       margin: EdgeInsets.only(left: 25, bottom: 20, right: 25).r,
@@ -822,8 +830,8 @@ class HomeTabScreen extends ConsumerWidget {
 
   Widget _buildGridCard(BuildContext context, WidgetRef ref, int index) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(homeNotifierProvider);
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final state = ref.watch(homeProvider);
+    final notifier = ref.read(homeProvider.notifier);
     final isCn = notifier.isCn;
     final cardName = _gridCardName(l10n, index, isCn);
     final img = isCn ? _gridCardImagesCn : _gridCardImagesNotCn;
@@ -910,8 +918,8 @@ class HomeTabScreen extends ConsumerWidget {
     int index,
     bool isCn,
   ) {
-    final state = ref.watch(homeNotifierProvider);
-    final notifier = ref.read(homeNotifierProvider.notifier);
+    final state = ref.watch(homeProvider);
+    final notifier = ref.read(homeProvider.notifier);
 
     // index 4:打卡 — 文字 "已达成/未达成",25sp,红/绿色
     if (index == 4) {

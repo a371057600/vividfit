@@ -223,7 +223,8 @@ class _OvalTrackPainter extends CustomPainter {
           path.lineTo(rightSemicircleCenter.dx, centerY - radius); // 上直线全段
           final arcDistance = distance - halfLine;
           final radiansEnd =
-              (-math.pi / 2) + (arcDistance / semicircleCircumference) * math.pi;
+              (-math.pi / 2) +
+              (arcDistance / semicircleCircumference) * math.pi;
           // 右半圆弧线段
           path.arcTo(
             Rect.fromCircle(center: rightSemicircleCenter, radius: radius),
@@ -231,7 +232,8 @@ class _OvalTrackPainter extends CustomPainter {
             radiansEnd - (-math.pi / 2),
             false,
           );
-        } else if (distance <= halfLine + semicircleCircumference + lineLength) {
+        } else if (distance <=
+            halfLine + semicircleCircumference + lineLength) {
           // 阶段3：上直线+右半圆全段 + 下直线部分
           path.lineTo(rightSemicircleCenter.dx, centerY - radius); // 上直线
           path.arcTo(
@@ -246,7 +248,10 @@ class _OvalTrackPainter extends CustomPainter {
             centerY + radius,
           ); // 下直线部分
         } else if (distance <=
-            halfLine + semicircleCircumference + lineLength + semicircleCircumference) {
+            halfLine +
+                semicircleCircumference +
+                lineLength +
+                semicircleCircumference) {
           // 阶段4：上直线+右半圆+下直线全段 + 左半圆部分
           path.lineTo(rightSemicircleCenter.dx, centerY - radius); // 上直线
           path.arcTo(
@@ -315,7 +320,10 @@ class _OvalTrackPainter extends CustomPainter {
           centerY + radius,
         );
       } else if (distance <=
-          halfLine + semicircleCircumference + lineLength + semicircleCircumference) {
+          halfLine +
+              semicircleCircumference +
+              lineLength +
+              semicircleCircumference) {
         // 左半圆
         final arcDistance =
             distance - (halfLine + semicircleCircumference + lineLength);
@@ -327,7 +335,8 @@ class _OvalTrackPainter extends CustomPainter {
         );
       } else {
         // 绕圈后回到上直线段
-        final lineDistance = distance -
+        final lineDistance =
+            distance -
             (halfLine +
                 semicircleCircumference +
                 lineLength +

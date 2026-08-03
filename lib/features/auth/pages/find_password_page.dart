@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 找回密码页(1:1 复刻旧项目 NewFindPasswordScreen)。
@@ -19,11 +19,11 @@ class FindPasswordPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final showPassword =
-        ref.watch(authNotifierProvider.select((s) => s.showPassword));
+        ref.watch(authProvider.select((s) => s.showPassword));
     final reGetCode2 =
-        ref.watch(authNotifierProvider.select((s) => s.reGetCode2));
+        ref.watch(authProvider.select((s) => s.reGetCode2));
     final countdown =
-        ref.watch(authNotifierProvider.select((s) => s.countdown));
+        ref.watch(authProvider.select((s) => s.countdown));
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -59,7 +59,7 @@ class FindPasswordPage extends ConsumerWidget {
                     hintStyle: TextStyle(color: FitTheme.backgroundColor),
                   ),
                   onChanged: (value) => ref
-                      .read(authNotifierProvider.notifier)
+                      .read(authProvider.notifier)
                       .setEmailAccount(value),
                 ),
                 TextField(
@@ -71,7 +71,7 @@ class FindPasswordPage extends ConsumerWidget {
                   decoration: InputDecoration(
                     suffix: InkWell(
                       onTap: () => ref
-                          .read(authNotifierProvider.notifier)
+                          .read(authProvider.notifier)
                           .toggleShowPassword(),
                       child: SizedBox(
                         height: 50.r,
@@ -97,7 +97,7 @@ class FindPasswordPage extends ConsumerWidget {
                     hintStyle: TextStyle(color: FitTheme.backgroundColor),
                   ),
                   onChanged: (value) => ref
-                      .read(authNotifierProvider.notifier)
+                      .read(authProvider.notifier)
                       .setChangePassword(value),
                 ),
                 Stack(
@@ -124,7 +124,7 @@ class FindPasswordPage extends ConsumerWidget {
                         ),
                       ),
                       onChanged: (value) => ref
-                          .read(authNotifierProvider.notifier)
+                          .read(authProvider.notifier)
                           .setCaptcha(value),
                     ),
                     Positioned(
@@ -133,7 +133,7 @@ class FindPasswordPage extends ConsumerWidget {
                       child: reGetCode2
                           ? InkWell(
                               onTap: () => ref
-                                  .read(authNotifierProvider.notifier)
+                                  .read(authProvider.notifier)
                                   .sendEmailCaptcha(),
                               child: Text(
                                 l10n.getCode,
@@ -151,7 +151,7 @@ class FindPasswordPage extends ConsumerWidget {
                 ElevatedButton(
                   onPressed: () async {
                     final ok = await ref
-                        .read(authNotifierProvider.notifier)
+                        .read(authProvider.notifier)
                         .checkCaptchaAndResetPassword();
                     if (ok && context.mounted) {
                       // 旧 Get.off(NewLoginScreen):回到入口选择页。

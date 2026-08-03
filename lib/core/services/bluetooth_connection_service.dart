@@ -34,6 +34,7 @@ class BluetoothConnectionService {
 
   /// 启动蓝牙扫描(带白名单过滤)。
   Future<void> startScan(List<String> whitelist) async {
+    debugPrint('[Bluetooth] startScan begin, whitelist=$whitelist');
     _discoveredDevices.clear();
     onDevicesUpdated?.call([]);
     onScanningChanged?.call(true);
@@ -41,6 +42,7 @@ class BluetoothConnectionService {
     // 6 秒兜底结束搜索(对应旧 6.delay)。
     Future.delayed(const Duration(seconds: 6), () {
       if (_isScanningSub != null) {
+        debugPrint('[Bluetooth] startScan 6s timeout, forcing stop');
         onScanningChanged?.call(false);
       }
     });
@@ -52,17 +54,20 @@ class BluetoothConnectionService {
           if (name.isEmpty) continue;
           if (!_discoveredDevices.containsKey(name)) {
             _discoveredDevices[name] = r.device;
+            debugPrint('[Bluetooth] discovered device: "$name" (total: ${_discoveredDevices.length})');
             onDevicesUpdated?.call(List<String>.from(_discoveredDevices.keys));
           }
         }
       }
-    }, onError: (e) => debugPrint('scan error: $e'));
+    }, onError: (e) => debugPrint('[Bluetooth] scan error: $e'));
 
     FlutterBluePlus.cancelWhenScanComplete(_scanSub!);
 
     final adapterState = await FlutterBluePlus.adapterState.first;
+    debugPrint('[Bluetooth] adapterState=$adapterState');
     if (adapterState != BluetoothAdapterState.on) {
       onScanningChanged?.call(false);
+      debugPrint('[Bluetooth] adapter OFF, throwing BluetoothNotEnabledException');
       throw BluetoothNotEnabledException();
     }
 
@@ -70,8 +75,10 @@ class BluetoothConnectionService {
       withKeywords: whitelist,
       timeout: const Duration(seconds: 5),
     );
+    debugPrint('[Bluetooth] startScan started, 5s timeout');
 
     _isScanningSub = FlutterBluePlus.isScanning.listen((scanning) {
+      debugPrint('[Bluetooth] isScanning=$scanning');
       if (!scanning) {
         onScanningChanged?.call(false);
         _isScanningSub?.cancel();
@@ -89,10 +96,15 @@ class BluetoothConnectionService {
 
   /// 连接指定广播名的设备。
   Future<void> connect(String deviceName) async {
+    debugPrint('[Bluetooth] connect begin, deviceName="$deviceName"');
     final device = _discoveredDevices[deviceName];
-    if (device == null) return;
+    if (device == null) {
+      debugPrint('[Bluetooth] connect: device not found in discovered list');
+      return;
+    }
     _targetDevice = device;
     await stopScan();
+    debugPrint('[Bluetooth] connecting to device "${deviceName}" (id=${device.remoteId}), 35s timeout');
 
     try {
       await device.connect(
@@ -100,12 +112,14 @@ class BluetoothConnectionService {
         timeout: const Duration(seconds: 35),
         autoConnect: false,
       );
-    } catch (_) {
-      // 旧逻辑静默重试,首屏不重试,仅记录。
+      debugPrint('[Bluetooth] connect SUCCESS: "$deviceName"');
+    } catch (e) {
+      debugPrint('[Bluetooth] connect FAILED: "$deviceName", error=$e');
     }
 
     _connStateSub = device.connectionState.listen((event) {
       final isConnected = event == BluetoothConnectionState.connected;
+      debugPrint('[Bluetooth] connectionState event: ${event.name}, isConnected=$isConnected');
       onConnectionChanged?.call(isConnected, isConnected);
     });
     device.cancelWhenDisconnected(_connStateSub!, delayed: true, next: true);
@@ -113,12 +127,16 @@ class BluetoothConnectionService {
 
   /// 断开当前设备并清理订阅。
   Future<void> disconnect() async {
+    debugPrint('[Bluetooth] disconnect begin');
     await _connStateSub?.cancel();
     _connStateSub = null;
     if (_targetDevice != null) {
       try {
         await _targetDevice!.disconnect();
-      } catch (_) {}
+        debugPrint('[Bluetooth] disconnect SUCCESS');
+      } catch (e) {
+        debugPrint('[Bluetooth] disconnect error: $e');
+      }
       _targetDevice = null;
     }
   }

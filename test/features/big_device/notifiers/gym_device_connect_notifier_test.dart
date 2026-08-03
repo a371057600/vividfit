@@ -5,7 +5,7 @@ import 'package:vividfit_v2/core/services/bluetooth_connection_service.dart';
 import 'package:vividfit_v2/core/services/bluetooth_connection_service_provider.dart';
 import 'package:vividfit_v2/core/services/storage_service.dart';
 import 'package:vividfit_v2/core/services/storage_service_provider.dart';
-import 'package:vividfit_v2/features/big_device/data/device_category.dart';
+import 'package:vividfit_v2/core/ftms/ftms_device_type.dart';
 import 'package:vividfit_v2/features/big_device/notifiers/gym_device_connect_notifier.dart';
 import 'package:vividfit_v2/features/big_device/notifiers/gym_device_connect_notifier_provider.dart';
 
@@ -43,7 +43,7 @@ void main() {
 
     test('setDeviceCategory 后 validateReadyForEntry 未连接返回提示', () {
       final notifier = _createNotifier(service, storage);
-      notifier.setDeviceCategory(DeviceCategory.bike);
+      notifier.setDeviceCategory(FtmsDeviceType.indoorBike);
       final result = notifier.validateReadyForEntry();
       expect(result, isNotNull);
       expect(result, 'pleaseConnectDevice');
@@ -51,16 +51,16 @@ void main() {
 
     test('markConnected 后 validateReadyForEntry 返回 null(可进入)', () {
       final notifier = _createNotifier(service, storage);
-      notifier.setDeviceCategory(DeviceCategory.treadmill);
+      notifier.setDeviceCategory(FtmsDeviceType.treadmill);
       notifier.markConnectedForTest();
       expect(notifier.validateReadyForEntry(), isNull);
     });
 
     test('setDeviceCategory 默认 bike', () {
       final notifier = _createNotifier(service, storage);
-      expect(notifier.deviceCategory, DeviceCategory.bike);
-      notifier.setDeviceCategory(DeviceCategory.rower);
-      expect(notifier.deviceCategory, DeviceCategory.rower);
+      expect(notifier.deviceCategory, FtmsDeviceType.indoorBike);
+      notifier.setDeviceCategory(FtmsDeviceType.rower);
+      expect(notifier.deviceCategory, FtmsDeviceType.rower);
     });
   });
 }

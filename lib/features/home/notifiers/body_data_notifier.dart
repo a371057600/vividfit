@@ -1,10 +1,13 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/storage_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../states/body_data_state.dart';
 
-class BodyDataNotifier extends Notifier<BodyDataState> {
+part 'body_data_notifier.g.dart';
+
+@riverpod
+class BodyDataNotifier extends _$BodyDataNotifier {
   @override
   BodyDataState build() {
     _storage = ref.watch(storageServiceProvider);
@@ -18,8 +21,9 @@ class BodyDataNotifier extends Notifier<BodyDataState> {
     final d = DateTime.parse(b);
     final height = _storage.userHeight;
     final weight = _storage.userWeight;
+    final isCn = _storage.languageNum == 0 || _storage.languageNum == 2;
     return BodyDataState(
-      nickName: _storage.username ?? 'UserName',
+      nickName: _storage.username ?? (isCn ? '用户' : 'User'),
       birthday: b,
       sexValue: _storage.userSex,
       bodyHeight: height,
@@ -60,7 +64,8 @@ class BodyDataNotifier extends Notifier<BodyDataState> {
       int.parse(state.bodyAgeDay),
     );
     if (inputDate.isAfter(today)) {
-      return 'Please select date before today';
+      final isCn = _storage.languageNum == 0 || _storage.languageNum == 2;
+      return isCn ? '请选择今天之前的日期' : 'Please select date before today';
     }
     final birthday =
         '${state.bodyAgeYear}-${state.bodyAgeMonth.padLeft(2, '0')}-${state.bodyAgeDay.padLeft(2, '0')}';

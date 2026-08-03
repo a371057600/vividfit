@@ -1,4 +1,4 @@
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/home_repository_provider.dart';
 import '../../../core/services/storage_service.dart';
@@ -7,7 +7,10 @@ import '../../../data/models/new_main_data.dart';
 import '../repositories/home_repository.dart';
 import '../states/home_state.dart';
 
-class HomeNotifier extends Notifier<HomeState> {
+part 'home_notifier.g.dart';
+
+@Riverpod(keepAlive: true)
+class HomeNotifier extends _$HomeNotifier {
   @override
   HomeState build() {
     _repo = ref.watch(homeRepositoryProvider);
@@ -37,9 +40,10 @@ class HomeNotifier extends Notifier<HomeState> {
     final day = d.day < 10 ? '0${d.day}' : '${d.day}';
     mainData = mainData.copyWith(recordDate: '$m/$day');
 
+    final isCn = _storage.languageNum == 0 || _storage.languageNum == 2;
     return HomeState(
       mainData: mainData.copyWith(isLoading: false, isLoading2: false),
-      nickName: _storage.username ?? 'UserName',
+      nickName: _storage.username ?? (isCn ? '用户' : 'User'),
       headImageHash: _storage.headImageHash ?? '',
       selectedCharacterIndex: _storage.selectedCharacterIndex,
       myRank: _storage.myRank ?? '99',

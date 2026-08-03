@@ -358,7 +358,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
         // 旧项目未实现跳转,暂不处理
         break;
       case 4: // recreationalFitness
-        context.push('/gym-game-select');
+        context.push('/gym-game-select', extra: deviceType);
         break;
       default:
         break;

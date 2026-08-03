@@ -1,14 +1,18 @@
 import 'package:dio/dio.dart';
-
-import 'api_exception.dart';
+import 'package:vividfit_v2/core/constants/api_constants.dart';
 import 'api_response.dart';
 
+/// 类型安全的 API 请求客户端。
+///
+/// 支持两种响应格式：
+/// - ResultDto 包装型（标准格式）：使用 get/post/put/delete
+/// - 直接返回型（非标准格式）：使用 getRaw/postRaw/putRaw/deleteRaw
 class ApiClient {
-  ApiClient(this._dio);
-
   final Dio _dio;
 
-  Future<ApiResponse<T>> get<T>(
+  ApiClient(this._dio);
+
+  Future<T> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
@@ -23,123 +27,207 @@ class ApiClient {
     );
   }
 
-  Future<ApiResponse<T>> post<T>(
+  Future<T> post<T>(
     String path, {
+    dynamic data,
     Map<String, dynamic>? queryParameters,
-    Object? data,
     Options? options,
     required T Function(dynamic json) parser,
   }) async {
     return _request<T>(
       'POST',
       path,
-      queryParameters: queryParameters,
       data: data,
+      queryParameters: queryParameters,
       options: options,
       parser: parser,
     );
   }
 
-  Future<ApiResponse<T>> put<T>(
+  Future<T> put<T>(
     String path, {
+    dynamic data,
     Map<String, dynamic>? queryParameters,
-    Object? data,
     Options? options,
     required T Function(dynamic json) parser,
   }) async {
     return _request<T>(
       'PUT',
       path,
-      queryParameters: queryParameters,
       data: data,
+      queryParameters: queryParameters,
       options: options,
       parser: parser,
     );
   }
 
-  Future<ApiResponse<T>> delete<T>(
+  Future<T> delete<T>(
     String path, {
+    dynamic data,
     Map<String, dynamic>? queryParameters,
-    Object? data,
     Options? options,
     required T Function(dynamic json) parser,
   }) async {
     return _request<T>(
       'DELETE',
       path,
-      queryParameters: queryParameters,
       data: data,
+      queryParameters: queryParameters,
       options: options,
       parser: parser,
     );
   }
 
-  Future<ApiResponse<T>> _request<T>(
-    String method,
+  // ============ 直接返回型（Raw）方法 ============
+
+  Future<T> getRaw<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
-    Object? data,
     Options? options,
     required T Function(dynamic json) parser,
   }) async {
+    return _requestRaw('GET', path,
+        queryParameters: queryParameters, options: options, parser: parser);
+  }
+
+  Future<T> postRaw<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    required T Function(dynamic json) parser,
+  }) async {
+    return _requestRaw('POST', path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        parser: parser);
+  }
+
+  Future<T> putRaw<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    required T Function(dynamic json) parser,
+  }) async {
+    return _requestRaw('PUT', path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        parser: parser);
+  }
+
+  Future<T> deleteRaw<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    required T Function(dynamic json) parser,
+  }) async {
+    return _requestRaw('DELETE', path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        parser: parser);
+  }
+
+  // ============ 内部实现 ============
+
+  Future<T> _request<T>(
+    String method,
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    dynamic data,
+    Options? options,
+    required T Function(dynamic json) parser,
+  }) async {
+    final url = '${ApiConstants.baseUrl}$path';
+    print('📤 Request: [$method] $url');
+    if (queryParameters != null && queryParameters.isNotEmpty) {
+      print('📤 Query: $queryParameters');
+    }
+    if (data != null) {
+      print('📤 Body: $data');
+    }
+
     try {
-      late final Response<dynamic> response;
+      final response = await _dio.fetch<Map<String, dynamic>>(
+        RequestOptions(
+          path: url,
+          method: method,
+          queryParameters: queryParameters,
+          data: data,
+        ),
+      );
 
-      switch (method.toUpperCase()) {
-        case 'GET':
-          response = await _dio.get(
-            path,
-            queryParameters: queryParameters,
-            options: options,
-          );
-          break;
-        case 'POST':
-          response = await _dio.post(
-            path,
-            queryParameters: queryParameters,
-            data: data,
-            options: options,
-          );
-          break;
-        case 'PUT':
-          response = await _dio.put(
-            path,
-            queryParameters: queryParameters,
-            data: data,
-            options: options,
-          );
-          break;
-        case 'DELETE':
-          response = await _dio.delete(
-            path,
-            queryParameters: queryParameters,
-            data: data,
-            options: options,
-          );
-          break;
-        default:
-          throw UnsupportedError('HTTP method $method not supported');
-      }
+      final body = response.data;
+      print('📥 Response [${response.statusCode}] $url');
+      print('📥 Body: $body');
 
-      final rawData = response.data;
-      if (rawData is! Map<String, dynamic>) {
-        throw const ApiException(
-          code: 'INVALID_RESPONSE',
-          message: 'Response body is not a JSON object',
+      final apiResponse = ApiResponse<T>.fromJson(body!, parser);
+      if (!apiResponse.isSuccess) {
+        print('❌ Error: code=${apiResponse.code}, msg=${apiResponse.msg}');
+        throw DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+          error: apiResponse.msg,
         );
       }
 
-      return ApiResponse<T>.fromJson(rawData, parser);
+      return apiResponse.data as T;
     } on DioException catch (e) {
-      final apiError = e.error;
-      if (apiError is ApiException) {
-        rethrow;
+      print('❌ DioError: ${e.message}');
+      if (e.response != null) {
+        print('❌ Response: ${e.response!.data}');
       }
-      throw ApiException(
-        code: 'NETWORK_ERROR',
-        message: e.message ?? 'Network request failed',
-        rawError: e,
+      rethrow;
+    } catch (e) {
+      print('❌ UnknownError: $e');
+      rethrow;
+    }
+  }
+
+  Future<T> _requestRaw<T>(
+    String method,
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    dynamic data,
+    Options? options,
+    required T Function(dynamic json) parser,
+  }) async {
+    final url = '${ApiConstants.baseUrl}$path';
+    print('📤 Request: [$method] $url');
+    if (queryParameters != null && queryParameters.isNotEmpty) {
+      print('📤 Query: $queryParameters');
+    }
+    if (data != null) {
+      print('📤 Body: $data');
+    }
+
+    try {
+      final response = await _dio.fetch<dynamic>(
+        RequestOptions(
+          path: url,
+          method: method,
+          queryParameters: queryParameters,
+          data: data,
+        ),
       );
+
+      print('📥 Raw Response [${response.statusCode}] ${response.requestOptions.uri}');
+      print('📥 Body: ${response.data}');
+      return parser(response.data);
+    } on DioException catch (e) {
+      print('❌ DioError: ${e.message}');
+      if (e.response != null) {
+        print('❌ Response: ${e.response!.data}');
+      }
+      rethrow;
+    } catch (e) {
+      print('❌ UnknownError: $e');
+      rethrow;
     }
   }
 }

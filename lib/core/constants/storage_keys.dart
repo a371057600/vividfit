@@ -37,9 +37,8 @@ class StorageKeys {
   static const String tricycliDuring = 'tricycliDuring';
   static const String tricycliSportStrength = 'tricycliSportStrength';
   static const String tricyclicalorie = 'tricyclicalorie';
-  static const String allowGetPermission = 'AllowGetPermission';
-  static const String allowAskPermission = 'AllowAskPermission';
-  static const String permissionDateTime = 'PermissionDateTime';
+  /// 蓝牙权限告知弹窗是否已展示过（仅 Android 首次弹窗机制）
+  static const String btPermissionDialogShown = 'BtPermissionDialogShown';
 
   // ---- 大设备模块 ----
   static const String bikeMachine = 'bikeMachine';

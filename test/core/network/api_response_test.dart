@@ -7,18 +7,19 @@ void main() {
   group('ApiResponse', () {
     test('fromJson parses success response with data', () {
       final response = ApiResponse<Map<String, dynamic>>.fromJson(
-        {'code': '200', 'data': {'id': 1}, 'message': 'ok'},
+        {'code': '200', 'data': {'id': 1}, 'msg': 'ok'},
         (json) => json as Map<String, dynamic>,
       );
       expect(response.code, '200');
       expect(response.isSuccess, isTrue);
       expect(response.data, {'id': 1});
+      expect(response.msg, 'ok');
       expect(response.message, 'ok');
     });
 
     test('fromJson parses error response without data', () {
       final response = ApiResponse<Map<String, dynamic>>.fromJson(
-        {'code': '500', 'message': 'server error'},
+        {'code': '500', 'msg': 'server error'},
         (json) => json as Map<String, dynamic>,
       );
       expect(response.code, '500');
@@ -43,7 +44,7 @@ void main() {
     });
 
     test('throws ApiException when code is not 200', () {
-      const response = ApiResponse<int>(code: '400', message: 'bad request');
+      const response = ApiResponse<int>(code: '400', msg: 'bad request');
       expect(() => response.getOrThrow(), throwsA(isA<ApiException>()));
     });
 

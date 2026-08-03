@@ -6,7 +6,7 @@ import 'package:pinput/pinput.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
-import '../notifiers/auth_notifier_provider.dart';
+import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
 
 /// 验证码输入页(1:1 复刻旧项目 NewLoginGetCodeScreen)。
@@ -20,9 +20,9 @@ class GetCodePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final reGetCode =
-        ref.watch(authNotifierProvider.select((s) => s.reGetCode));
+        ref.watch(authProvider.select((s) => s.reGetCode));
     final countdown =
-        ref.watch(authNotifierProvider.select((s) => s.countdown));
+        ref.watch(authProvider.select((s) => s.countdown));
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -58,7 +58,7 @@ class GetCodePage extends ConsumerWidget {
                   onCompleted: (String pin) {
                     if (pin.length == 6) {
                       ref
-                          .read(authNotifierProvider.notifier)
+                          .read(authProvider.notifier)
                           .selectLoginType(pin);
                     }
                   },
@@ -79,7 +79,7 @@ class GetCodePage extends ConsumerWidget {
                     onPressed: reGetCode
                         ? () {
                             ref
-                                .read(authNotifierProvider.notifier)
+                                .read(authProvider.notifier)
                                 .regetCode();
                           }
                         : null,

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'body_data_state.dart';
@@ -9,6 +9,7 @@ part of 'body_data_state.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -63,7 +64,7 @@ class _$BodyDataStateCopyWithImpl<$Res>
 /// Create a copy of BodyDataState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? sexValue = null,Object? bodyHeight = null,Object? bodyWeight = null,Object? birthday = null,Object? bodyAgeDay = null,Object? bodyAgeMonth = null,Object? bodyAgeYear = null,Object? nickName = null,Object? heightPosition = null,Object? weightPosition = null,}) {
-  return _then(_self.copyWith(
+  return _then(BodyDataState(
 sexValue: null == sexValue ? _self.sexValue : sexValue // ignore: cast_nullable_to_non_nullable
 as bool,bodyHeight: null == bodyHeight ? _self.bodyHeight : bodyHeight // ignore: cast_nullable_to_non_nullable
 as int,bodyWeight: null == bodyWeight ? _self.bodyWeight : bodyWeight // ignore: cast_nullable_to_non_nullable
