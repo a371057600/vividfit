@@ -53,7 +53,7 @@ abstract class DownloadProgress with _$DownloadProgress {
   factory DownloadProgress.failed({
     required int totalFiles,
     required int completedFiles,
-    required String fileName,
+    required String? fileName,
     required String reason,
   }) =>
       DownloadProgress(
