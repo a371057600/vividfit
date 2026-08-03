@@ -11,6 +11,9 @@ class StorageService {
 
   final SharedPreferences _prefs;
 
+  /// 暴露内部 prefs(供其他服务复用同一实例,避免多次初始化)。
+  SharedPreferences get prefs => _prefs;
+
   static Future<StorageService> create() async {
     final prefs = await SharedPreferences.getInstance();
     return StorageService._(prefs);
