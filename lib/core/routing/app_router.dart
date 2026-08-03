@@ -54,7 +54,7 @@ const _testRoutes = {
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   return GoRouter(
-    initialLocation: '/gym-device-play', // TODO: 临时修改为测试页面，测试完成后改回 '/splash'
+    initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
       final authState = ref.read(authProvider);
