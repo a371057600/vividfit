@@ -11,6 +11,7 @@ import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/gym_course_detail_notifier.dart';
 import '../states/gym_course_detail_state.dart';
+import 'widgets/download_progress_dialog.dart';
 
 /// 课程详情页(1:1 还原旧 `big_device_course_detail_screen.dart`)。
 ///
@@ -35,6 +36,11 @@ class GymCourseDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
+  // 测试用:模拟下载进度弹窗
+  bool _isTestDownloading = false;
+  double _testProgress = 0.0;
+  DateTime? _testStartTime;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +51,42 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
       ref
           .read(gymCourseDetailProvider.notifier)
           .loadDetail(courseId: widget.courseId, deviceType: widget.deviceType);
+    });
+  }
+
+  /// 开始模拟下载进度(测试用)
+  void _startTestDownload() {
+    setState(() {
+      _isTestDownloading = true;
+      _testProgress = 0.0;
+      _testStartTime = DateTime.now();
+    });
+    // 模拟 3 秒从 0 到 100%
+    const totalDuration = Duration(seconds: 3);
+    const tickInterval = Duration(milliseconds: 50);
+    Future.doWhile(() async {
+      await Future.delayed(tickInterval);
+      if (!mounted || !_isTestDownloading) return false;
+      final elapsed = DateTime.now().difference(_testStartTime!);
+      final progress = elapsed.inMilliseconds / totalDuration.inMilliseconds;
+      setState(() {
+        _testProgress = progress.clamp(0.0, 1.0);
+      });
+      return progress < 1.0;
+    }).then((_) {
+      if (mounted) {
+        setState(() {
+          _isTestDownloading = false;
+        });
+      }
+    });
+  }
+
+  /// 取消测试下载
+  void _cancelTestDownload() {
+    setState(() {
+      _isTestDownloading = false;
+      _testProgress = 0.0;
     });
   }
 
@@ -69,22 +111,6 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
         }
       }
     });
-
-    // 课程就绪后导航到播放页(context.push 保栈保横屏,禁用 context.go)
-    ref.listen<bool>(
-      gymCourseDetailProvider.select((s) => s.allowGoToPlayScreen),
-      (previous, next) {
-        if (next && previous != true) {
-          context.push(
-            '/gym-device-play',
-            extra: {
-              'courseId': widget.courseId,
-              'deviceType': widget.deviceType,
-            },
-          );
-        }
-      },
-    );
 
     // 下载失败 toast
     ref.listen<String?>(
@@ -126,7 +152,7 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
             ),
             // 主内容(1:1 还原旧 Positioned top:160.h)
             Positioned(
-              top: 120.h,
+              top: 150.h,
               left: 0,
               right: 0,
               bottom: 0,
@@ -170,6 +196,24 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
                 ),
               ),
             ),
+            // 下载进度弹窗覆盖层(真实下载 + 测试模式)
+            if (state.isNeedDownloaded || _isTestDownloading)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _isTestDownloading ? _cancelTestDownload : null,
+                  child: Container(
+                    color: Colors.black54,
+                    child: DownloadProgressDialog(
+                      progress: _isTestDownloading
+                          ? _testProgress
+                          : state.downLoadProgress,
+                      currentFileName: _isTestDownloading
+                          ? 'test_file.zip'
+                          : state.currentDownloadingFile,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -341,13 +385,19 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
 
   /// 底部按钮(1:1 还原旧 `_buildBottomButton`)。
   ///
-  /// onPressed → Notifier.onEnterCoursePressed();导航由 ref.listen 监听
-  /// allowGoToPlayScreen 变化触发(context.push 保栈保横屏)。
+  /// 根据 isCourseReady 显示不同文本:
+  /// - 已就绪 → "开始播放"
+  /// - 未就绪 → "下载课程"
+  /// 附带一个测试按钮,用于模拟下载进度弹窗
   Widget _buildBottomButton(AppLocalizations l10n, GymCourseDetailState state) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final buttonText = state.isCourseReady
+        ? l10n.startPlaying
+        : l10n.downloadCourse;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // 主按钮
         SizedBox(
           height: 160.h,
           width: screenWidth * 0.25,
@@ -362,17 +412,58 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
               ),
             ),
             onPressed: () {
-              ref.read(gymCourseDetailProvider.notifier).onEnterCoursePressed();
+              if (state.isCourseReady) {
+                // 课程已就绪 → 直接导航到 Play 页面
+                context.push(
+                  '/gym-device-play',
+                  extra: {
+                    'courseId': widget.courseId,
+                    'deviceType': widget.deviceType,
+                  },
+                );
+              } else {
+                // 未就绪 → 开始下载
+                ref
+                    .read(gymCourseDetailProvider.notifier)
+                    .onEnterCoursePressed();
+              }
             },
             child: Container(
               alignment: Alignment.center,
               child: Text(
-                l10n.entryCourse,
+                buttonText,
                 style: TextStyle(
                   color: FitTheme.textButtonColor,
                   fontSize: FitTheme.fonSizeBig,
                   fontFamily: FitTheme.fontFamily,
                 ),
+              ),
+            ),
+          ),
+        ),
+        // 测试按钮(小一号,灰色边框)
+        SizedBox(width: 20.w),
+        SizedBox(
+          height: 80.h,
+          width: screenWidth * 0.08,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: FitTheme.textColor,
+              side: BorderSide(
+                color: FitTheme.textColor.withValues(alpha: 0.5),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            onPressed: _isTestDownloading
+                ? _cancelTestDownload
+                : _startTestDownload,
+            child: Text(
+              _isTestDownloading ? '取消' : '测试下载',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontFamily: FitTheme.fontFamily,
               ),
             ),
           ),

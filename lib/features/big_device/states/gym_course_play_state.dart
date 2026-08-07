@@ -192,6 +192,19 @@ abstract class GymCoursePlayState with _$GymCoursePlayState {
     /// 动画帧率
     @Default(30) int imageFps,
 
+    /// 本地图片资源根路径（对应旧版 rootImagePath）
+    /// 格式示例："/var/mobile/.../course/actionImage/"
+    /// 拼接规则："${rootImagePath}${imageName}/${imagePlayIndex}.png"
+    @Default('') String rootImagePath,
+
+    /// 本地 BGM 资源根路径
+    /// 格式示例："/var/mobile/.../course/bgm/"
+    @Default('') String rootBgmPath,
+
+    /// 本地 Voice 资源根路径
+    /// 格式示例："/var/mobile/.../course/voice/"
+    @Default('') String rootVoicePath,
+
     /// 播放进度百分比 (0.0-1.0)，控制底部箭头位置
     @Default(0.0) double playProgressPercent,
 
@@ -245,6 +258,8 @@ abstract class ActionItemState with _$ActionItemState {
   const factory ActionItemState({
     @Default('Warm Up') String name,
     @Default('') String imageName,
+    @Default('') String bgmName,
+    @Default('') String voiceName,
     @Default(60) int duration,
     @Default(3) int resistance,
     @Default(25) int cadence,

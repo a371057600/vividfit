@@ -33,7 +33,6 @@ class QuickStartTrainingPage extends ConsumerStatefulWidget {
 class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
@@ -59,7 +58,6 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       duration: const Duration(seconds: 10),
       vsync: this,
     )..repeat();
-    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
   }
 
   @override
@@ -95,8 +93,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   _buildPauseWidget(tr, screenHeight, screenWidth),
                 _buildBackButton(state),
                 Positioned(
-                  left: 20.w,
-                  top: 30.h,
+                  left: 40.w,
+                  top: 40.h,
                   child: _buildMusicButton(state),
                 ),
               ],
@@ -193,7 +191,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
     switch (widget.deviceType) {
       case FtmsDeviceType.indoorBike:
-        padding = EdgeInsets.only(top: 30.h, right: 50.w, left: 50.w);
+        padding = EdgeInsets.only(top: 30.h, right: 40.w, left: 80.w);
         mainAxisAlignment = MainAxisAlignment.spaceBetween;
         containerWidth = screenWidth;
         metrics = [
@@ -353,7 +351,12 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   Widget _buildBikeController(QuickStartState state) {
     return Container(
-      margin: EdgeInsets.only(top: 200.h, left: 40.w, right: 40.w),
+      margin: EdgeInsets.only(
+        top: 120.h,
+        left: 40.w,
+        right: 40.w,
+        bottom: 40.h,
+      ),
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: Row(
@@ -440,7 +443,12 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   Widget _buildTreadmillController(QuickStartState state) {
     return Container(
-      margin: EdgeInsets.only(top: 200.h, left: 40.w, right: 40.w),
+      margin: EdgeInsets.only(
+        top: 150.h,
+        left: 40.w,
+        right: 40.w,
+        bottom: 40.h,
+      ),
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: Row(
@@ -832,7 +840,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               });
             },
             child: Container(
-              height: 30.sp,
+              height: 25.sp,
               child: Image.asset(
                 "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/music_play.png",
               ),

@@ -1365,6 +1365,18 @@ abstract class AppLocalizations {
   /// **'Entry Course'**
   String get entryCourse;
 
+  /// No description provided for @startPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Playing'**
+  String get startPlaying;
+
+  /// No description provided for @downloadCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Course'**
+  String get downloadCourse;
+
   /// No description provided for @courseList.
   ///
   /// In en, this message translates to:
@@ -1616,6 +1628,366 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No data? Tap to retry'**
   String get noDataTapToRetry;
+
+  /// No description provided for @finishedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get finishedTime;
+
+  /// No description provided for @finishedDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get finishedDistance;
+
+  /// No description provided for @finishedCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get finishedCalories;
+
+  /// No description provided for @finishedCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts'**
+  String get finishedCounts;
+
+  /// No description provided for @trainingIntensity.
+  ///
+  /// In en, this message translates to:
+  /// **'Training Intensity'**
+  String get trainingIntensity;
+
+  /// No description provided for @courseRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Rating'**
+  String get courseRating;
+
+  /// No description provided for @speedBarChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed Bar Chart'**
+  String get speedBarChart;
+
+  /// No description provided for @courseOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Over'**
+  String get courseOver;
+
+  /// No description provided for @finishedSportTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Sport Time'**
+  String get finishedSportTime;
+
+  /// No description provided for @finishedTotalDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Distance'**
+  String get finishedTotalDistance;
+
+  /// No description provided for @finishedTotalCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Calories'**
+  String get finishedTotalCalories;
+
+  /// No description provided for @finishedPace.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace'**
+  String get finishedPace;
+
+  /// No description provided for @finishedMaxPace.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Pace'**
+  String get finishedMaxPace;
+
+  /// No description provided for @finishedAvgCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Cadence'**
+  String get finishedAvgCadence;
+
+  /// No description provided for @finishedMaxCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Cadence'**
+  String get finishedMaxCadence;
+
+  /// No description provided for @finishedMaxHeartRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Heart Rate'**
+  String get finishedMaxHeartRate;
+
+  /// No description provided for @finishedTotalCadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Cadence'**
+  String get finishedTotalCadence;
+
+  /// No description provided for @finishedRestTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest Time'**
+  String get finishedRestTime;
+
+  /// No description provided for @finishedCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get finishedCompletion;
+
+  /// No description provided for @completion.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion'**
+  String get completion;
+
+  /// No description provided for @stability.
+  ///
+  /// In en, this message translates to:
+  /// **'Stability'**
+  String get stability;
+
+  /// No description provided for @pedalingEff.
+  ///
+  /// In en, this message translates to:
+  /// **'Pacing Eff'**
+  String get pedalingEff;
+
+  /// No description provided for @cadence.
+  ///
+  /// In en, this message translates to:
+  /// **'Cadence'**
+  String get cadence;
+
+  /// No description provided for @moderateChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate Challenge'**
+  String get moderateChallenge;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'PAUSED'**
+  String get paused;
+
+  /// No description provided for @sportPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Sport Paused'**
+  String get sportPaused;
+
+  /// No description provided for @continueBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueBtn;
+
+  /// No description provided for @exitCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Course'**
+  String get exitCourse;
+
+  /// No description provided for @leaveLevelA.
+  ///
+  /// In en, this message translates to:
+  /// **'Level A'**
+  String get leaveLevelA;
+
+  /// No description provided for @leaveLevelB.
+  ///
+  /// In en, this message translates to:
+  /// **'Level B'**
+  String get leaveLevelB;
+
+  /// No description provided for @leaveLevelC.
+  ///
+  /// In en, this message translates to:
+  /// **'Level C'**
+  String get leaveLevelC;
+
+  /// No description provided for @leaveLevelD.
+  ///
+  /// In en, this message translates to:
+  /// **'Level D'**
+  String get leaveLevelD;
+
+  /// No description provided for @leaveLevelE.
+  ///
+  /// In en, this message translates to:
+  /// **'Level E'**
+  String get leaveLevelE;
+
+  /// No description provided for @leisurely.
+  ///
+  /// In en, this message translates to:
+  /// **'Leisurely'**
+  String get leisurely;
+
+  /// No description provided for @lightAdapt.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Adapt'**
+  String get lightAdapt;
+
+  /// No description provided for @easyAdaptation.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy Adaptation'**
+  String get easyAdaptation;
+
+  /// No description provided for @moderateImprovement.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate Improvement'**
+  String get moderateImprovement;
+
+  /// No description provided for @intenseLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Intense Load'**
+  String get intenseLoad;
+
+  /// No description provided for @extremeBreakthrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Extreme Breakthrough'**
+  String get extremeBreakthrough;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumber;
+
+  /// No description provided for @emailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Email Address'**
+  String get emailAddress;
+
+  /// No description provided for @unionId.
+  ///
+  /// In en, this message translates to:
+  /// **'Unionid'**
+  String get unionId;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @authentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get authentication;
+
+  /// No description provided for @verificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Code'**
+  String get verificationCode;
+
+  /// No description provided for @chooseOtherVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Other Verification Methods'**
+  String get chooseOtherVerification;
+
+  /// No description provided for @confirmOwnOperation.
+  ///
+  /// In en, this message translates to:
+  /// **'To confirm that it is your own operation, please verify your identity.'**
+  String get confirmOwnOperation;
+
+  /// No description provided for @codeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Code Sent'**
+  String get codeSent;
+
+  /// No description provided for @setNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Set New Password'**
+  String get setNewPassword;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePassword;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @passwordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Password does not match'**
+  String get passwordMismatch;
+
+  /// No description provided for @passwordRequirements.
+  ///
+  /// In en, this message translates to:
+  /// **'Password Requirements'**
+  String get passwordRequirements;
+
+  /// No description provided for @atLeast8Chars.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 8 characters'**
+  String get atLeast8Chars;
+
+  /// No description provided for @bindNewPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind a new phone'**
+  String get bindNewPhone;
+
+  /// No description provided for @bindNewEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Bind a new email'**
+  String get bindNewEmail;
+
+  /// No description provided for @accountBound.
+  ///
+  /// In en, this message translates to:
+  /// **'The account has been bound'**
+  String get accountBound;
+
+  /// No description provided for @success.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get success;
+
+  /// No description provided for @unbound.
+  ///
+  /// In en, this message translates to:
+  /// **'Unbound'**
+  String get unbound;
+
+  /// No description provided for @warningDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: Do you want to cancel your account so that you will delete personal information?'**
+  String get warningDeleteAccount;
 }
 
 class _AppLocalizationsDelegate

@@ -9,10 +9,66 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/home_notifier.dart';
+import '../states/home_state.dart';
+
+// ============================================================================
+// 功能入口配置模型
+// ============================================================================
+class HomeFuncEntryConfig {
+  final String key;
+  final String Function(AppLocalizations) labelBuilder;
+  final String imagePath;
+  final String? route;
+  final int? tabIndex;
+  final bool isEnabled;
+
+  const HomeFuncEntryConfig({
+    required this.key,
+    required this.labelBuilder,
+    required this.imagePath,
+    this.route,
+    this.tabIndex,
+    this.isEnabled = true,
+  });
+}
+
+// ============================================================================
+// 卡片网格类型枚举
+// ============================================================================
+enum HomeGridCardType {
+  numberAndUnit,
+  textStatus,
+  unitOnly,
+}
+
+// ============================================================================
+// 卡片网格配置模型
+// ============================================================================
+class HomeGridCardConfig {
+  final String key;
+  final String Function(AppLocalizations) titleBuilder;
+  final String imagePath;
+  final String Function(AppLocalizations)? unitBuilder;
+  final HomeGridCardType cardType;
+  final bool isCnOnly;
+  final bool isNotCnOnly;
+  final bool isEnabled;
+
+  const HomeGridCardConfig({
+    required this.key,
+    required this.titleBuilder,
+    required this.imagePath,
+    this.unitBuilder,
+    required this.cardType,
+    this.isCnOnly = false,
+    this.isNotCnOnly = false,
+    this.isEnabled = true,
+  });
+}
 
 /// 主页主屏(1:1 复刻旧 NewMainSportScreen)。
 class HomeTabScreen extends ConsumerWidget {
-  const HomeTabScreen({super.key});
+  HomeTabScreen({super.key});
 
   static const _ringLabels = ['timeMin', 'met', 'kcal'];
   static const _ringColors = [
@@ -21,22 +77,194 @@ class HomeTabScreen extends ConsumerWidget {
     Color.fromARGB(255, 255, 168, 0),
     Color.fromARGB(255, 230, 51, 16),
   ];
-  static const _funcEntryKeys = [
-    'courses',
-    'ranks',
-    'daily',
-    'fitnessAi',
-    'medal',
-    'game',
-    'game',
+  // ---- 功能入口配置模型 ----
+  late final List<HomeFuncEntryConfig> _funcEntryConfigs = [
+    // 顺序即为显示顺序, 禁用后会自动跳过, 空位自动填充
+    HomeFuncEntryConfig(
+      key: 'game',
+      labelBuilder: (l10n) => l10n.game,
+      imagePath: 'images/newUIScreen/icons/icon_game.png',
+      route: '/placeholder',
+    ),
+    HomeFuncEntryConfig(
+      key: 'medal',
+      labelBuilder: (l10n) => l10n.medal,
+      imagePath: 'images/newUIScreen/icons/icon_second_button1.png',
+      route: '/placeholder',
+    ),
+    HomeFuncEntryConfig(
+      key: 'ranks',
+      labelBuilder: (l10n) => l10n.ranks,
+      imagePath: 'images/newUIScreen/icons/icon_second_button0.png',
+      route: '/ranking',
+    ),
+    HomeFuncEntryConfig(
+      key: 'daily',
+      labelBuilder: (l10n) => l10n.daily,
+      imagePath: 'images/newUIScreen/icons/icon_second_button4.png',
+      route: '/placeholder',
+    ),
+    HomeFuncEntryConfig(
+      key: 'courses',
+      labelBuilder: (l10n) => l10n.courses,
+      imagePath: 'images/newUIScreen/icons/icon_second_button3.png',
+      tabIndex: 1,
+    ),
+    // AI 入口 - 暂时禁用, 启用时将 isEnabled 改为 true
+    HomeFuncEntryConfig(
+      key: 'fitnessAi',
+      labelBuilder: (l10n) => l10n.fitnessAi,
+      imagePath: 'images/newUIScreen/icons/icon_second_button2.png',
+      route: '/placeholder',
+      isEnabled: false,
+    ),
   ];
-  static const _funcEntryImages = [
-    'images/newUIScreen/icons/icon_second_button3.png',
-    'images/newUIScreen/icons/icon_second_button0.png',
-    'images/newUIScreen/icons/icon_second_button4.png',
-    'images/newUIScreen/icons/icon_second_button2.png',
-    'images/newUIScreen/icons/icon_second_button1.png',
-    'images/newUIScreen/icons/icon_game.png',
+
+  // ---- 卡片网格配置 ----
+  late final List<HomeGridCardConfig> _gridCardConfigs = [
+    // CN 卡片 (简中模式)
+    HomeGridCardConfig(
+      key: 'exerciseRecord',
+      titleBuilder: (l10n) => l10n.exerciseRecord,
+      imagePath: 'images/newUIScreen/icons/icon_home_page0.png',
+      unitBuilder: (l10n) => l10n.times,
+      cardType: HomeGridCardType.numberAndUnit,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'bodyData',
+      titleBuilder: (l10n) => l10n.bodyData,
+      imagePath: 'images/newUIScreen/icons/icon_home_page1.png',
+      unitBuilder: (l10n) => l10n.bmi,
+      cardType: HomeGridCardType.numberAndUnit,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'burnRank',
+      titleBuilder: (l10n) => l10n.burnRank,
+      imagePath: 'images/newUIScreen/icons/icon_home_page2.png',
+      unitBuilder: (l10n) => l10n.rankUnit,
+      cardType: HomeGridCardType.numberAndUnit,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'todaysBurn',
+      titleBuilder: (l10n) => l10n.todaysBurn,
+      imagePath: 'images/newUIScreen/icons/icon_home_page3.png',
+      unitBuilder: (l10n) => l10n.kcal,
+      cardType: HomeGridCardType.numberAndUnit,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'checkInTask',
+      titleBuilder: (l10n) => l10n.checkInTask,
+      imagePath: 'images/newUIScreen/icons/icon_home_page4.png',
+      cardType: HomeGridCardType.textStatus,
+      isCnOnly: true,
+    ),
+    // AI 卡片 - 暂时禁用, 启用时将 isEnabled 改为 true
+    HomeGridCardConfig(
+      key: 'aiPt',
+      titleBuilder: (l10n) => l10n.aiPt,
+      imagePath: 'images/newUIScreen/icons/icon_home_page5.png',
+      cardType: HomeGridCardType.textStatus,
+      isCnOnly: true,
+      isEnabled: false,
+    ),
+    HomeGridCardConfig(
+      key: 'onlineStore',
+      titleBuilder: (l10n) => l10n.onlineStore,
+      imagePath: 'images/newUIScreen/icons/icon_home_page6.png',
+      unitBuilder: (l10n) => l10n.jdShopping,
+      cardType: HomeGridCardType.unitOnly,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'sportsGoal',
+      titleBuilder: (l10n) => l10n.sportsGoal,
+      imagePath: 'images/newUIScreen/icons/icon_home_page7.png',
+      unitBuilder: (l10n) => l10n.reasonableGoalSetting,
+      cardType: HomeGridCardType.unitOnly,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'sportsReport',
+      titleBuilder: (l10n) => l10n.sportsReport,
+      imagePath: 'images/newUIScreen/icons/icon_home_page8.png',
+      unitBuilder: (l10n) => l10n.annualSportsSummary,
+      cardType: HomeGridCardType.unitOnly,
+      isCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'onlineManual',
+      titleBuilder: (l10n) => l10n.onlineManual,
+      imagePath: 'images/newUIScreen/icons/icon_home_page9.png',
+      unitBuilder: (l10n) => l10n.manualDownload,
+      cardType: HomeGridCardType.unitOnly,
+      isCnOnly: true,
+    ),
+    // 非 CN 卡片 (国际模式)
+    HomeGridCardConfig(
+      key: 'exerciseRecord',
+      titleBuilder: (l10n) => l10n.exerciseRecord,
+      imagePath: 'images/newUIScreen/icons/icon_home_page0.png',
+      unitBuilder: (l10n) => l10n.times,
+      cardType: HomeGridCardType.numberAndUnit,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'bodyMassIndex',
+      titleBuilder: (l10n) => l10n.bodyMassIndex,
+      imagePath: 'images/newUIScreen/icons/icon_home_page1.png',
+      cardType: HomeGridCardType.numberAndUnit,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'ranks',
+      titleBuilder: (l10n) => l10n.ranks,
+      imagePath: 'images/newUIScreen/icons/icon_home_page2.png',
+      cardType: HomeGridCardType.numberAndUnit,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'kcalCons',
+      titleBuilder: (l10n) => l10n.kcalCons,
+      imagePath: 'images/newUIScreen/icons/icon_home_page3.png',
+      unitBuilder: (l10n) => l10n.kcal,
+      cardType: HomeGridCardType.numberAndUnit,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'dailyTask',
+      titleBuilder: (l10n) => l10n.dailyTask,
+      imagePath: 'images/newUIScreen/icons/icon_home_page4.png',
+      cardType: HomeGridCardType.textStatus,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'fitnessGoals',
+      titleBuilder: (l10n) => l10n.fitnessGoals,
+      imagePath: 'images/newUIScreen/icons/icon_home_page7.png',
+      unitBuilder: (l10n) => l10n.goalSetting,
+      cardType: HomeGridCardType.unitOnly,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'sportsReport',
+      titleBuilder: (l10n) => l10n.sportsReport,
+      imagePath: 'images/newUIScreen/icons/icon_home_page8.png',
+      unitBuilder: (l10n) => l10n.annualSportsReview,
+      cardType: HomeGridCardType.unitOnly,
+      isNotCnOnly: true,
+    ),
+    HomeGridCardConfig(
+      key: 'deviceManual',
+      titleBuilder: (l10n) => l10n.deviceManual,
+      imagePath: 'images/newUIScreen/icons/icon_home_page9.png',
+      unitBuilder: (l10n) => l10n.manualDownload,
+      cardType: HomeGridCardType.unitOnly,
+      isNotCnOnly: true,
+    ),
   ];
   static const _deviceEntryKeys = [
     'spinBike',
@@ -54,33 +282,6 @@ class HomeTabScreen extends ConsumerWidget {
     'images/newUIScreen/HomePageAnimation/other/icon_rowing_machine.png',
     'images/newUIScreen/HomePageAnimation/other/icon_power_station.png',
     'images/newUIScreen/icons/icon_game.png',
-  ];
-
-  // CN 卡片图片(10 张)
-  static const _gridCardImagesCn = [
-    'images/newUIScreen/icons/icon_home_page0.png',
-    'images/newUIScreen/icons/icon_home_page1.png',
-    'images/newUIScreen/icons/icon_home_page2.png',
-    'images/newUIScreen/icons/icon_home_page3.png',
-    'images/newUIScreen/icons/icon_home_page4.png',
-    'images/newUIScreen/icons/icon_home_page5.png',
-    'images/newUIScreen/icons/icon_home_page6.png',
-    'images/newUIScreen/icons/icon_home_page7.png',
-    'images/newUIScreen/icons/icon_home_page8.png',
-    'images/newUIScreen/icons/icon_home_page9.png',
-    'images/newUIScreen/icons/icon_home_page6.png',
-  ];
-  // 非简中卡片图片(8 张)
-  static const _gridCardImagesNotCn = [
-    'images/newUIScreen/icons/icon_home_page0.png',
-    'images/newUIScreen/icons/icon_home_page1.png',
-    'images/newUIScreen/icons/icon_home_page2.png',
-    'images/newUIScreen/icons/icon_home_page3.png',
-    'images/newUIScreen/icons/icon_home_page4.png',
-    'images/newUIScreen/icons/icon_home_page7.png',
-    'images/newUIScreen/icons/icon_home_page8.png',
-    'images/newUIScreen/icons/icon_home_page9.png',
-    'images/newUIScreen/icons/icon_home_page6.png',
   ];
 
   @override
@@ -153,7 +354,7 @@ class HomeTabScreen extends ConsumerWidget {
                 ),
                 Spacer(),
                 InkWell(
-                  onTap: () => context.push('/placeholder'),
+                  onTap: () => context.push('/record-main'),
                   child: _buildStepBar(ref),
                 ),
               ],
@@ -177,6 +378,7 @@ class HomeTabScreen extends ConsumerWidget {
       'carol',
     ];
     final character = characters[state.selectedCharacterIndex.clamp(0, 6)];
+    final frameIndex = state.animationIndex;
     return SizedBox(
       height: 460.h,
       width: MediaQuery.of(ref.context).size.width,
@@ -188,10 +390,9 @@ class HomeTabScreen extends ConsumerWidget {
               InkWell(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
-                onTap: () =>
-                    ref.read(homeProvider.notifier).touchCharacter(),
+                onTap: () => ref.read(homeProvider.notifier).touchCharacter(),
                 child: ExtendedImage.asset(
-                  'images/newUIScreen/HomePageAnimation/$character/1.png',
+                  'images/newUIScreen/HomePageAnimation/$character/$frameIndex.png',
                   repeat: ImageRepeat.noRepeat,
                   fit: BoxFit.fitHeight,
                   height: 390.h,
@@ -503,10 +704,14 @@ class HomeTabScreen extends ConsumerWidget {
     );
   }
 
-  // ---- 5 功能入口 ----
+  // ---- 功能入口 ----
+  List<HomeFuncEntryConfig> _getEnabledFuncEntries() {
+    return _funcEntryConfigs.where((e) => e.isEnabled).toList();
+  }
+
   Widget _buildFuncEntries(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final order = [5, 3, 1, 2, 4];
+    final entries = _getEnabledFuncEntries();
     return Card(
       color: FitTheme.secondbackGround,
       margin: EdgeInsets.only(top: 25, bottom: 25, left: 25, right: 25).r,
@@ -515,34 +720,28 @@ class HomeTabScreen extends ConsumerWidget {
         width: MediaQuery.of(context).size.width,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: order.map((i) => _funcEntry(context, ref, l10n, i)).toList(),
+          children: entries
+              .map((config) => _funcEntry(context, ref, l10n, config))
+              .toList(),
         ),
       ),
     );
   }
 
-  Widget _funcEntry(BuildContext context, WidgetRef ref, AppLocalizations l10n, int index) {
-    final label = _funcEntryKeys[index] == 'courses'
-        ? l10n.courses
-        : _funcEntryKeys[index] == 'ranks'
-        ? l10n.ranks
-        : _funcEntryKeys[index] == 'daily'
-        ? l10n.daily
-        : _funcEntryKeys[index] == 'fitnessAi'
-        ? l10n.fitnessAi
-        : _funcEntryKeys[index] == 'medal'
-        ? l10n.medal
-        : l10n.game;
+  Widget _funcEntry(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    HomeFuncEntryConfig config,
+  ) {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       onTap: () {
-        if (_funcEntryKeys[index] == 'courses') {
-          // 课程入口：切换到底部导航第二个 Tab
-          ref.read(homeProvider.notifier).changePage(1);
-        } else {
-          // 其他入口：跳转到占位页（后续可隐藏或迁移）
-          context.push('/placeholder');
+        if (config.tabIndex != null) {
+          ref.read(homeProvider.notifier).changePage(config.tabIndex!);
+        } else if (config.route != null) {
+          context.push(config.route!);
         }
       },
       child: SizedBox(
@@ -554,12 +753,12 @@ class HomeTabScreen extends ConsumerWidget {
               height: 60.h,
               width: 60.w,
               child: Image.asset(
-                _funcEntryImages[index],
+                config.imagePath,
                 color: FitTheme.buttonColor,
               ),
             ),
             Text(
-              label,
+              config.labelBuilder(l10n),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -604,7 +803,7 @@ class HomeTabScreen extends ConsumerWidget {
             Container(
               alignment: Alignment.centerLeft,
               child: Text(
-                l10n.bodyMassIndexColon,
+                "BMI",
                 style: TextStyle(
                   height: 1,
                   fontSize: 30.sp,
@@ -662,28 +861,30 @@ class HomeTabScreen extends ConsumerWidget {
                     style: TextStyle(
                       height: 1,
                       color: _ringColors[bmiIdx],
-                      fontSize: 60.sp,
+                      fontSize: 55.sp,
                       fontFamily: AppFonts.bebas,
                     ),
                   ),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: _ringColors[bmiIdx],
-                    borderRadius: BorderRadius.circular(5).r,
-                  ),
-                  margin: EdgeInsets.only(top: 10, left: 10).r,
-                  height: 40.h,
-                  width: 140.w,
-                  alignment: Alignment.center,
-                  child: Text(
-                    weightLabels[bmiIdx],
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 15.sp,
-                      fontFamily: AppFonts.hofontregular,
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _ringColors[bmiIdx],
+                      borderRadius: BorderRadius.circular(5).r,
+                    ),
+                    margin: EdgeInsets.only(top: 10, left: 10).r,
+                    height: 40.h,
+                    width: 140.w,
+                    alignment: Alignment.center,
+                    child: Text(
+                      weightLabels[bmiIdx],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 15.sp,
+                        fontFamily: AppFonts.hofontregular,
+                      ),
                     ),
                   ),
                 ),
@@ -760,84 +961,43 @@ class HomeTabScreen extends ConsumerWidget {
   }
 
   // ---- 卡片网格 ----
+  List<HomeGridCardConfig> _getEnabledGridCards(bool isCn) {
+    return _gridCardConfigs.where((config) {
+      if (!config.isEnabled) return false;
+      if (isCn && config.isNotCnOnly) return false;
+      if (!isCn && config.isCnOnly) return false;
+      return true;
+    }).toList();
+  }
+
   Widget _buildCardGrid(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(homeProvider.notifier);
-    final count = notifier.isCn ? 10 : 8;
+    final isCn = notifier.isCn;
+    final cards = _getEnabledGridCards(isCn);
     return Container(
       margin: EdgeInsets.only(left: 25, bottom: 20, right: 25).r,
       child: Wrap(
         alignment: WrapAlignment.start,
         spacing: 25.r,
         runSpacing: 25.r,
-        children: List.generate(count, (i) => _buildGridCard(context, ref, i)),
+        children: cards
+            .map((config) => _buildGridCard(context, ref, config, isCn))
+            .toList(),
       ),
     );
   }
 
-  /// 获取卡片名称(基于 l10n)。
-  String _gridCardName(AppLocalizations l10n, int index, bool isCn) {
-    final cnKeys = [
-      l10n.exerciseRecord,
-      l10n.bodyData,
-      l10n.burnRank,
-      l10n.todaysBurn,
-      l10n.checkInTask,
-      l10n.aiPt,
-      l10n.onlineStore,
-      l10n.sportsGoal,
-      l10n.sportsReport,
-      l10n.onlineManual,
-    ];
-    final notCnKeys = [
-      l10n.exerciseRecord,
-      l10n.bodyMassIndex,
-      l10n.ranks,
-      l10n.kcalCons,
-      l10n.dailyTask,
-      l10n.fitnessGoals,
-      l10n.sportsReport,
-      l10n.deviceManual,
-    ];
-    final list = isCn ? cnKeys : notCnKeys;
-    return list[index % list.length];
-  }
-
-  /// 获取卡片单位(基于 l10n)。
-  String _gridCardUnit(AppLocalizations l10n, int index, bool isCn) {
-    switch (index) {
-      case 0:
-        return l10n.times;
-      case 1:
-        return isCn ? l10n.bmi : '';
-      case 2:
-        return isCn ? l10n.rankUnit : '';
-      case 3:
-        return l10n.kcal;
-      case 5:
-        return isCn ? '' : l10n.goalSetting;
-      case 6:
-        return isCn ? l10n.jdShopping : l10n.annualSportsReview;
-      case 7:
-        return isCn ? l10n.reasonableGoalSetting : l10n.manualDownload;
-      case 8:
-        return isCn ? l10n.annualSportsSummary : '';
-      case 9:
-        return isCn ? l10n.manualDownload : '';
-      default:
-        return '';
-    }
-  }
-
-  Widget _buildGridCard(BuildContext context, WidgetRef ref, int index) {
+  Widget _buildGridCard(
+    BuildContext context,
+    WidgetRef ref,
+    HomeGridCardConfig config,
+    bool isCn,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(homeProvider);
-    final notifier = ref.read(homeProvider.notifier);
-    final isCn = notifier.isCn;
-    final cardName = _gridCardName(l10n, index, isCn);
-    final img = isCn ? _gridCardImagesCn : _gridCardImagesNotCn;
 
-    // 文字卡(index 4/5)高度 355,其余 370
-    final isTextCard = index == 4 || (index == 5 && isCn);
+    // textStatus 类型使用较短高度
+    final isTextCard = config.cardType == HomeGridCardType.textStatus;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -861,7 +1021,7 @@ class HomeTabScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        cardName,
+                        config.titleBuilder(l10n),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 30.sp,
@@ -870,7 +1030,8 @@ class HomeTabScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    if (index != 3)
+                    // 数字卡(index 0-3 对应 key 以 exerciseRecord/burnRank 等)不显示箭头
+                    if (config.key != 'todaysBurn' && config.key != 'kcalCons')
                       Container(
                         padding: EdgeInsets.only(bottom: 5).r,
                         height: 30.r,
@@ -882,16 +1043,16 @@ class HomeTabScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              // 内容区:3 种类型
+              // 内容区
               Expanded(
-                child: _buildCardContent(context, ref, l10n, index, isCn),
+                child: _buildCardContent(context, ref, l10n, config, isCn),
               ),
               // 卡片图片
               Container(
                 height: 160.r,
                 width: MediaQuery.of(context).size.width,
                 alignment: Alignment.centerRight,
-                child: Image.asset(img[index % img.length], fit: BoxFit.fill),
+                child: Image.asset(config.imagePath, fit: BoxFit.fill),
               ),
               // 日期
               Text(
@@ -915,14 +1076,79 @@ class HomeTabScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    int index,
+    HomeGridCardConfig config,
     bool isCn,
   ) {
     final state = ref.watch(homeProvider);
     final notifier = ref.read(homeProvider.notifier);
 
-    // index 4:打卡 — 文字 "已达成/未达成",25sp,红/绿色
-    if (index == 4) {
+    switch (config.cardType) {
+      case HomeGridCardType.textStatus:
+        return _buildTextStatusCard(config.key, state, l10n);
+
+      case HomeGridCardType.unitOnly:
+        final unit = config.unitBuilder?.call(l10n) ?? '';
+        return Container(
+          alignment: Alignment.topLeft,
+          margin: EdgeInsets.only(top: 10, bottom: 20).r,
+          child: Text(
+            unit,
+            overflow: TextOverflow.clip,
+            style: TextStyle(
+              color: FitTheme.textColor,
+              fontSize: 25.sp,
+              height: 1,
+            ),
+          ),
+        );
+
+      case HomeGridCardType.numberAndUnit:
+        final value = notifier.cardDataValueByKey(config.key);
+        final unit = config.unitBuilder?.call(l10n) ?? '';
+        return Container(
+          alignment: Alignment.centerLeft,
+          margin: EdgeInsets.only(bottom: 20).r,
+          width: MediaQuery.of(context).size.width,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(
+                    letterSpacing: 0,
+                    color: FitTheme.textColor,
+                    fontSize: 50.sp,
+                    fontFamily: AppFonts.bebas,
+                    height: 1,
+                  ),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.only(left: 10).r,
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  unit,
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    color: FitTheme.textColor,
+                    fontSize: 25.sp,
+                    height: 0.8,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+    }
+  }
+
+  /// 文字状态卡 (打卡 / AI 报告)
+  Widget _buildTextStatusCard(String key, HomeState state, AppLocalizations l10n) {
+    if (key == 'checkInTask' || key == 'dailyTask') {
       final text = state.isReached ? l10n.achieved : l10n.unachieved;
       final color = state.isReached
           ? Colors.green
@@ -945,8 +1171,7 @@ class HomeTabScreen extends ConsumerWidget {
       );
     }
 
-    // index 5(CN):AI私教 — 文字 "已定制/未定制",25sp
-    if (index == 5 && isCn) {
+    if (key == 'aiPt') {
       final text = state.hasAiReport ? l10n.customized : l10n.unsatisfactory;
       final color = state.hasAiReport
           ? FitTheme.textColor
@@ -969,64 +1194,6 @@ class HomeTabScreen extends ConsumerWidget {
       );
     }
 
-    // index > 5:纯单位文字卡(无数值),25sp,topLeft 对齐
-    if (index > 5) {
-      final unit = _gridCardUnit(l10n, index, isCn);
-      return Container(
-        alignment: Alignment.topLeft,
-        margin: EdgeInsets.only(top: 10, bottom: 20).r,
-        child: Text(
-          unit,
-          overflow: TextOverflow.clip,
-          style: TextStyle(
-            color: FitTheme.textColor,
-            fontSize: 25.sp,
-            height: 1,
-          ),
-        ),
-      );
-    }
-
-    // 默认:数字 + 单位(0,1,2,3)
-    final value = notifier.cardDataValue(index);
-    final unit = _gridCardUnit(l10n, index, isCn);
-    return Container(
-      alignment: Alignment.centerLeft,
-      margin: EdgeInsets.only(bottom: 20).r,
-      width: MediaQuery.of(context).size.width,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Flexible(
-            child: Text(
-              value,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: TextStyle(
-                letterSpacing: 0,
-                color: FitTheme.textColor,
-                fontSize: 50.sp,
-                fontFamily: AppFonts.bebas,
-                height: 1,
-              ),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(left: 10).r,
-            alignment: Alignment.bottomLeft,
-            child: Text(
-              unit,
-              overflow: TextOverflow.clip,
-              style: TextStyle(
-                color: FitTheme.textColor,
-                fontSize: 25.sp,
-                height: 0.8,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 }

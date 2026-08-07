@@ -1,5 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/services/storage_service.dart';
+import '../../../core/services/storage_service_provider.dart';
+import '../../home/notifiers/home_notifier.dart';
 import '../states/user_settings_state.dart';
 
 part 'user_settings_notifier.g.dart';
@@ -8,8 +11,11 @@ part 'user_settings_notifier.g.dart';
 class UserSettingsNotifier extends _$UserSettingsNotifier {
   @override
   UserSettingsState build() {
+    _storage = ref.watch(storageServiceProvider);
     return const UserSettingsState();
   }
+
+  late StorageService _storage;
 
   Future<void> loadData() async {
     await Future.delayed(const Duration(milliseconds: 500));
@@ -51,6 +57,9 @@ class UserSettingsNotifier extends _$UserSettingsNotifier {
 
   void updateSelectedImageIndex(int index) {
     state = state.copyWith(selectedImageIndex: index);
+    _storage.setSelectedCharacterIndex(index);
+    print('🎯 [Character] selected character index: $index');
+    ref.read(homeProvider.notifier).syncSelectedCharacter(index);
   }
 
   void toggleUpdating(bool isUpdating) {

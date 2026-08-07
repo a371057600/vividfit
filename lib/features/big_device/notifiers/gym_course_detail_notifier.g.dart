@@ -75,7 +75,7 @@ final class GymCourseDetailNotifierProvider
 }
 
 String _$gymCourseDetailNotifierHash() =>
-    r'96696143b8f4b6896f04174c7c52a4f564b1f987';
+    r'a979d9e231afb41f5a79cbd6d3debd1e68b1c0d5';
 
 /// 课程详情页 Notifier(Riverpod 3.0 代码生成,auto-dispose)。
 ///

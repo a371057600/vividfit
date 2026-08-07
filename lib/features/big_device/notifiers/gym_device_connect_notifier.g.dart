@@ -42,7 +42,7 @@ final class GymDeviceConnectNotifierProvider
 }
 
 String _$gymDeviceConnectNotifierHash() =>
-    r'4ff4c5ca6728f20da19628f364ff74d7346f52dc';
+    r'802ca56a09029a0fa0ebef483b54128f9f2105dc';
 
 abstract class _$GymDeviceConnectNotifier
     extends $Notifier<GymDeviceConnectState> {

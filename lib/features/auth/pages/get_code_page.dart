@@ -5,118 +5,186 @@ import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
-import 'auth_video_background.dart';
 
-/// 验证码输入页(1:1 复刻旧项目 NewLoginGetCodeScreen)。
+/// 6 位验证码输入页(对应旧项目 NewGetCodeScreen)。
 ///
-/// 保留原结构:视频背景 + Pinput(6位)+ Re-get/倒计时按钮 + 左上返回标题。
-/// Pinput 输入完成调用 selectLoginType 触发验证码登录,成功后由路由重定向到首页。
-class GetCodePage extends ConsumerWidget {
+/// 支持:倒计时重新获取、Pinput 自动焦点、输入完成后 Loading + 登录 + 按 200/201 分发跳转。
+class GetCodePage extends ConsumerStatefulWidget {
   const GetCodePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GetCodePage> createState() => _GetCodePageState();
+}
+
+class _GetCodePageState extends ConsumerState<GetCodePage> {
+  final _pinCtrl = TextEditingController();
+  final _pinFocus = FocusNode();
+
+  @override
+  void dispose() {
+    _pinCtrl.dispose();
+    _pinFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onCompleted(String pin) async {
     final l10n = AppLocalizations.of(context)!;
-    final reGetCode =
-        ref.watch(authProvider.select((s) => s.reGetCode));
-    final countdown =
-        ref.watch(authProvider.select((s) => s.countdown));
+    final n = ref.read(authProvider.notifier);
+    showLoadingDialog(context, message: l10n.login);
+    try {
+      final ok = await n.selectLoginType(pin);
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      if (ok) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        if (!context.mounted) return;
+        final isNewUser = ref.read(authProvider).isNewUser;
+        context.go(isNewUser ? '/nickname-setup' : '/home-shell');
+      } else {
+        // 登录失败(验证码错误等)→清空 Pinput 重新聚焦让用户再输
+        _pinCtrl.clear();
+        _pinFocus.requestFocus();
+      }
+    } catch (e) {
+      print('❌ [GetCodePage] unexpected error: $e');
+      if (context.mounted) Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
+    final state = ref.watch(authProvider);
+    final countdown = state.countdown;
+    final reGet = state.reGetCode2;
+    final loginType = state.loginType;
+    final targetHint = loginType == 1
+        ? state.phoneNumber.toString()
+        : state.emailAccount;
+
+    final defaultPinTheme = PinTheme(
+      width: 80.r,
+      height: 90.r,
+      textStyle: TextStyle(color: FitTheme.textColor, fontSize: 40.sp),
+      decoration: BoxDecoration(
+        border: Border.all(color: FitTheme.buttonColor),
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: FitTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          const AuthVideoBackground(),
-          Container(
-            padding: const EdgeInsets.only(left: 20, right: 20),
-            height: height,
-            width: width,
-            alignment: Alignment.center,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Pinput(
+      appBar: AppBar(
+        backgroundColor: FitTheme.backgroundColor,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        leading: InkWell(
+          onTap: () {
+            if (context.canPop()) context.pop();
+          },
+          child: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
+        ),
+        title: Text(l10n.getCodeTitle,
+            style: TextStyle(color: FitTheme.textColor, fontSize: 40.sp)),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 50.r, vertical: 40.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 40.r),
+              Text(
+                l10n.enterCode,
+                style: TextStyle(color: FitTheme.textColor, fontSize: 60.sp),
+              ),
+              SizedBox(height: 20.r),
+              // TODO(l10n): "Code was sent to <phone/email>" - 当前硬编码占位
+              Text(
+                'Code was sent to $targetHint',
+                style: TextStyle(
+                  color: FitTheme.textColor.withValues(alpha: 0.6),
+                  fontSize: 26.sp,
+                ),
+              ),
+              SizedBox(height: 80.r),
+              Center(
+                child: Pinput(
+                  controller: _pinCtrl,
+                  focusNode: _pinFocus,
                   length: 6,
-                  defaultPinTheme: PinTheme(
-                    margin: const EdgeInsets.all(5),
-                    width: 45,
-                    height: 45,
-                    textStyle: TextStyle(
-                      fontSize: 22,
-                      color: FitTheme.backgroundColor,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      border: Border.all(color: FitTheme.backgroundColor),
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: defaultPinTheme.copyWith(
+                    decoration: defaultPinTheme.decoration!.copyWith(
+                      border: Border.all(
+                        color: FitTheme.buttonColor,
+                        width: 2.5,
+                      ),
                     ),
                   ),
-                  onCompleted: (String pin) {
-                    if (pin.length == 6) {
-                      ref
-                          .read(authProvider.notifier)
-                          .selectLoginType(pin);
-                    }
-                  },
+                  onCompleted: _onCompleted,
+                  autofocus: true,
+                  showCursor: true,
+                  hapticFeedbackType: HapticFeedbackType.lightImpact,
                 ),
-                Container(
-                  width: width,
-                  margin: const EdgeInsets.all(20),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      disabledBackgroundColor: const Color.fromARGB(
-                        80,
-                        236,
-                        228,
-                        227,
-                      ),
-                      backgroundColor: FitTheme.buttonColor,
-                    ),
-                    onPressed: reGetCode
+              ),
+              SizedBox(height: 60.r),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: reGet
                         ? () {
-                            ref
-                                .read(authProvider.notifier)
-                                .regetCode();
+                            ref.read(authProvider.notifier).regetCode();
                           }
                         : null,
                     child: Text(
-                      reGetCode ? l10n.reGet : countdown.toString(),
+                      reGet
+                          ? l10n.reGet
+                          : '${l10n.reGet} (${countdown}s)',
                       style: TextStyle(
-                        color: FitTheme.textButtonColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                        color: reGet
+                            ? FitTheme.buttonColor
+                            : FitTheme.textColor.withValues(alpha: 0.4),
+                        fontSize: 28.sp,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 100.r,
-            left: 25.r,
-            child: InkWell(
-              // 旧 Get.off(NewLoginScreen):返回到入口选择页。
-              onTap: () => context.go('/login'),
-              child: Row(
-                children: [
-                  Icon(Icons.arrow_back_ios,
-                      color: Colors.white, size: 50.sp),
-                  SizedBox(width: 10.r),
-                  Text(
-                    l10n.getCodeTitle,
-                    style: TextStyle(color: Colors.white, fontSize: 40.sp),
-                  ),
                 ],
               ),
-            ),
+              SizedBox(height: 100.r),
+              SizedBox(
+                width: width,
+                height: 90.r,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_pinCtrl.text.length == 6) {
+                      _onCompleted(_pinCtrl.text);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FitTheme.buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.login,
+                    style: TextStyle(
+                      color: FitTheme.textButtonColor,
+                      fontSize: 36.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

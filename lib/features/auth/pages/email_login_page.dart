@@ -5,107 +5,140 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
-import 'auth_video_background.dart';
 
-/// 邮箱验证码登录-输入邮箱页(1:1 复刻旧项目 NewEmailLoginScreen)。
-///
-/// 保留原结构:视频背景 + 邮箱输入 + Get Captcha 按钮(带倒计时)。
-/// 发送成功后跳转验证码输入页(GetCodePage)。
-class EmailLoginPage extends ConsumerWidget {
+/// 邮箱登录(发送验证码→跳 GetCodePage)。对应旧项目 NewEmailLoginScreen。
+class EmailLoginPage extends ConsumerStatefulWidget {
   const EmailLoginPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EmailLoginPage> createState() => _EmailLoginPageState();
+}
+
+class _EmailLoginPageState extends ConsumerState<EmailLoginPage> {
+  late TextEditingController _emailCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailCtrl = TextEditingController(
+      text: ref.read(authProvider).emailAccount,
+    );
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    final reGetCode2 =
-        ref.watch(authProvider.select((s) => s.reGetCode2));
-    final countdown =
-        ref.watch(authProvider.select((s) => s.countdown));
+    final n = ref.read(authProvider.notifier);
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty) {
+      Fluttertoast.showToast(msg: l10n.enterEmail);
+      return;
+    }
+    if (!email.contains('@')) {
+      Fluttertoast.showToast(msg: l10n.enterEmail);
+      return;
+    }
+    n.setEmailAccount(email);
+    if (!ref.read(authProvider).ishasInternet) {
+      Fluttertoast.showToast(msg: l10n.noInternetConnectionOrNoInput);
+      return;
+    }
+    showLoadingDialog(context, message: l10n.getCaptcha);
+    try {
+      final ok = await n.sendEmailCaptcha();
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      if (ok) {
+        context.push('/get-code');
+      }
+    } catch (e) {
+      print('❌ [EmailLoginPage] unexpected error: $e');
+      if (context.mounted) Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: FitTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          const AuthVideoBackground(),
-          Container(
-            height: height,
-            width: width,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(left: 40, right: 40),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextField(
-                  style: TextStyle(color: FitTheme.backgroundColor),
-                  decoration: InputDecoration(
-                    hintText: l10n.enterEmail,
-                    hintStyle: const TextStyle(color: Colors.grey),
+      appBar: AppBar(
+        backgroundColor: FitTheme.backgroundColor,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        leading: InkWell(
+          onTap: () {
+            if (context.canPop()) context.pop();
+          },
+          child: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 60.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 40.r),
+              Text(
+                l10n.emailLogin,
+                style: TextStyle(color: FitTheme.textColor, fontSize: 60.sp),
+              ),
+              SizedBox(height: 80.r),
+              TextField(
+                controller: _emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                onChanged: ref.read(authProvider.notifier).setEmailAccount,
+                style: TextStyle(color: FitTheme.textColor, fontSize: 30.sp),
+                cursorColor: FitTheme.buttonColor,
+                decoration: InputDecoration(
+                  labelText: l10n.emailLogin,
+                  labelStyle: TextStyle(color: FitTheme.textColor, fontSize: 28.sp),
+                  hintText: l10n.enterEmail,
+                  hintStyle: TextStyle(color: FitTheme.textColor.withValues(alpha: 0.4)),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: FitTheme.textColor.withValues(alpha: 0.3)),
                   ),
-                  onChanged: (value) => ref
-                      .read(authProvider.notifier)
-                      .setEmailAccount(value),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: FitTheme.buttonColor),
+                  ),
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    final state = ref.read(authProvider);
-                    if (state.ishasInternet &&
-                        state.emailAccount.isNotEmpty &&
-                        state.reGetCode2) {
-                      final ok = await ref
-                          .read(authProvider.notifier)
-                          .sendEmailCaptcha();
-                      if (ok && context.mounted) {
-                        // 旧 Get.off(GetCode):替换当前页,返回时回到入口。
-                        context.pushReplacement('/get-code');
-                      }
-                    } else {
-                      Fluttertoast.showToast(
-                        msg: l10n.noInternetConnectionOrNoInput,
-                      );
-                    }
-                  },
+              ),
+              SizedBox(height: 120.r),
+              SizedBox(
+                width: width,
+                height: 90.r,
+                child: ElevatedButton(
+                  onPressed: () => _submit(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FitTheme.buttonColor,
-                    disabledBackgroundColor:
-                        FitTheme.buttonColor.withValues(alpha: 0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
                   ),
-                  child: Container(
-                    width: width * 0.8,
-                    alignment: Alignment.center,
-                    child: Text(
-                      reGetCode2 ? l10n.getCaptcha : '${countdown}s',
-                      style: const TextStyle(color: Colors.white),
+                  child: Text(
+                    l10n.getCaptcha,
+                    style: TextStyle(
+                      color: FitTheme.textButtonColor,
+                      fontSize: 36.sp,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 100.r,
-            left: 25.r,
-            child: InkWell(
-              onTap: () => context.pop(),
-              child: Row(
-                children: [
-                  Icon(Icons.arrow_back_ios,
-                      color: Colors.white, size: 50.sp),
-                  SizedBox(width: 10.r),
-                  Text(
-                    l10n.emailLogin,
-                    style: TextStyle(color: Colors.white, fontSize: 40.sp),
-                  ),
-                ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

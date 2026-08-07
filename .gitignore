@@ -48,6 +48,9 @@ app.*.map.json
 android/local.properties
 **/local.properties
 
+# TRAE 本地规划文档目录(仅本地使用,禁止同步到仓库)
+.trae/
+
 # CMake 缓存
 android/app/.cxx/
 

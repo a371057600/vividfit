@@ -207,18 +207,36 @@ class LoginPage extends ConsumerWidget {
                         SizedBox(height: 20.r),
                         _buildPrivacy(context, ref, l10n, languageNum, agreed),
                         if (kDebugMode) ...[
-                          SizedBox(height: 20.r),
-                          TextButton.icon(
-                            onPressed: () async {
-                              await ref.read(authProvider.notifier).devLogin();
-                              if (context.mounted) context.go('/home-shell');
-                            },
-                            icon: const Icon(Icons.developer_board, color: Colors.orange),
-                            label: Text(l10n.devOneClickLogin, style: const TextStyle(color: Colors.orange)),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => context.go('/api-test'),
-                            child: const Text('API 测试页'),
+                          SizedBox(height: 10.r),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 16.r,
+                            runSpacing: 8.r,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () async {
+                                  await ref.read(authProvider.notifier).devLogin();
+                                  if (context.mounted) context.go('/home-shell');
+                                },
+                                icon: const Icon(Icons.developer_board, color: Colors.orange),
+                                label: Text(l10n.devOneClickLogin, style: const TextStyle(color: Colors.orange)),
+                              ),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  // 模拟新用户注册(code=201 场景)→走一轮:昵称→目标→身体数据→首页
+                                  await ref
+                                      .read(authProvider.notifier)
+                                      .devSimulateRegister();
+                                  // 路由 redirect 会自动拉到 /nickname-setup
+                                },
+                                icon: const Icon(Icons.person_add_alt_1, color: Colors.lightGreenAccent),
+                                label: const Text('[调试]走注册流程(新用户)', style: TextStyle(color: Colors.lightGreenAccent)),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => context.go('/api-test'),
+                                child: const Text('API 测试页'),
+                              ),
+                            ],
                           ),
                         ],
                       ],

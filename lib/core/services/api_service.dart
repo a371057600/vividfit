@@ -14,6 +14,7 @@ class ApiService {
   ApiService(this._storage) {
     _dio = Dio(
       BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
         headers: <String, Object>{
           ApiConstants.headerAccessToken: _storage.accessToken ?? '',
           ApiConstants.headerAppPass: ApiConstants.appPass,
@@ -100,27 +101,28 @@ class ApiService {
     final resp = await _dio.get(
       path,
       queryParameters: queryParameters,
-      options: Options(headers: {
-        ApiConstants.headerAppPass: ApiConstants.appPass,
-        if (token != null) ApiConstants.headerAccessToken: token,
-      }),
+      options: Options(
+        headers: {
+          ApiConstants.headerAppPass: ApiConstants.appPass,
+          if (token != null) ApiConstants.headerAccessToken: token,
+        },
+      ),
     );
     return resp.data as Map<String, dynamic>;
   }
 
   /// 带 access_token 的 PUT。
-  Future<Map<String, dynamic>> authedPut(
-    String path, {
-    dynamic data,
-  }) async {
+  Future<Map<String, dynamic>> authedPut(String path, {dynamic data}) async {
     final token = _storage.accessToken;
     final resp = await _dio.put(
       path,
       data: data,
-      options: Options(headers: {
-        ApiConstants.headerAppPass: ApiConstants.appPass,
-        if (token != null) ApiConstants.headerAccessToken: token,
-      }),
+      options: Options(
+        headers: {
+          ApiConstants.headerAppPass: ApiConstants.appPass,
+          if (token != null) ApiConstants.headerAccessToken: token,
+        },
+      ),
     );
     return resp.data as Map<String, dynamic>;
   }

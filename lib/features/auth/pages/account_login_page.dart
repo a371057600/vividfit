@@ -1,157 +1,206 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
-import 'auth_video_background.dart';
 
-/// 账号密码登录页(1:1 复刻旧项目 NewAccountLoginScreen)。
+/// 账号密码登录页(对应旧项目 NewAccountLoginScreen)。
 ///
-/// 保留原结构:视频背景 + 邮箱/密码输入(UnderlineInputBorder)+ Login 按钮
-/// + Register/Forget password 链接 + 左上返回标题。密码显隐图标与旧版一致。
-class AccountLoginPage extends ConsumerWidget {
+/// 点击 Login 按钮 → 弹窗 Loading → 调用 AuthNotifier.login → 路由层按 200/201 分发跳转。
+class AccountLoginPage extends ConsumerStatefulWidget {
   const AccountLoginPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AccountLoginPage> createState() => _AccountLoginPageState();
+}
+
+class _AccountLoginPageState extends ConsumerState<AccountLoginPage> {
+  late TextEditingController _accountCtrl;
+  late TextEditingController _pwdCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = ref.read(authProvider);
+    _accountCtrl = TextEditingController(text: s.emailAccount);
+    _pwdCtrl = TextEditingController(text: s.password);
+  }
+
+  @override
+  void dispose() {
+    _accountCtrl.dispose();
+    _pwdCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _doLogin(BuildContext context) async {
+    final n = ref.read(authProvider.notifier);
     final l10n = AppLocalizations.of(context)!;
-    final showPassword =
-        ref.watch(authProvider.select((s) => s.showPassword));
+    final account = _accountCtrl.text.trim();
+    final pwd = _pwdCtrl.text.trim();
+    if (account.isEmpty || pwd.isEmpty) {
+      Fluttertoast.showToast(msg: l10n.pleaseEnterAccountAndPassword);
+      return;
+    }
+    n
+      ..setEmailAccount(account)
+      ..setPassword(pwd);
+    // 调登录接口前展示 Loading
+    showLoadingDialog(context, message: l10n.login);
+    try {
+      final ok = await n.login();
+      if (!context.mounted) return;
+      Navigator.of(context).pop(); // 关闭 Loading
+      if (ok) {
+        // 路由层 redirect 会按 isNewUser 分发 → 201→/nickname-setup; 200→/home-shell
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        if (!context.mounted) return;
+        final isNewUser = ref.read(authProvider).isNewUser;
+        context.go(isNewUser ? '/nickname-setup' : '/home-shell');
+      }
+    } catch (e) {
+      print('❌ [AccountLoginPage] unexpected error: $e');
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
+    final showPwd = ref.watch(authProvider.select((s) => s.showPassword));
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          const AuthVideoBackground(),
-          Container(
-            height: height,
-            width: width,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(left: 50, right: 50).r,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                TextField(
-                  style: TextStyle(color: Colors.white, fontSize: 25.sp),
-                  decoration: InputDecoration(
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    hintText: l10n.enterEmail,
-                    hintStyle: const TextStyle(color: Colors.white),
-                  ),
-                  onChanged: (value) =>
-                      ref.read(authProvider.notifier).setEmailAccount(value),
-                ),
-                TextField(
-                  obscureText: showPassword,
-                  style: TextStyle(color: Colors.white, fontSize: 25.sp),
-                  decoration: InputDecoration(
-                    suffix: InkWell(
-                      onTap: () => ref
-                          .read(authProvider.notifier)
-                          .toggleShowPassword(),
-                      child: SizedBox(
-                        height: 50.r,
-                        width: 50.r,
-                        child: showPassword
-                            ? Image.asset(
-                                'images/newUIScreen/icons/icon_password_show.png',
-                              )
-                            : Image.asset(
-                                'images/newUIScreen/icons/icon_password_close.png',
-                              ),
-                      ),
-                    ),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                    hintText: l10n.enterPassword,
-                    hintStyle: const TextStyle(color: Colors.white),
-                  ),
-                  onChanged: (value) =>
-                      ref.read(authProvider.notifier).setPassword(value),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () =>
-                      ref.read(authProvider.notifier).login(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FitTheme.buttonColor,
-                  ),
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: width - 200.w,
-                    child: Text(
-                      l10n.login,
-                      style: TextStyle(color: Colors.white, fontSize: 30.sp),
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: const EdgeInsets.all(25).r,
-                  height: 100.r,
-                  width: width,
-                  alignment: Alignment.center,
-                  child: Row(
-                    children: [
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () => context.push('/email-login'),
-                        child: Text(
-                          l10n.register,
-                          style:
-                              TextStyle(color: Colors.blue, fontSize: 30.sp),
-                        ),
-                      ),
-                      const Spacer(),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () => context.push('/find-password'),
-                        child: Text(
-                          l10n.forgetPassword,
-                          style:
-                              TextStyle(color: Colors.blue, fontSize: 30.sp),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 100.r,
-            left: 25.r,
-            child: InkWell(
-              onTap: () => context.pop(),
-              child: Row(
+      backgroundColor: FitTheme.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: FitTheme.backgroundColor,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        leading: InkWell(
+          onTap: () {
+            if (context.canPop()) context.pop();
+          },
+          child: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 60.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 40.r),
+              Text(
+                l10n.accountLogin,
+                style: TextStyle(color: FitTheme.textColor, fontSize: 60.sp),
+              ),
+              SizedBox(height: 80.r),
+              _buildAccountField(context, l10n),
+              SizedBox(height: 30.r),
+              _buildPasswordField(context, l10n, showPwd),
+              SizedBox(height: 30.r),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Icon(Icons.arrow_back_ios,
-                      color: Colors.white, size: 50.sp),
-                  SizedBox(width: 10.r),
-                  Text(
-                    l10n.accountLogin,
-                    style: TextStyle(color: Colors.white, fontSize: 40.sp),
+                  InkWell(
+                    onTap: () => context.push('/find-password'),
+                    child: Text(
+                      l10n.forgetPassword,
+                      style: TextStyle(
+                        color: FitTheme.textColor.withValues(alpha: 0.7),
+                        fontSize: 26.sp,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 100.r),
+              SizedBox(
+                width: width,
+                height: 90.r,
+                child: ElevatedButton(
+                  onPressed: () => _doLogin(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FitTheme.buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.login,
+                    style: TextStyle(
+                      color: FitTheme.textButtonColor,
+                      fontSize: 36.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountField(BuildContext context, AppLocalizations l10n) {
+    return TextField(
+      controller: _accountCtrl,
+      keyboardType: TextInputType.emailAddress,
+      onChanged: ref.read(authProvider.notifier).setEmailAccount,
+      style: TextStyle(color: FitTheme.textColor, fontSize: 30.sp),
+      cursorColor: FitTheme.buttonColor,
+      decoration: InputDecoration(
+        labelText: l10n.account,
+        labelStyle: TextStyle(color: FitTheme.textColor, fontSize: 28.sp),
+        hintText: l10n.enterEmail,
+        hintStyle: TextStyle(color: FitTheme.textColor.withValues(alpha: 0.4)),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: FitTheme.textColor.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: FitTheme.buttonColor),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool showPwd,
+  ) {
+    return TextField(
+      controller: _pwdCtrl,
+      obscureText: showPwd,
+      onChanged: ref.read(authProvider.notifier).setPassword,
+      style: TextStyle(color: FitTheme.textColor, fontSize: 30.sp),
+      cursorColor: FitTheme.buttonColor,
+      decoration: InputDecoration(
+        labelText: l10n.password,
+        labelStyle: TextStyle(color: FitTheme.textColor, fontSize: 28.sp),
+        hintText: l10n.enterPassword,
+        hintStyle: TextStyle(color: FitTheme.textColor.withValues(alpha: 0.4)),
+        suffixIcon: InkWell(
+          onTap: ref.read(authProvider.notifier).toggleShowPassword,
+          child: Icon(
+            showPwd ? Icons.visibility_off : Icons.visibility,
+            color: FitTheme.textColor,
+          ),
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: FitTheme.textColor.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: FitTheme.buttonColor),
+        ),
       ),
     );
   }

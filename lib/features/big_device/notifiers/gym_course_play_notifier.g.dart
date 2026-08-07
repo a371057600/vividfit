@@ -12,7 +12,7 @@ part of 'gym_course_play_notifier.dart';
 ///
 /// 职责：
 /// 1. 维护页面三态（loading / playing / finished）
-/// 2. 提供所有 UI 组件的 mock 数据
+/// 2. 纯本地模拟播放流程（无蓝牙）：定时器驱动 playIndex/imagePlayIndex/运动数据
 /// 3. 设备控制按钮的交互（速度/坡度/阻力 +/−）
 
 @ProviderFor(GymCoursePlayNotifier)
@@ -22,7 +22,7 @@ final gymCoursePlayProvider = GymCoursePlayNotifierProvider._();
 ///
 /// 职责：
 /// 1. 维护页面三态（loading / playing / finished）
-/// 2. 提供所有 UI 组件的 mock 数据
+/// 2. 纯本地模拟播放流程（无蓝牙）：定时器驱动 playIndex/imagePlayIndex/运动数据
 /// 3. 设备控制按钮的交互（速度/坡度/阻力 +/−）
 final class GymCoursePlayNotifierProvider
     extends $NotifierProvider<GymCoursePlayNotifier, GymCoursePlayState> {
@@ -30,7 +30,7 @@ final class GymCoursePlayNotifierProvider
   ///
   /// 职责：
   /// 1. 维护页面三态（loading / playing / finished）
-  /// 2. 提供所有 UI 组件的 mock 数据
+  /// 2. 纯本地模拟播放流程（无蓝牙）：定时器驱动 playIndex/imagePlayIndex/运动数据
   /// 3. 设备控制按钮的交互（速度/坡度/阻力 +/−）
   GymCoursePlayNotifierProvider._()
     : super(
@@ -60,13 +60,13 @@ final class GymCoursePlayNotifierProvider
 }
 
 String _$gymCoursePlayNotifierHash() =>
-    r'637dbba579b669b79c314e05fc2befc126752653';
+    r'912a68ece5912a1cff31c332e0dedd1a22a22454';
 
 /// 课程播放页 Notifier（对应旧 ControllerBigDeviceCoursePlay + ControllerNewFourBigDeviceSprot）
 ///
 /// 职责：
 /// 1. 维护页面三态（loading / playing / finished）
-/// 2. 提供所有 UI 组件的 mock 数据
+/// 2. 纯本地模拟播放流程（无蓝牙）：定时器驱动 playIndex/imagePlayIndex/运动数据
 /// 3. 设备控制按钮的交互（速度/坡度/阻力 +/−）
 
 abstract class _$GymCoursePlayNotifier extends $Notifier<GymCoursePlayState> {

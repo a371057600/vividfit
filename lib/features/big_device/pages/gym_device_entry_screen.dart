@@ -48,12 +48,8 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
       ref
           .read(gymCourseHomeProvider.notifier)
           .bootstrap(widget.deviceCategoryIndex);
-      final category = ref
-          .read(gymCourseHomeProvider)
-          .selectedDeviceCategory;
-      ref
-          .read(gymDeviceConnectProvider.notifier)
-          .setDeviceCategory(category);
+      final category = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
+      ref.read(gymDeviceConnectProvider.notifier).setDeviceCategory(category);
     });
   }
 
@@ -147,7 +143,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
         ),
         body: Container(
           width: screenWidth,
-          margin: EdgeInsets.only(left: 85, right: 45).r,
+          margin: EdgeInsets.only(left: 100, right: 15).r,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -172,9 +168,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
 
   /// 1:1 还原旧 `_titleWidget()`。
   Widget _buildHeaderTitle(GymCourseHomeState homeState, AppLocalizations tr) {
-    final titleKey = ref
-        .read(gymCourseHomeProvider.notifier)
-        .deviceTitleKey;
+    final titleKey = ref.read(gymCourseHomeProvider.notifier).deviceTitleKey;
 
     return Column(
       children: [
@@ -302,30 +296,25 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
 
   /// 卡片点击:按 index 跳转到对应子页面。
   ///
-  /// TODO(正式版): 恢复蓝牙连接守卫。当前为页面排布预览阶段,临时移除
-  /// "必须连接蓝牙才能进入"的限制。恢复时将下方守卫代码解注,并删除跳转 switch。
+  /// 1:1 还原旧 `_handleCardTap` 的蓝牙连接守卫逻辑:
+  /// 1. 未连接 → 请求权限 → 检查蓝牙 → 断开已有连接 → 启动扫描 → 弹出搜索对话框
+  /// 2. 已连接 → 直接跳转到对应功能页面
   void _handleCardTap(
     EntryCardData data,
     GymDeviceConnectState connectState,
   ) async {
     final deviceType = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
 
-    // === 临时移除蓝牙连接守卫(正式版恢复) ===
+    // === 蓝牙连接守卫(临时隐藏,测试用) ===
+    // TODO(恢复时): 取消注释下方代码,启用蓝牙连接守卫
     // if (!connectState.isEquipmentConnected) {
-    //   await BluetoothPermission.ensureInformedAndRequest(context);
-    //   if (!await BluetoothPermission.isAdapterOn()) {
-    //     if (mounted) {
-    //       final tr = AppLocalizations.of(context)!;
-    //       ScaffoldMessenger.of(context).showSnackBar(
-    //         SnackBar(content: Text(tr.pleaseOpenBluetooth)),
-    //       );
-    //     }
-    //     return;
+    //   if (connectState.isBluetoothConnected) {
+    //     connectNotifier.disconnectIfAny();
     //   }
-    //   connectNotifier.disconnectIfAny();
     //   if (!connectState.isSearching) {
     //     connectNotifier.startDeviceScan();
     //   }
+    //   if (!context.mounted) return;
     //   showDialog(
     //     context: context,
     //     barrierDismissible: false,

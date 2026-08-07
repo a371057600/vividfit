@@ -163,9 +163,7 @@ class UserSettingsPage extends ConsumerWidget {
 
   Widget _buildAvatarWidget(BuildContext context, state) {
     return Container(
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-      ),
+      decoration: const BoxDecoration(shape: BoxShape.circle),
       height: 80.r,
       width: 80.r,
       clipBehavior: Clip.hardEdge,
@@ -176,9 +174,7 @@ class UserSettingsPage extends ConsumerWidget {
           switch (state.extendedImageLoadState) {
             case LoadState.loading:
               return Center(
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                ),
+                child: CircularProgressIndicator(color: Colors.white),
               );
             case LoadState.failed:
               return ExtendedImage.asset(
@@ -205,7 +201,12 @@ class UserSettingsPage extends ConsumerWidget {
   ) {
     return Container(
       margin: const EdgeInsets.only(top: 20, bottom: 20, left: 20, right: 20).r,
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 10).r,
+      padding: const EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: 10,
+      ).r,
       height: 540.h,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
@@ -220,9 +221,27 @@ class UserSettingsPage extends ConsumerWidget {
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
           _buildBirthdayPickWidget(context, ref, l10n, state, notifier, 2),
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
-          Expanded(child: _buildHeightPickerWidget(context, ref, l10n, state, notifier, 3)),
+          Expanded(
+            child: _buildHeightPickerWidget(
+              context,
+              ref,
+              l10n,
+              state,
+              notifier,
+              3,
+            ),
+          ),
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
-          Expanded(child: _buildWeightPickerWidget(context, ref, l10n, state, notifier, 4)),
+          Expanded(
+            child: _buildWeightPickerWidget(
+              context,
+              ref,
+              l10n,
+              state,
+              notifier,
+              4,
+            ),
+          ),
         ],
       ),
     );
@@ -404,11 +423,7 @@ class UserSettingsPage extends ConsumerWidget {
             style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
           ),
           SizedBox(width: 20.r),
-          Icon(
-            Icons.arrow_forward_ios,
-            size: 30.sp,
-            color: FitTheme.textColor,
-          ),
+          Icon(Icons.arrow_forward_ios, size: 30.sp, color: FitTheme.textColor),
         ],
       ),
     );
@@ -449,11 +464,7 @@ class UserSettingsPage extends ConsumerWidget {
             style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
           ),
           SizedBox(width: 20.r),
-          Icon(
-            Icons.arrow_forward_ios,
-            size: 30.sp,
-            color: FitTheme.textColor,
-          ),
+          Icon(Icons.arrow_forward_ios, size: 30.sp, color: FitTheme.textColor),
         ],
       ),
     );
@@ -497,10 +508,7 @@ class UserSettingsPage extends ConsumerWidget {
                   l10n.theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname,
                   maxLines: 2,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: FitTheme.textColor,
-                    fontSize: 25.sp,
-                  ),
+                  style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
                 ),
                 Container(
                   height: 80.r,
@@ -594,115 +602,132 @@ class UserSettingsPage extends ConsumerWidget {
           ),
           alignment: Alignment.topLeft,
           width: MediaQuery.of(context).size.width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.genderSelection,
-                style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 20).r,
-                height: 40,
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.male,
-                          style: TextStyle(
-                            color: FitTheme.textColor,
-                            fontSize: 25.sp,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: Radio<double>(
-                            groupValue: state.gander ? 0 : 1,
-                            activeColor: FitTheme.buttonColor,
-                            value: 0,
-                            onChanged: ((value) {
-                              notifier.updateGender(true);
-                              Navigator.of(context).pop();
-                            }),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(
-                      height: 9,
-                      indent: 0,
-                      endIndent: 0,
-                      color: Color.fromARGB(47, 132, 129, 129),
-                    ),
-                  ],
+          child: RadioGroup<double>(
+            groupValue: state.gander ? 0 : 1,
+            onChanged: (double? value) {
+              if (value == 0) {
+                notifier.updateGender(true);
+              } else {
+                notifier.updateGender(false);
+              }
+              Navigator.of(context).pop();
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  l10n.genderSelection,
+                  style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
                 ),
-              ),
-              Container(
-                height: 40,
-                margin: EdgeInsets.only(top: 20),
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.female,
-                          style: TextStyle(
-                            color: FitTheme.textColor,
-                            fontSize: 25.sp,
+                Container(
+                  margin: EdgeInsets.only(top: 20).r,
+                  height: 40,
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.male,
+                            style: TextStyle(
+                              color: FitTheme.textColor,
+                              fontSize: 25.sp,
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: Radio<double>(
-                            groupValue: state.gander ? 0 : 1,
-                            activeColor: FitTheme.buttonColor,
-                            value: 1,
-                            onChanged: ((value) {
-                              notifier.updateGender(false);
-                              Navigator.of(context).pop();
-                            }),
+                          SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: Radio<double>(
+                              value: 0,
+                              fillColor:
+                                  WidgetStateProperty.resolveWith<Color?>((
+                                    states,
+                                  ) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return FitTheme.buttonColor;
+                                    }
+                                    return null;
+                                  }),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Divider(
-                      height: 9,
-                      indent: 0,
-                      endIndent: 0,
-                      color: Color.fromARGB(47, 132, 129, 129),
-                    ),
-                  ],
+                        ],
+                      ),
+                      Divider(
+                        height: 9,
+                        indent: 0,
+                        endIndent: 0,
+                        color: Color.fromARGB(47, 132, 129, 129),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Container(
-                  alignment: Alignment.bottomCenter,
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(
-                      l10n.cancel,
-                      style: TextStyle(color: Colors.white, fontSize: 25.sp),
+                Container(
+                  height: 40,
+                  margin: EdgeInsets.only(top: 20),
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.female,
+                            style: TextStyle(
+                              color: FitTheme.textColor,
+                              fontSize: 25.sp,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: Radio<double>(
+                              value: 1,
+                              fillColor:
+                                  WidgetStateProperty.resolveWith<Color?>((
+                                    states,
+                                  ) {
+                                    if (states.contains(WidgetState.selected)) {
+                                      return FitTheme.buttonColor;
+                                    }
+                                    return null;
+                                  }),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(
+                        height: 9,
+                        indent: 0,
+                        endIndent: 0,
+                        color: Color.fromARGB(47, 132, 129, 129),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
+                    child: InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        l10n.cancel,
+                        style: TextStyle(color: Colors.white, fontSize: 25.sp),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -755,7 +780,8 @@ class UserSettingsPage extends ConsumerWidget {
                     initialDateTime: DateTime(2022, 1, 1),
                     mode: CupertinoDatePickerMode.date,
                     onDateTimeChanged: (DateTime date) {
-                      final birthday = "${date.year}-${date.month.toString().padLeft(2, "0")}-${date.day.toString().padLeft(2, "0")}";
+                      final birthday =
+                          "${date.year}-${date.month.toString().padLeft(2, "0")}-${date.day.toString().padLeft(2, "0")}";
                       notifier.updateBirthday(birthday);
                     },
                   ),
@@ -899,10 +925,7 @@ class UserSettingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildConfirmButtonGroup(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildConfirmButtonGroup(BuildContext context, AppLocalizations l10n) {
     return SizedBox(
       height: 60,
       width: MediaQuery.of(context).size.width,

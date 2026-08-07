@@ -10,7 +10,9 @@ import '../notifiers/gym_device_connect_notifier.dart';
 ///
 /// 双态弹窗:
 /// 1. 搜索中态:透明背景 + 居中 CircularProgressIndicator(白色, strokeWidth:2)
+///    - **仅在搜索中且无设备时显示 Loading**
 /// 2. 设备列表态:secondbackGround 背景 + Row(标题+关闭按钮) + ListView(设备名)
+///    - **发现设备立即显示列表，支持追加**
 ///
 /// 还原点:
 /// - 搜索中:backgroundColor:transparent, content: Container(300x300 CircularProgressIndicator)
@@ -29,8 +31,9 @@ class DeviceSearchDialog extends ConsumerWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // ---- 搜索中态:透明背景 + 居中 CircularProgressIndicator ----
-    if (connectState.isSearching) {
+    // ✅ 修复:仅在搜索中且无设备时显示 Loading
+    // 发现第一个设备后立即切换到列表视图
+    if (connectState.isSearching && connectState.foundDeviceNames.isEmpty) {
       return AlertDialog(
         backgroundColor: Colors.transparent,
         title: const Center(child: Text('')),
@@ -52,7 +55,7 @@ class DeviceSearchDialog extends ConsumerWidget {
       );
     }
 
-    // ---- 设备列表态:secondbackGround 背景 + Row 标题 + ListView ----
+    // ✅ 发现设备立即显示列表（即使扫描未结束）
     return AlertDialog(
       backgroundColor: FitTheme.secondbackGround,
       title: Row(
@@ -75,6 +78,8 @@ class DeviceSearchDialog extends ConsumerWidget {
             color: FitTheme.secondbackGround,
             child: IconButton(
               onPressed: () async {
+                // ✅ 关闭时停止扫描和断开连接
+                await connectNotifier.stopScan();
                 connectNotifier.disconnectIfAny();
                 if (context.mounted) Navigator.of(context).pop();
               },
@@ -106,6 +111,8 @@ class DeviceSearchDialog extends ConsumerWidget {
                   final name = connectState.foundDeviceNames[index];
                   return InkWell(
                     onTap: () async {
+                      // ✅ 选择设备：先停止扫描再连接
+                      await connectNotifier.stopScan();
                       await connectNotifier.connectSelectedDevice(name);
                       if (context.mounted) Navigator.of(context).pop();
                     },

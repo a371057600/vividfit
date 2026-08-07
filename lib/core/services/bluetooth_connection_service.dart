@@ -3,6 +3,15 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
+/// 蓝牙连接事件类型(供 Notifier 区分 Layer 1/Layer 2)。
+enum BluetoothConnectionEvent {
+  /// Layer 1: 蓝牙链路已建立(BluetoothConnectionState.connected)。
+  bluetoothConnected,
+
+  /// 蓝牙链路已断开(BluetoothConnectionState.disconnected)。
+  bluetoothDisconnected,
+}
+
 /// 共享蓝牙连接服务。
 ///
 /// 封装 `FlutterBluePlus` 的扫描、连接、断开、状态订阅,
@@ -10,6 +19,9 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 /// **所有模块(course/connect/big_device)共享此 Service**,避免各自直接依赖 `flutter_blue_plus`。
 ///
 /// 通过 callback 向调用方(Notifier)报告事件,调用方负责将事件转换为 Riverpod state。
+/// 采用双保险判定机制:
+/// - Layer 1: bluetoothConnected → 仅表示蓝牙链路建立,不代表设备就绪
+/// - Layer 2: 由 FTMS 服务报告数据就绪后才设置 isEquipmentConnected=true
 class BluetoothConnectionService {
   BluetoothConnectionService();
 
@@ -29,8 +41,9 @@ class BluetoothConnectionService {
   /// 搜索状态变更回调 → Notifier 中更新 `isSearching`。
   void Function(bool isScanning)? onScanningChanged;
 
-  /// 连接状态变更回调 → Notifier 中更新 `isEquipmentConnected` / `hasConnectedOnce`。
-  void Function(bool isConnected, bool hasConnectedOnce)? onConnectionChanged;
+  /// 连接事件回调(替代旧 `onConnectionChanged`)。
+  /// Notifier 根据 event 类型分别处理 Layer 1/Layer 2 状态。
+  void Function(BluetoothConnectionEvent event)? onConnectionEvent;
 
   /// 启动蓝牙扫描(带白名单过滤)。
   Future<void> startScan(List<String> whitelist) async {
@@ -118,9 +131,14 @@ class BluetoothConnectionService {
     }
 
     _connStateSub = device.connectionState.listen((event) {
-      final isConnected = event == BluetoothConnectionState.connected;
-      debugPrint('[Bluetooth] connectionState event: ${event.name}, isConnected=$isConnected');
-      onConnectionChanged?.call(isConnected, isConnected);
+      debugPrint('[Bluetooth] connectionState event: ${event.name}');
+      if (event == BluetoothConnectionState.connected) {
+        debugPrint('[Bluetooth] Layer 1: bluetoothConnected');
+        onConnectionEvent?.call(BluetoothConnectionEvent.bluetoothConnected);
+      } else if (event == BluetoothConnectionState.disconnected) {
+        debugPrint('[Bluetooth] bluetoothDisconnected');
+        onConnectionEvent?.call(BluetoothConnectionEvent.bluetoothDisconnected);
+      }
     });
     device.cancelWhenDisconnected(_connStateSub!, delayed: true, next: true);
   }

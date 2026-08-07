@@ -199,8 +199,9 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
   Future<void> checkReadiness() async {
     if (state.courseActionList.isEmpty || state.courseId == null) return;
     try {
-      final manifest =
-          CourseResourceManifest.fromActions(state.courseActionList);
+      final manifest = CourseResourceManifest.fromActions(
+        state.courseActionList,
+      );
       final registry = ref.read(courseDownloadRegistryProvider);
       final ready = await registry.isReady(state.courseId!, state.deviceType);
       // 二次确认:登记表说 ready,但文件可能被外部清理过
@@ -217,7 +218,8 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
         // 登记表说 ready 但文件缺失 → 标记 partial
         await registry.markPartial(state.courseId!, state.deviceType, 0);
         debugPrint(
-            '⚠️ [CourseDetail] registry says ready but files missing, mark partial');
+          '⚠️ [CourseDetail] registry says ready but files missing, mark partial',
+        );
       }
     } catch (e) {
       debugPrint('🔴 [CourseDetail] checkReadiness failed: $e');
@@ -235,8 +237,9 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
     );
 
     try {
-      final manifest =
-          CourseResourceManifest.fromActions(state.courseActionList);
+      final manifest = CourseResourceManifest.fromActions(
+        state.courseActionList,
+      );
       final service = await ref.read(courseDownloadServiceProvider.future);
       final registry = ref.read(courseDownloadRegistryProvider);
 
@@ -250,8 +253,10 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
       state = state.copyWith(totalFileCount: manifest.totalFileCount);
 
       // 下载
-      await for (final progress
-          in service.downloadManifest(manifest, cancelToken: _downloadCancelToken)) {
+      await for (final progress in service.downloadManifest(
+        manifest,
+        cancelToken: _downloadCancelToken,
+      )) {
         if (!state.isNeedDownloaded) break; // 已被取消
         state = state.copyWith(
           downLoadProgress: progress.overallProgress,
@@ -261,22 +266,26 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
         );
         if (progress.status == DownloadStatus.failed) {
           await registry.markPartial(
-              state.courseId!, state.deviceType, progress.completedFiles);
+            state.courseId!,
+            state.deviceType,
+            progress.completedFiles,
+          );
           state = state.copyWith(
             isNeedDownloaded: false,
             downloadError: progress.errorReason ?? '下载失败',
           );
           debugPrint(
-              '🔴 [CourseDetail] download failed: ${progress.errorReason}');
+            '🔴 [CourseDetail] download failed: ${progress.errorReason}',
+          );
           return;
         }
         if (progress.status == DownloadStatus.cancelled) {
           await registry.markPartial(
-              state.courseId!, state.deviceType, progress.completedFiles);
-          state = state.copyWith(
-            isNeedDownloaded: false,
-            downloadError: '已取消',
+            state.courseId!,
+            state.deviceType,
+            progress.completedFiles,
           );
+          state = state.copyWith(isNeedDownloaded: false, downloadError: '已取消');
           return;
         }
       }
@@ -290,7 +299,10 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
         await _saveAssetAndFinish(manifest, registry);
       } else {
         await registry.markPartial(
-            state.courseId!, state.deviceType, state.downloadedFileCount);
+          state.courseId!,
+          state.deviceType,
+          state.downloadedFileCount,
+        );
         state = state.copyWith(
           isNeedDownloaded: false,
           downloadError: '解压后校验仍不通过,请重试',
@@ -340,7 +352,7 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
     state = state.copyWith(
       isNeedDownloaded: false,
       isCourseReady: true,
-      allowGoToPlayScreen: true,
+      allowGoToPlayScreen: false,
       downLoadProgress: 1.0,
       downloadedFileCount: manifest.totalFileCount,
     );
@@ -349,9 +361,6 @@ class GymCourseDetailNotifier extends _$GymCourseDetailNotifier {
   /// 取消下载(供 UI 取消按钮或返回时调用)。
   void cancelDownload() {
     _downloadCancelToken?.cancel('user cancelled');
-    state = state.copyWith(
-      isNeedDownloaded: false,
-      downloadError: '已取消',
-    );
+    state = state.copyWith(isNeedDownloaded: false, downloadError: '已取消');
   }
 }

@@ -43,7 +43,7 @@ class HomeShellScreen extends ConsumerWidget {
           body: IndexedStack(
             index: state.currentIndex,
             children: [
-              const HomeTabScreen(),
+              HomeTabScreen(),
               const CourseListPage(),
               const DeviceSearchScreen(),
               const AboutShellPage(),
@@ -66,41 +66,66 @@ class HomeShellScreen extends ConsumerWidget {
             ),
             child: BottomNavigationBar(
               selectedLabelStyle: TextStyle(
-                fontFamily: AppFonts.hofontmedium, fontSize: 30.sp,
+                fontFamily: AppFonts.hofontmedium,
+                fontSize: 30.sp,
               ),
               unselectedLabelStyle: TextStyle(
                 fontFamily: AppFonts.hofontregular,
-                color: FitTheme.textColor, fontSize: 30.sp,
+                color: FitTheme.textColor,
+                fontSize: 30.sp,
               ),
               elevation: 20.r,
               items: [
                 BottomNavigationBarItem(
-                  icon: Image.asset('images/newUIScreen/healthUn.png',
-                      width: 24, height: 24),
-                  activeIcon: Image.asset('images/newUIScreen/health.png',
-                      width: 24, height: 24),
+                  icon: Image.asset(
+                    'images/newUIScreen/healthUn.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  activeIcon: Image.asset(
+                    'images/newUIScreen/health.png',
+                    width: 24,
+                    height: 24,
+                  ),
                   label: l10n.health,
                 ),
                 BottomNavigationBarItem(
-                  icon: Image.asset('images/newUIScreen/courseUn.png',
-                      width: 24, height: 24),
-                  activeIcon: Image.asset('images/newUIScreen/course.png',
-                      width: 24, height: 24),
+                  icon: Image.asset(
+                    'images/newUIScreen/courseUn.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  activeIcon: Image.asset(
+                    'images/newUIScreen/course.png',
+                    width: 24,
+                    height: 24,
+                  ),
                   label: l10n.sport,
                 ),
                 BottomNavigationBarItem(
-                  icon: Image.asset('images/newUIScreen/icons/icon_device.png',
-                      width: 24, height: 24),
+                  icon: Image.asset(
+                    'images/newUIScreen/icons/icon_device.png',
+                    width: 24,
+                    height: 24,
+                  ),
                   activeIcon: Image.asset(
-                      'images/newUIScreen/icons/icon_device_sel.png',
-                      width: 24, height: 24),
+                    'images/newUIScreen/icons/icon_device_sel.png',
+                    width: 24,
+                    height: 24,
+                  ),
                   label: l10n.device,
                 ),
                 BottomNavigationBarItem(
-                  icon: Image.asset('images/newUIScreen/icons/meUn.png',
-                      width: 24, height: 24),
-                  activeIcon: Image.asset('images/newUIScreen/icons/me.png',
-                      width: 24, height: 24),
+                  icon: Image.asset(
+                    'images/newUIScreen/icons/meUn.png',
+                    width: 24,
+                    height: 24,
+                  ),
+                  activeIcon: Image.asset(
+                    'images/newUIScreen/icons/me.png',
+                    width: 24,
+                    height: 24,
+                  ),
                   label: l10n.me,
                 ),
               ],
@@ -123,40 +148,55 @@ class HomeShellScreen extends ConsumerWidget {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(l10n.fitMonster,
-                style: TextStyle(
-                  color: FitTheme.textColor, fontSize: 40.sp,
-                  fontFamily: AppFonts.hofontmedium,
-                )),
+            Text(
+              l10n.fitMonster,
+              style: TextStyle(
+                color: FitTheme.textColor,
+                fontSize: 40.sp,
+                fontFamily: AppFonts.hofontmedium,
+              ),
+            ),
             SizedBox(width: 10),
             Container(
               margin: EdgeInsets.only(bottom: 6).r,
-              child: Text(l10n.madeFitnessFunSlogan,
-                  style: TextStyle(
-                    color: FitTheme.textColor, fontSize: 25.sp,
-                    fontFamily: AppFonts.hofontregular,
-                  )),
+              child: Text(
+                l10n.madeFitnessFunSlogan,
+                style: TextStyle(
+                  color: FitTheme.textColor,
+                  fontSize: 25.sp,
+                  fontFamily: AppFonts.hofontregular,
+                ),
+              ),
             ),
           ],
         );
       case 1:
-        return Text(l10n.course,
-            style: TextStyle(
-              color: FitTheme.textColor, fontSize: 40.sp,
-              fontFamily: AppFonts.hofontmedium,
-            ));
+        return Text(
+          l10n.course,
+          style: TextStyle(
+            color: FitTheme.textColor,
+            fontSize: 40.sp,
+            fontFamily: AppFonts.hofontmedium,
+          ),
+        );
       case 2:
-        return Text(l10n.device,
-            style: TextStyle(
-              color: FitTheme.textColor, fontSize: 40.sp,
-              fontFamily: AppFonts.hofontmedium,
-            ));
+        return Text(
+          l10n.device,
+          style: TextStyle(
+            color: FitTheme.textColor,
+            fontSize: 40.sp,
+            fontFamily: AppFonts.hofontmedium,
+          ),
+        );
       case 3:
-        return Text(l10n.me,
-            style: TextStyle(
-              color: FitTheme.textColor, fontSize: 40.sp,
-              fontFamily: AppFonts.hofontmedium,
-            ));
+        return Text(
+          l10n.me,
+          style: TextStyle(
+            color: FitTheme.textColor,
+            fontSize: 40.sp,
+            fontFamily: AppFonts.hofontmedium,
+          ),
+        );
       default:
         return Container();
     }

@@ -24,7 +24,9 @@ mixin _$HomeState {
  String get myRank;/// 今日是否打卡
  bool get isReached;/// 是否有 AI 报告
  bool get hasAiReport;/// 是否正在加载(首次进入)
- bool get isLoading;
+ bool get isLoading;/// 动画帧索引(1~123,初始1)
+ int get animationIndex;/// 防重复点击锁(6秒冷却)
+ bool get allowTouch;
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -35,16 +37,16 @@ $HomeStateCopyWith<HomeState> get copyWith => _$HomeStateCopyWithImpl<HomeState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.mainData, mainData) || other.mainData == mainData)&&(identical(other.nickName, nickName) || other.nickName == nickName)&&(identical(other.headImageHash, headImageHash) || other.headImageHash == headImageHash)&&(identical(other.selectedCharacterIndex, selectedCharacterIndex) || other.selectedCharacterIndex == selectedCharacterIndex)&&(identical(other.myRank, myRank) || other.myRank == myRank)&&(identical(other.isReached, isReached) || other.isReached == isReached)&&(identical(other.hasAiReport, hasAiReport) || other.hasAiReport == hasAiReport)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HomeState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.mainData, mainData) || other.mainData == mainData)&&(identical(other.nickName, nickName) || other.nickName == nickName)&&(identical(other.headImageHash, headImageHash) || other.headImageHash == headImageHash)&&(identical(other.selectedCharacterIndex, selectedCharacterIndex) || other.selectedCharacterIndex == selectedCharacterIndex)&&(identical(other.myRank, myRank) || other.myRank == myRank)&&(identical(other.isReached, isReached) || other.isReached == isReached)&&(identical(other.hasAiReport, hasAiReport) || other.hasAiReport == hasAiReport)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.animationIndex, animationIndex) || other.animationIndex == animationIndex)&&(identical(other.allowTouch, allowTouch) || other.allowTouch == allowTouch));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentIndex,mainData,nickName,headImageHash,selectedCharacterIndex,myRank,isReached,hasAiReport,isLoading);
+int get hashCode => Object.hash(runtimeType,currentIndex,mainData,nickName,headImageHash,selectedCharacterIndex,myRank,isReached,hasAiReport,isLoading,animationIndex,allowTouch);
 
 @override
 String toString() {
-  return 'HomeState(currentIndex: $currentIndex, mainData: $mainData, nickName: $nickName, headImageHash: $headImageHash, selectedCharacterIndex: $selectedCharacterIndex, myRank: $myRank, isReached: $isReached, hasAiReport: $hasAiReport, isLoading: $isLoading)';
+  return 'HomeState(currentIndex: $currentIndex, mainData: $mainData, nickName: $nickName, headImageHash: $headImageHash, selectedCharacterIndex: $selectedCharacterIndex, myRank: $myRank, isReached: $isReached, hasAiReport: $hasAiReport, isLoading: $isLoading, animationIndex: $animationIndex, allowTouch: $allowTouch)';
 }
 
 
@@ -55,7 +57,7 @@ abstract mixin class $HomeStateCopyWith<$Res>  {
   factory $HomeStateCopyWith(HomeState value, $Res Function(HomeState) _then) = _$HomeStateCopyWithImpl;
 @useResult
 $Res call({
- int currentIndex, FitMainData mainData, String nickName, String headImageHash, int selectedCharacterIndex, String myRank, bool isReached, bool hasAiReport, bool isLoading
+ int currentIndex, FitMainData mainData, String nickName, String headImageHash, int selectedCharacterIndex, String myRank, bool isReached, bool hasAiReport, bool isLoading, int animationIndex, bool allowTouch
 });
 
 
@@ -72,7 +74,7 @@ class _$HomeStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentIndex = null,Object? mainData = null,Object? nickName = null,Object? headImageHash = null,Object? selectedCharacterIndex = null,Object? myRank = null,Object? isReached = null,Object? hasAiReport = null,Object? isLoading = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentIndex = null,Object? mainData = null,Object? nickName = null,Object? headImageHash = null,Object? selectedCharacterIndex = null,Object? myRank = null,Object? isReached = null,Object? hasAiReport = null,Object? isLoading = null,Object? animationIndex = null,Object? allowTouch = null,}) {
   return _then(HomeState(
 currentIndex: null == currentIndex ? _self.currentIndex : currentIndex // ignore: cast_nullable_to_non_nullable
 as int,mainData: null == mainData ? _self.mainData : mainData // ignore: cast_nullable_to_non_nullable
@@ -83,6 +85,8 @@ as int,myRank: null == myRank ? _self.myRank : myRank // ignore: cast_nullable_t
 as String,isReached: null == isReached ? _self.isReached : isReached // ignore: cast_nullable_to_non_nullable
 as bool,hasAiReport: null == hasAiReport ? _self.hasAiReport : hasAiReport // ignore: cast_nullable_to_non_nullable
 as bool,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,animationIndex: null == animationIndex ? _self.animationIndex : animationIndex // ignore: cast_nullable_to_non_nullable
+as int,allowTouch: null == allowTouch ? _self.allowTouch : allowTouch // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -177,10 +181,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentIndex,  FitMainData mainData,  String nickName,  String headImageHash,  int selectedCharacterIndex,  String myRank,  bool isReached,  bool hasAiReport,  bool isLoading)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentIndex,  FitMainData mainData,  String nickName,  String headImageHash,  int selectedCharacterIndex,  String myRank,  bool isReached,  bool hasAiReport,  bool isLoading,  int animationIndex,  bool allowTouch)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HomeState() when $default != null:
-return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImageHash,_that.selectedCharacterIndex,_that.myRank,_that.isReached,_that.hasAiReport,_that.isLoading);case _:
+return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImageHash,_that.selectedCharacterIndex,_that.myRank,_that.isReached,_that.hasAiReport,_that.isLoading,_that.animationIndex,_that.allowTouch);case _:
   return orElse();
 
 }
@@ -198,10 +202,10 @@ return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImage
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentIndex,  FitMainData mainData,  String nickName,  String headImageHash,  int selectedCharacterIndex,  String myRank,  bool isReached,  bool hasAiReport,  bool isLoading)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentIndex,  FitMainData mainData,  String nickName,  String headImageHash,  int selectedCharacterIndex,  String myRank,  bool isReached,  bool hasAiReport,  bool isLoading,  int animationIndex,  bool allowTouch)  $default,) {final _that = this;
 switch (_that) {
 case _HomeState():
-return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImageHash,_that.selectedCharacterIndex,_that.myRank,_that.isReached,_that.hasAiReport,_that.isLoading);case _:
+return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImageHash,_that.selectedCharacterIndex,_that.myRank,_that.isReached,_that.hasAiReport,_that.isLoading,_that.animationIndex,_that.allowTouch);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -218,10 +222,10 @@ return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImage
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentIndex,  FitMainData mainData,  String nickName,  String headImageHash,  int selectedCharacterIndex,  String myRank,  bool isReached,  bool hasAiReport,  bool isLoading)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentIndex,  FitMainData mainData,  String nickName,  String headImageHash,  int selectedCharacterIndex,  String myRank,  bool isReached,  bool hasAiReport,  bool isLoading,  int animationIndex,  bool allowTouch)?  $default,) {final _that = this;
 switch (_that) {
 case _HomeState() when $default != null:
-return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImageHash,_that.selectedCharacterIndex,_that.myRank,_that.isReached,_that.hasAiReport,_that.isLoading);case _:
+return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImageHash,_that.selectedCharacterIndex,_that.myRank,_that.isReached,_that.hasAiReport,_that.isLoading,_that.animationIndex,_that.allowTouch);case _:
   return null;
 
 }
@@ -233,7 +237,7 @@ return $default(_that.currentIndex,_that.mainData,_that.nickName,_that.headImage
 
 
 class _HomeState implements HomeState {
-  const _HomeState({this.currentIndex = 0, this.mainData = const FitMainData(), this.nickName = 'UserName', this.headImageHash = '', this.selectedCharacterIndex = 0, this.myRank = '99', this.isReached = false, this.hasAiReport = false, this.isLoading = true});
+  const _HomeState({this.currentIndex = 0, this.mainData = const FitMainData(), this.nickName = 'UserName', this.headImageHash = '', this.selectedCharacterIndex = 0, this.myRank = '99', this.isReached = false, this.hasAiReport = false, this.isLoading = true, this.animationIndex = 1, this.allowTouch = true});
   
 
 /// 底部导航当前 tab
@@ -254,6 +258,10 @@ class _HomeState implements HomeState {
 @override@JsonKey() final  bool hasAiReport;
 /// 是否正在加载(首次进入)
 @override@JsonKey() final  bool isLoading;
+/// 动画帧索引(1~123,初始1)
+@override@JsonKey() final  int animationIndex;
+/// 防重复点击锁(6秒冷却)
+@override@JsonKey() final  bool allowTouch;
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +273,16 @@ _$HomeStateCopyWith<_HomeState> get copyWith => __$HomeStateCopyWithImpl<_HomeSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.mainData, mainData) || other.mainData == mainData)&&(identical(other.nickName, nickName) || other.nickName == nickName)&&(identical(other.headImageHash, headImageHash) || other.headImageHash == headImageHash)&&(identical(other.selectedCharacterIndex, selectedCharacterIndex) || other.selectedCharacterIndex == selectedCharacterIndex)&&(identical(other.myRank, myRank) || other.myRank == myRank)&&(identical(other.isReached, isReached) || other.isReached == isReached)&&(identical(other.hasAiReport, hasAiReport) || other.hasAiReport == hasAiReport)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HomeState&&(identical(other.currentIndex, currentIndex) || other.currentIndex == currentIndex)&&(identical(other.mainData, mainData) || other.mainData == mainData)&&(identical(other.nickName, nickName) || other.nickName == nickName)&&(identical(other.headImageHash, headImageHash) || other.headImageHash == headImageHash)&&(identical(other.selectedCharacterIndex, selectedCharacterIndex) || other.selectedCharacterIndex == selectedCharacterIndex)&&(identical(other.myRank, myRank) || other.myRank == myRank)&&(identical(other.isReached, isReached) || other.isReached == isReached)&&(identical(other.hasAiReport, hasAiReport) || other.hasAiReport == hasAiReport)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.animationIndex, animationIndex) || other.animationIndex == animationIndex)&&(identical(other.allowTouch, allowTouch) || other.allowTouch == allowTouch));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentIndex,mainData,nickName,headImageHash,selectedCharacterIndex,myRank,isReached,hasAiReport,isLoading);
+int get hashCode => Object.hash(runtimeType,currentIndex,mainData,nickName,headImageHash,selectedCharacterIndex,myRank,isReached,hasAiReport,isLoading,animationIndex,allowTouch);
 
 @override
 String toString() {
-  return 'HomeState(currentIndex: $currentIndex, mainData: $mainData, nickName: $nickName, headImageHash: $headImageHash, selectedCharacterIndex: $selectedCharacterIndex, myRank: $myRank, isReached: $isReached, hasAiReport: $hasAiReport, isLoading: $isLoading)';
+  return 'HomeState(currentIndex: $currentIndex, mainData: $mainData, nickName: $nickName, headImageHash: $headImageHash, selectedCharacterIndex: $selectedCharacterIndex, myRank: $myRank, isReached: $isReached, hasAiReport: $hasAiReport, isLoading: $isLoading, animationIndex: $animationIndex, allowTouch: $allowTouch)';
 }
 
 
@@ -285,7 +293,7 @@ abstract mixin class _$HomeStateCopyWith<$Res> implements $HomeStateCopyWith<$Re
   factory _$HomeStateCopyWith(_HomeState value, $Res Function(_HomeState) _then) = __$HomeStateCopyWithImpl;
 @override @useResult
 $Res call({
- int currentIndex, FitMainData mainData, String nickName, String headImageHash, int selectedCharacterIndex, String myRank, bool isReached, bool hasAiReport, bool isLoading
+ int currentIndex, FitMainData mainData, String nickName, String headImageHash, int selectedCharacterIndex, String myRank, bool isReached, bool hasAiReport, bool isLoading, int animationIndex, bool allowTouch
 });
 
 
@@ -302,7 +310,7 @@ class __$HomeStateCopyWithImpl<$Res>
 
 /// Create a copy of HomeState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentIndex = null,Object? mainData = null,Object? nickName = null,Object? headImageHash = null,Object? selectedCharacterIndex = null,Object? myRank = null,Object? isReached = null,Object? hasAiReport = null,Object? isLoading = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentIndex = null,Object? mainData = null,Object? nickName = null,Object? headImageHash = null,Object? selectedCharacterIndex = null,Object? myRank = null,Object? isReached = null,Object? hasAiReport = null,Object? isLoading = null,Object? animationIndex = null,Object? allowTouch = null,}) {
   return _then(_HomeState(
 currentIndex: null == currentIndex ? _self.currentIndex : currentIndex // ignore: cast_nullable_to_non_nullable
 as int,mainData: null == mainData ? _self.mainData : mainData // ignore: cast_nullable_to_non_nullable
@@ -313,6 +321,8 @@ as int,myRank: null == myRank ? _self.myRank : myRank // ignore: cast_nullable_t
 as String,isReached: null == isReached ? _self.isReached : isReached // ignore: cast_nullable_to_non_nullable
 as bool,hasAiReport: null == hasAiReport ? _self.hasAiReport : hasAiReport // ignore: cast_nullable_to_non_nullable
 as bool,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,animationIndex: null == animationIndex ? _self.animationIndex : animationIndex // ignore: cast_nullable_to_non_nullable
+as int,allowTouch: null == allowTouch ? _self.allowTouch : allowTouch // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

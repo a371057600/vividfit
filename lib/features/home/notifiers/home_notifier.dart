@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/services/home_repository_provider.dart';
@@ -17,11 +19,23 @@ class HomeNotifier extends _$HomeNotifier {
     _storage = ref.watch(storageServiceProvider);
     final state = _buildInitialState();
     _initData();
+    _animationTimer = Timer.periodic(
+      const Duration(milliseconds: 30),
+      (_) => _onAnimationTick(),
+    );
+    _touchLockTimer = Timer(const Duration(seconds: 6), _resetTouchLock);
+    ref.onDispose(() {
+      _animationTimer?.cancel();
+      _touchLockTimer?.cancel();
+    });
     return state;
   }
 
   late HomeRepository _repo;
   late StorageService _storage;
+  Timer? _animationTimer;
+  Timer? _touchLockTimer;
+  bool _isAnimating = false;
 
   HomeState _buildInitialState() {
     var mainData = FitMainData();
@@ -76,9 +90,7 @@ class HomeNotifier extends _$HomeNotifier {
   }
 
   Future<void> refresh() async {
-    state = state.copyWith(
-      mainData: state.mainData.copyWith(isLoading: true),
-    );
+    state = state.copyWith(mainData: state.mainData.copyWith(isLoading: true));
     await _fetchStatistics();
     await _repo.getStatisticsCalendar();
     state = state.copyWith(isReached: _storage.isReached ?? false);
@@ -88,7 +100,43 @@ class HomeNotifier extends _$HomeNotifier {
     state = state.copyWith(currentIndex: index);
   }
 
-  void touchCharacter() {}
+  void syncSelectedCharacter(int index) {
+    state = state.copyWith(
+      selectedCharacterIndex: index,
+      animationIndex: 1,
+      allowTouch: true,
+    );
+    _isAnimating = false;
+    print('🎯 [Character] home sync character: $index, animation reset');
+  }
+
+  void touchCharacter() {
+    if (!state.allowTouch) {
+      print('🔒 [Animation] touch locked, ignored');
+      return;
+    }
+    print('🎬 [Animation] touchCharacter triggered');
+    _isAnimating = true;
+    state = state.copyWith(allowTouch: false);
+    _touchLockTimer?.cancel();
+    _touchLockTimer = Timer(const Duration(seconds: 6), _resetTouchLock);
+  }
+
+  void _onAnimationTick() {
+    if (!_isAnimating) return;
+    final currentIndex = state.animationIndex;
+    if (currentIndex >= 123) {
+      print('🎬 [Animation] animation completed, reset to frame 1');
+      state = state.copyWith(animationIndex: 1);
+      _isAnimating = false;
+    } else {
+      state = state.copyWith(animationIndex: currentIndex + 1);
+    }
+  }
+
+  void _resetTouchLock() {
+    state = state.copyWith(allowTouch: true);
+  }
 
   int bmiIndex() {
     final bmi = state.mainData.bodyBmi;
@@ -134,6 +182,26 @@ class HomeNotifier extends _$HomeNotifier {
       case 2:
         return state.myRank;
       case 3:
+        return m.triCycleCalorie.toString();
+      default:
+        return '';
+    }
+  }
+
+  /// 按 key 获取卡片数据值, 用于配置化卡片网格
+  String cardDataValueByKey(String key) {
+    final m = state.mainData;
+    switch (key) {
+      case 'exerciseRecord':
+        return m.todayCount.toString();
+      case 'bodyData':
+      case 'bodyMassIndex':
+        return isCn ? m.bodyBmi.toStringAsFixed(1) : '';
+      case 'burnRank':
+      case 'ranks':
+        return state.myRank;
+      case 'todaysBurn':
+      case 'kcalCons':
         return m.triCycleCalorie.toString();
       default:
         return '';

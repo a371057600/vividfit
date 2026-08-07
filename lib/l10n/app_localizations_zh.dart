@@ -645,6 +645,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get entryCourse => '进入课程';
 
   @override
+  String get startPlaying => '开始播放';
+
+  @override
+  String get downloadCourse => '下载课程';
+
+  @override
   String get courseList => '课程列表';
 
   @override
@@ -772,4 +778,184 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noDataTapToRetry => '如果没有数据，点击我';
+
+  @override
+  String get finishedTime => '时长';
+
+  @override
+  String get finishedDistance => '距离';
+
+  @override
+  String get finishedCalories => '卡路里';
+
+  @override
+  String get finishedCounts => '次数';
+
+  @override
+  String get trainingIntensity => '训练强度';
+
+  @override
+  String get courseRating => '课程评分';
+
+  @override
+  String get speedBarChart => '速度柱状图';
+
+  @override
+  String get courseOver => '课程结束';
+
+  @override
+  String get finishedSportTime => '运动时间';
+
+  @override
+  String get finishedTotalDistance => '总距离';
+
+  @override
+  String get finishedTotalCalories => '总卡路里';
+
+  @override
+  String get finishedPace => '配速';
+
+  @override
+  String get finishedMaxPace => '最大配速';
+
+  @override
+  String get finishedAvgCadence => '平均踏频';
+
+  @override
+  String get finishedMaxCadence => '最大踏频';
+
+  @override
+  String get finishedMaxHeartRate => '最大心率';
+
+  @override
+  String get finishedTotalCadence => '总踏频';
+
+  @override
+  String get finishedRestTime => '休息时间';
+
+  @override
+  String get finishedCompletion => '完成度';
+
+  @override
+  String get completion => '完成度';
+
+  @override
+  String get stability => '稳定性';
+
+  @override
+  String get pedalingEff => '坡度控';
+
+  @override
+  String get cadence => '运动连';
+
+  @override
+  String get moderateChallenge => '轻松适应';
+
+  @override
+  String get paused => '暂停';
+
+  @override
+  String get sportPaused => '运动已暂停';
+
+  @override
+  String get continueBtn => '继续';
+
+  @override
+  String get exitCourse => '退出课程';
+
+  @override
+  String get leaveLevelA => 'Level A';
+
+  @override
+  String get leaveLevelB => 'Level B';
+
+  @override
+  String get leaveLevelC => 'Level C';
+
+  @override
+  String get leaveLevelD => 'Level D';
+
+  @override
+  String get leaveLevelE => 'Level E';
+
+  @override
+  String get leisurely => '轻松';
+
+  @override
+  String get lightAdapt => '轻松适应';
+
+  @override
+  String get easyAdaptation => '轻松适应';
+
+  @override
+  String get moderateImprovement => '适中改善';
+
+  @override
+  String get intenseLoad => '高强度训练';
+
+  @override
+  String get extremeBreakthrough => '极限突破';
+
+  @override
+  String get phoneNumber => '电话号码';
+
+  @override
+  String get emailAddress => '邮箱地址';
+
+  @override
+  String get unionId => 'Unionid';
+
+  @override
+  String get deleteAccount => '注销账号';
+
+  @override
+  String get authentication => '身份验证';
+
+  @override
+  String get verificationCode => '验证码';
+
+  @override
+  String get chooseOtherVerification => '选择其他验证方式';
+
+  @override
+  String get confirmOwnOperation => '确认是您本人操作,请进行身份验证。';
+
+  @override
+  String get codeSent => '已发送';
+
+  @override
+  String get setNewPassword => '设置新密码';
+
+  @override
+  String get changePassword => '修改密码';
+
+  @override
+  String get confirmPassword => '确认密码';
+
+  @override
+  String get passwordMismatch => '密码不一致';
+
+  @override
+  String get passwordRequirements => '密码要求';
+
+  @override
+  String get atLeast8Chars => '至少8个字符';
+
+  @override
+  String get bindNewPhone => '绑定新手机';
+
+  @override
+  String get bindNewEmail => '绑定新邮箱';
+
+  @override
+  String get accountBound => '该账号已被绑定';
+
+  @override
+  String get success => '成功';
+
+  @override
+  String get unbound => '未绑定';
+
+  @override
+  String get warningDeleteAccount => '警告:您确定要注销账号吗?这将删除您的个人信息。';
 }

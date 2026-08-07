@@ -19,13 +19,12 @@ class VividFitApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     return ScreenUtilInit(
       designSize: const Size(750, 1624),
-      minTextAdapt: true,
-      splitScreenMode: true,
       builder: (context, child) {
         return MediaQuery(
           // 旧项目 builder 内 textScaler: TextScaler.noScaling
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.noScaling),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.noScaling),
           child: MaterialApp.router(
             title: 'Vivid Fit',
             debugShowCheckedModeBanner: false,

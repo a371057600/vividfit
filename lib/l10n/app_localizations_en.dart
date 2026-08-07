@@ -657,6 +657,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get entryCourse => 'Entry Course';
 
   @override
+  String get startPlaying => 'Start Playing';
+
+  @override
+  String get downloadCourse => 'Download Course';
+
+  @override
   String get courseList => 'Course List';
 
   @override
@@ -786,4 +792,186 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noDataTapToRetry => 'No data? Tap to retry';
+
+  @override
+  String get finishedTime => 'Time';
+
+  @override
+  String get finishedDistance => 'Distance';
+
+  @override
+  String get finishedCalories => 'Calories';
+
+  @override
+  String get finishedCounts => 'Counts';
+
+  @override
+  String get trainingIntensity => 'Training Intensity';
+
+  @override
+  String get courseRating => 'Course Rating';
+
+  @override
+  String get speedBarChart => 'Speed Bar Chart';
+
+  @override
+  String get courseOver => 'Course Over';
+
+  @override
+  String get finishedSportTime => 'Sport Time';
+
+  @override
+  String get finishedTotalDistance => 'Total Distance';
+
+  @override
+  String get finishedTotalCalories => 'Total Calories';
+
+  @override
+  String get finishedPace => 'Pace';
+
+  @override
+  String get finishedMaxPace => 'Max Pace';
+
+  @override
+  String get finishedAvgCadence => 'Avg Cadence';
+
+  @override
+  String get finishedMaxCadence => 'Max Cadence';
+
+  @override
+  String get finishedMaxHeartRate => 'Max Heart Rate';
+
+  @override
+  String get finishedTotalCadence => 'Total Cadence';
+
+  @override
+  String get finishedRestTime => 'Rest Time';
+
+  @override
+  String get finishedCompletion => 'Completion';
+
+  @override
+  String get completion => 'Completion';
+
+  @override
+  String get stability => 'Stability';
+
+  @override
+  String get pedalingEff => 'Pacing Eff';
+
+  @override
+  String get cadence => 'Cadence';
+
+  @override
+  String get moderateChallenge => 'Moderate Challenge';
+
+  @override
+  String get paused => 'PAUSED';
+
+  @override
+  String get sportPaused => 'Sport Paused';
+
+  @override
+  String get continueBtn => 'Continue';
+
+  @override
+  String get exitCourse => 'Exit Course';
+
+  @override
+  String get leaveLevelA => 'Level A';
+
+  @override
+  String get leaveLevelB => 'Level B';
+
+  @override
+  String get leaveLevelC => 'Level C';
+
+  @override
+  String get leaveLevelD => 'Level D';
+
+  @override
+  String get leaveLevelE => 'Level E';
+
+  @override
+  String get leisurely => 'Leisurely';
+
+  @override
+  String get lightAdapt => 'Light Adapt';
+
+  @override
+  String get easyAdaptation => 'Easy Adaptation';
+
+  @override
+  String get moderateImprovement => 'Moderate Improvement';
+
+  @override
+  String get intenseLoad => 'Intense Load';
+
+  @override
+  String get extremeBreakthrough => 'Extreme Breakthrough';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get emailAddress => 'Email Address';
+
+  @override
+  String get unionId => 'Unionid';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get authentication => 'Authentication';
+
+  @override
+  String get verificationCode => 'Verification Code';
+
+  @override
+  String get chooseOtherVerification => 'Choose Other Verification Methods';
+
+  @override
+  String get confirmOwnOperation =>
+      'To confirm that it is your own operation, please verify your identity.';
+
+  @override
+  String get codeSent => 'Code Sent';
+
+  @override
+  String get setNewPassword => 'Set New Password';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get passwordMismatch => 'Password does not match';
+
+  @override
+  String get passwordRequirements => 'Password Requirements';
+
+  @override
+  String get atLeast8Chars => 'At least 8 characters';
+
+  @override
+  String get bindNewPhone => 'Bind a new phone';
+
+  @override
+  String get bindNewEmail => 'Bind a new email';
+
+  @override
+  String get accountBound => 'The account has been bound';
+
+  @override
+  String get success => 'Success';
+
+  @override
+  String get unbound => 'Unbound';
+
+  @override
+  String get warningDeleteAccount =>
+      'Warning: Do you want to cancel your account so that you will delete personal information?';
 }

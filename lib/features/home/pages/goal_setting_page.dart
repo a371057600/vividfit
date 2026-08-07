@@ -6,11 +6,16 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../auth/notifiers/auth_notifier.dart';
 import '../notifiers/goal_setting_notifier.dart';
 
 /// 运动目标设置页(1:1 复刻旧 GoalSettingScreen)。
+///
+/// [isRegistration] 为 true 时走注册流程链路(确认后提交注册数据→/home-shell)。
 class GoalSettingPage extends ConsumerWidget {
-  const GoalSettingPage({super.key});
+  const GoalSettingPage({super.key, this.isRegistration = false});
+
+  final bool isRegistration;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +32,11 @@ class GoalSettingPage extends ConsumerWidget {
       [l10n.stage1, l10n.stage2, l10n.stage3],
     ];
     // 类型说明
-    final sportContents = [l10n.aerobicContent, l10n.anaerobicContent, l10n.rehabContent];
+    final sportContents = [
+      l10n.aerobicContent,
+      l10n.anaerobicContent,
+      l10n.rehabContent,
+    ];
     // 子档位说明
     final sportAreas = [
       [l10n.basicArea, l10n.moderateArea, l10n.hiitArea],
@@ -47,7 +56,13 @@ class GoalSettingPage extends ConsumerWidget {
             child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
-              onTap: () => context.go('/home-shell'),
+              onTap: () {
+                if (isRegistration) {
+                  context.pop();
+                } else {
+                  context.go('/home-shell');
+                }
+              },
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -55,15 +70,20 @@ class GoalSettingPage extends ConsumerWidget {
                     alignment: Alignment.bottomCenter,
                     padding: EdgeInsets.only(bottom: 10).r,
                     height: 100.r,
-                    child: Icon(Icons.arrow_back_ios,
-                        color: FitTheme.textColor, size: 40.sp),
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      color: FitTheme.textColor,
+                      size: 40.sp,
+                    ),
                   ),
-                  Text(l10n.sportsGoalSetting,
-                      style: TextStyle(
-                        color: FitTheme.textColor,
-                        fontSize: 40.sp,
-                        fontFamily: AppFonts.hofontmedium,
-                      )),
+                  Text(
+                    l10n.sportsGoalSetting,
+                    style: TextStyle(
+                      color: FitTheme.textColor,
+                      fontSize: 40.sp,
+                      fontFamily: AppFonts.hofontmedium,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -72,12 +92,14 @@ class GoalSettingPage extends ConsumerWidget {
         backgroundColor: FitTheme.backgroundColor,
         body: state.isLoading
             ? Center(
-                child: Text(l10n.loading,
-                    style: TextStyle(
-                      fontSize: 25.sp,
-                      color: FitTheme.textColor,
-                      fontFamily: AppFonts.bebas,
-                    )),
+                child: Text(
+                  l10n.loading,
+                  style: TextStyle(
+                    fontSize: 25.sp,
+                    color: FitTheme.textColor,
+                    fontFamily: AppFonts.bebas,
+                  ),
+                ),
               )
             : Container(
                 alignment: Alignment.topCenter,
@@ -96,7 +118,16 @@ class GoalSettingPage extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    _buildSportSettingWidget(context, ref, l10n, sportTypes, sportSubs, sportContents, sportAreas),
+                    _buildSportSettingWidget(
+                      context,
+                      ref,
+                      l10n,
+                      sportTypes,
+                      sportSubs,
+                      sportContents,
+                      sportAreas,
+                    ),
+                    const Spacer(),
                     Container(
                       width: MediaQuery.of(context).size.width,
                       margin: EdgeInsets.all(20).r,
@@ -106,7 +137,17 @@ class GoalSettingPage extends ConsumerWidget {
                         ),
                         onPressed: () async {
                           await notifier.saveGoal();
-                          if (context.mounted) context.go('/home-shell');
+                          if (!context.mounted) return;
+                          if (isRegistration) {
+                            // 注册流程:保存运动目标 → 提交注册数据 → 进首页
+                            await ref
+                                .read(authProvider.notifier)
+                                .completeRegistration();
+                            if (!context.mounted) return;
+                            context.go('/home-shell');
+                          } else {
+                            context.go('/home-shell');
+                          }
                         },
                         child: Text(
                           l10n.confirm,
@@ -118,6 +159,7 @@ class GoalSettingPage extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    Container(height: 20),
                   ],
                 ),
               ),
@@ -126,9 +168,13 @@ class GoalSettingPage extends ConsumerWidget {
   }
 
   Widget _buildSportSettingWidget(
-    BuildContext context, WidgetRef ref, AppLocalizations l10n,
-    List<String> sportTypes, List<List<String>> sportSubs,
-    List<String> sportContents, List<List<String>> sportAreas,
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    List<String> sportTypes,
+    List<List<String>> sportSubs,
+    List<String> sportContents,
+    List<List<String>> sportAreas,
   ) {
     final state = ref.watch(goalSettingProvider);
     final notifier = ref.read(goalSettingProvider.notifier);
@@ -194,9 +240,30 @@ class GoalSettingPage extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _subButton(ref, sportSubs[firstIdx][0], firstIdx, 0, secondIdx, notifier),
-                _subButton(ref, sportSubs[firstIdx][1], firstIdx, 1, secondIdx, notifier),
-                _subButton(ref, sportSubs[firstIdx][2], firstIdx, 2, secondIdx, notifier),
+                _subButton(
+                  ref,
+                  sportSubs[firstIdx][0],
+                  firstIdx,
+                  0,
+                  secondIdx,
+                  notifier,
+                ),
+                _subButton(
+                  ref,
+                  sportSubs[firstIdx][1],
+                  firstIdx,
+                  1,
+                  secondIdx,
+                  notifier,
+                ),
+                _subButton(
+                  ref,
+                  sportSubs[firstIdx][2],
+                  firstIdx,
+                  2,
+                  secondIdx,
+                  notifier,
+                ),
               ],
             ),
           ),
@@ -205,7 +272,13 @@ class GoalSettingPage extends ConsumerWidget {
     );
   }
 
-  Widget _typeButton(WidgetRef ref, String label, int index, int selected, GoalSettingNotifier notifier) {
+  Widget _typeButton(
+    WidgetRef ref,
+    String label,
+    int index,
+    int selected,
+    GoalSettingNotifier notifier,
+  ) {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -213,7 +286,9 @@ class GoalSettingPage extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: selected == index ? FitTheme.buttonColor : FitTheme.textColor,
+            color: selected == index
+                ? FitTheme.buttonColor
+                : FitTheme.textColor,
             width: 3.r,
           ),
           borderRadius: BorderRadius.all(Radius.circular(50).r),
@@ -233,7 +308,14 @@ class GoalSettingPage extends ConsumerWidget {
     );
   }
 
-  Widget _subButton(WidgetRef ref, String label, int first, int index, int selected, GoalSettingNotifier notifier) {
+  Widget _subButton(
+    WidgetRef ref,
+    String label,
+    int first,
+    int index,
+    int selected,
+    GoalSettingNotifier notifier,
+  ) {
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -241,7 +323,9 @@ class GoalSettingPage extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: selected == index ? FitTheme.buttonColor : FitTheme.textColor,
+            color: selected == index
+                ? FitTheme.buttonColor
+                : FitTheme.textColor,
             width: 3.r,
           ),
           borderRadius: BorderRadius.all(Radius.circular(50).r),

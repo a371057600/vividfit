@@ -3,125 +3,175 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
-import 'auth_video_background.dart';
 
-/// 手机验证码登录-输入手机号页(1:1 复刻旧项目 NewPhoneLoginScreen)。
+/// 手机登录(发送验证码→跳 GetCodePage)。对应旧项目 NewPhoneLoginScreen。
 ///
-/// 保留原结构:视频背景 + IntlPhoneField + Get Captcha 按钮。
-class PhoneLoginPage extends ConsumerWidget {
+/// 仅简体中文(languageNum==0)入口可见。
+class PhoneLoginPage extends ConsumerStatefulWidget {
   const PhoneLoginPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PhoneLoginPage> createState() => _PhoneLoginPageState();
+}
+
+class _PhoneLoginPageState extends ConsumerState<PhoneLoginPage> {
+  late TextEditingController _phoneCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final s = ref.read(authProvider);
+    _phoneCtrl = TextEditingController(
+      text: s.phoneNumber == 0 ? '' : s.phoneNumber.toString(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final n = ref.read(authProvider.notifier);
+    final phoneStr = _phoneCtrl.text.trim();
+    final parsedPhone = int.tryParse(phoneStr);
+    if (phoneStr.isEmpty || parsedPhone == null || parsedPhone <= 0) {
+      Fluttertoast.showToast(msg: l10n.enterCorrectPhoneNumber);
+      return;
+    }
+    n
+      ..setCountryCode('86')
+      ..setPhoneNumber(parsedPhone);
+    if (!ref.read(authProvider).ishasInternet) {
+      Fluttertoast.showToast(msg: l10n.noInternetConnectionOrNoInput);
+      return;
+    }
+    showLoadingDialog(context, message: l10n.getCaptcha);
+    try {
+      final ok = await n.sendPhoneCaptcha();
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      if (ok) {
+        context.push('/get-code');
+      }
+    } catch (e) {
+      print('❌ [PhoneLoginPage] unexpected error: $e');
+      if (context.mounted) Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: FitTheme.backgroundColor,
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          const AuthVideoBackground(),
-          Container(
-            height: height,
-            width: width,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(left: 50, right: 50).r,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                IntlPhoneField(
-                  dropdownTextStyle:
-                      TextStyle(color: FitTheme.backgroundColor),
-                  style: TextStyle(color: FitTheme.backgroundColor),
-                  decoration: InputDecoration(
-                    hintText: l10n.enterPhoneNumber,
-                    hintStyle: const TextStyle(color: Colors.grey),
-                    labelStyle:
-                        TextStyle(color: FitTheme.backgroundColor),
-                    counterStyle:
-                        TextStyle(color: FitTheme.backgroundColor),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide:
-                          BorderSide(color: FitTheme.backgroundColor),
+      appBar: AppBar(
+        backgroundColor: FitTheme.backgroundColor,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        leading: InkWell(
+          onTap: () {
+            if (context.canPop()) context.pop();
+          },
+          child: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 60.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 40.r),
+              Text(
+                l10n.phoneLogin,
+                style: TextStyle(color: FitTheme.textColor, fontSize: 60.sp),
+              ),
+              SizedBox(height: 80.r),
+              Row(
+                children: [
+                  Container(
+                    width: 100.r,
+                    padding: EdgeInsets.symmetric(vertical: 20.r),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: FitTheme.textColor.withValues(alpha: 0.3),
+                        ),
+                      ),
                     ),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: FitTheme.backgroundColor,
-                        width: 1,
+                    child: Center(
+                      child: Text(
+                        '+86',
+                        style: TextStyle(color: FitTheme.textColor, fontSize: 30.sp),
                       ),
                     ),
                   ),
-                  languageCode: 'cn',
-                  invalidNumberMessage: l10n.enterCorrectPhoneNumber,
-                  initialCountryCode: 'CN',
-                  onChanged: (phone) {
-                    ref
-                        .read(authProvider.notifier)
-                        .setCountryCode(phone.countryCode.replaceFirst('+', ''));
-                    ref
-                        .read(authProvider.notifier)
-                        .setPhoneNumber(int.tryParse(phone.number) ?? 0);
-                  },
-                  onCountryChanged: (country) {},
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    final state = ref.read(authProvider);
-                    if (state.ishasInternet && state.phoneNumber != 0) {
-                      final ok = await ref
-                          .read(authProvider.notifier)
-                          .sendPhoneCaptcha();
-                      if (ok && context.mounted) {
-                        context.pushReplacement('/get-code');
-                      }
-                    } else {
-                      Fluttertoast.showToast(
-                        msg: l10n.noInternetConnectionOrNoInput,
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FitTheme.buttonColor,
-                  ),
-                  child: Container(
-                    width: width * 0.8,
-                    alignment: Alignment.center,
-                    child: Text(
-                      l10n.getCaptcha,
-                      style: const TextStyle(color: Colors.white),
+                  SizedBox(width: 20.r),
+                  Expanded(
+                    child: TextField(
+                      controller: _phoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      onChanged: (v) {
+                        final p = int.tryParse(v.trim());
+                        if (p != null) {
+                          ref.read(authProvider.notifier).setPhoneNumber(p);
+                        }
+                      },
+                      style: TextStyle(color: FitTheme.textColor, fontSize: 30.sp),
+                      cursorColor: FitTheme.buttonColor,
+                      decoration: InputDecoration(
+                        labelText: l10n.phoneLogin,
+                        labelStyle: TextStyle(color: FitTheme.textColor, fontSize: 28.sp),
+                        hintText: l10n.enterPhoneNumber,
+                        hintStyle: TextStyle(color: FitTheme.textColor.withValues(alpha: 0.4)),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: FitTheme.textColor.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: FitTheme.buttonColor),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 100.r,
-            left: 25.r,
-            child: InkWell(
-              onTap: () => context.pop(),
-              child: Row(
-                children: [
-                  Icon(Icons.arrow_back_ios,
-                      color: Colors.white, size: 50.sp),
-                  SizedBox(width: 10.r),
-                  Text(
-                    l10n.phoneLogin,
-                    style: TextStyle(color: Colors.white, fontSize: 40.sp),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 120.r),
+              SizedBox(
+                width: width,
+                height: 90.r,
+                child: ElevatedButton(
+                  onPressed: () => _submit(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FitTheme.buttonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    l10n.getCaptcha,
+                    style: TextStyle(
+                      color: FitTheme.textButtonColor,
+                      fontSize: 36.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

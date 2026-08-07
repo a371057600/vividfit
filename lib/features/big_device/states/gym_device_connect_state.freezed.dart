@@ -16,10 +16,14 @@ T _$identity<T>(T value) => value;
 mixin _$GymDeviceConnectState {
 
 /// 是否正在搜索(对应旧 searchStatus)。
- bool get isSearching;/// 设备是否已连接(对应旧 isDeviceConnect)。
+ bool get isSearching;/// Layer 1: 蓝牙链路是否已建立(对应旧 BluetoothConnectionState.connected)。
+/// 仅表示物理连接成功,不代表设备数据已就绪。
+ bool get isBluetoothConnected;/// Layer 2: 设备是否已完全就绪(对应旧 isDeviceConnect,需收到第一个 0x2ADA 数据包)。
+/// 用户可以安全使用设备功能的最终判定。
  bool get isEquipmentConnected;/// 已发现设备的广播名列表(对应旧 showDeviceName.map(advName))。
  List<String> get foundDeviceNames;/// 是否曾经连接过(对应旧 _hasConnected,用于断连 toast 抑制)。
- bool get hasConnectedOnce;
+ bool get hasConnectedOnce;/// 是否正在连接中(防止重复点击)。
+ bool get isConnecting;
 /// Create a copy of GymDeviceConnectState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,16 +34,16 @@ $GymDeviceConnectStateCopyWith<GymDeviceConnectState> get copyWith => _$GymDevic
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is GymDeviceConnectState&&(identical(other.isSearching, isSearching) || other.isSearching == isSearching)&&(identical(other.isEquipmentConnected, isEquipmentConnected) || other.isEquipmentConnected == isEquipmentConnected)&&const DeepCollectionEquality().equals(other.foundDeviceNames, foundDeviceNames)&&(identical(other.hasConnectedOnce, hasConnectedOnce) || other.hasConnectedOnce == hasConnectedOnce));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GymDeviceConnectState&&(identical(other.isSearching, isSearching) || other.isSearching == isSearching)&&(identical(other.isBluetoothConnected, isBluetoothConnected) || other.isBluetoothConnected == isBluetoothConnected)&&(identical(other.isEquipmentConnected, isEquipmentConnected) || other.isEquipmentConnected == isEquipmentConnected)&&const DeepCollectionEquality().equals(other.foundDeviceNames, foundDeviceNames)&&(identical(other.hasConnectedOnce, hasConnectedOnce) || other.hasConnectedOnce == hasConnectedOnce)&&(identical(other.isConnecting, isConnecting) || other.isConnecting == isConnecting));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isSearching,isEquipmentConnected,const DeepCollectionEquality().hash(foundDeviceNames),hasConnectedOnce);
+int get hashCode => Object.hash(runtimeType,isSearching,isBluetoothConnected,isEquipmentConnected,const DeepCollectionEquality().hash(foundDeviceNames),hasConnectedOnce,isConnecting);
 
 @override
 String toString() {
-  return 'GymDeviceConnectState(isSearching: $isSearching, isEquipmentConnected: $isEquipmentConnected, foundDeviceNames: $foundDeviceNames, hasConnectedOnce: $hasConnectedOnce)';
+  return 'GymDeviceConnectState(isSearching: $isSearching, isBluetoothConnected: $isBluetoothConnected, isEquipmentConnected: $isEquipmentConnected, foundDeviceNames: $foundDeviceNames, hasConnectedOnce: $hasConnectedOnce, isConnecting: $isConnecting)';
 }
 
 
@@ -50,7 +54,7 @@ abstract mixin class $GymDeviceConnectStateCopyWith<$Res>  {
   factory $GymDeviceConnectStateCopyWith(GymDeviceConnectState value, $Res Function(GymDeviceConnectState) _then) = _$GymDeviceConnectStateCopyWithImpl;
 @useResult
 $Res call({
- bool isSearching, bool isEquipmentConnected, List<String> foundDeviceNames, bool hasConnectedOnce
+ bool isSearching, bool isBluetoothConnected, bool isEquipmentConnected, List<String> foundDeviceNames, bool hasConnectedOnce, bool isConnecting
 });
 
 
@@ -67,12 +71,14 @@ class _$GymDeviceConnectStateCopyWithImpl<$Res>
 
 /// Create a copy of GymDeviceConnectState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? isSearching = null,Object? isEquipmentConnected = null,Object? foundDeviceNames = null,Object? hasConnectedOnce = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? isSearching = null,Object? isBluetoothConnected = null,Object? isEquipmentConnected = null,Object? foundDeviceNames = null,Object? hasConnectedOnce = null,Object? isConnecting = null,}) {
   return _then(GymDeviceConnectState(
 isSearching: null == isSearching ? _self.isSearching : isSearching // ignore: cast_nullable_to_non_nullable
+as bool,isBluetoothConnected: null == isBluetoothConnected ? _self.isBluetoothConnected : isBluetoothConnected // ignore: cast_nullable_to_non_nullable
 as bool,isEquipmentConnected: null == isEquipmentConnected ? _self.isEquipmentConnected : isEquipmentConnected // ignore: cast_nullable_to_non_nullable
 as bool,foundDeviceNames: null == foundDeviceNames ? _self.foundDeviceNames : foundDeviceNames // ignore: cast_nullable_to_non_nullable
 as List<String>,hasConnectedOnce: null == hasConnectedOnce ? _self.hasConnectedOnce : hasConnectedOnce // ignore: cast_nullable_to_non_nullable
+as bool,isConnecting: null == isConnecting ? _self.isConnecting : isConnecting // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -158,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isSearching,  bool isEquipmentConnected,  List<String> foundDeviceNames,  bool hasConnectedOnce)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool isSearching,  bool isBluetoothConnected,  bool isEquipmentConnected,  List<String> foundDeviceNames,  bool hasConnectedOnce,  bool isConnecting)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _GymDeviceConnectState() when $default != null:
-return $default(_that.isSearching,_that.isEquipmentConnected,_that.foundDeviceNames,_that.hasConnectedOnce);case _:
+return $default(_that.isSearching,_that.isBluetoothConnected,_that.isEquipmentConnected,_that.foundDeviceNames,_that.hasConnectedOnce,_that.isConnecting);case _:
   return orElse();
 
 }
@@ -179,10 +185,10 @@ return $default(_that.isSearching,_that.isEquipmentConnected,_that.foundDeviceNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isSearching,  bool isEquipmentConnected,  List<String> foundDeviceNames,  bool hasConnectedOnce)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool isSearching,  bool isBluetoothConnected,  bool isEquipmentConnected,  List<String> foundDeviceNames,  bool hasConnectedOnce,  bool isConnecting)  $default,) {final _that = this;
 switch (_that) {
 case _GymDeviceConnectState():
-return $default(_that.isSearching,_that.isEquipmentConnected,_that.foundDeviceNames,_that.hasConnectedOnce);case _:
+return $default(_that.isSearching,_that.isBluetoothConnected,_that.isEquipmentConnected,_that.foundDeviceNames,_that.hasConnectedOnce,_that.isConnecting);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -199,10 +205,10 @@ return $default(_that.isSearching,_that.isEquipmentConnected,_that.foundDeviceNa
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isSearching,  bool isEquipmentConnected,  List<String> foundDeviceNames,  bool hasConnectedOnce)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool isSearching,  bool isBluetoothConnected,  bool isEquipmentConnected,  List<String> foundDeviceNames,  bool hasConnectedOnce,  bool isConnecting)?  $default,) {final _that = this;
 switch (_that) {
 case _GymDeviceConnectState() when $default != null:
-return $default(_that.isSearching,_that.isEquipmentConnected,_that.foundDeviceNames,_that.hasConnectedOnce);case _:
+return $default(_that.isSearching,_that.isBluetoothConnected,_that.isEquipmentConnected,_that.foundDeviceNames,_that.hasConnectedOnce,_that.isConnecting);case _:
   return null;
 
 }
@@ -214,12 +220,16 @@ return $default(_that.isSearching,_that.isEquipmentConnected,_that.foundDeviceNa
 
 
 class _GymDeviceConnectState implements GymDeviceConnectState {
-  const _GymDeviceConnectState({this.isSearching = false, this.isEquipmentConnected = false,  List<String> foundDeviceNames = const <String>[], this.hasConnectedOnce = false}): _foundDeviceNames = foundDeviceNames;
+  const _GymDeviceConnectState({this.isSearching = false, this.isBluetoothConnected = false, this.isEquipmentConnected = false,  List<String> foundDeviceNames = const <String>[], this.hasConnectedOnce = false, this.isConnecting = false}): _foundDeviceNames = foundDeviceNames;
   
 
 /// 是否正在搜索(对应旧 searchStatus)。
 @override@JsonKey() final  bool isSearching;
-/// 设备是否已连接(对应旧 isDeviceConnect)。
+/// Layer 1: 蓝牙链路是否已建立(对应旧 BluetoothConnectionState.connected)。
+/// 仅表示物理连接成功,不代表设备数据已就绪。
+@override@JsonKey() final  bool isBluetoothConnected;
+/// Layer 2: 设备是否已完全就绪(对应旧 isDeviceConnect,需收到第一个 0x2ADA 数据包)。
+/// 用户可以安全使用设备功能的最终判定。
 @override@JsonKey() final  bool isEquipmentConnected;
 /// 已发现设备的广播名列表(对应旧 showDeviceName.map(advName))。
  final  List<String> _foundDeviceNames;
@@ -232,6 +242,8 @@ class _GymDeviceConnectState implements GymDeviceConnectState {
 
 /// 是否曾经连接过(对应旧 _hasConnected,用于断连 toast 抑制)。
 @override@JsonKey() final  bool hasConnectedOnce;
+/// 是否正在连接中(防止重复点击)。
+@override@JsonKey() final  bool isConnecting;
 
 /// Create a copy of GymDeviceConnectState
 /// with the given fields replaced by the non-null parameter values.
@@ -243,16 +255,16 @@ _$GymDeviceConnectStateCopyWith<_GymDeviceConnectState> get copyWith => __$GymDe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GymDeviceConnectState&&(identical(other.isSearching, isSearching) || other.isSearching == isSearching)&&(identical(other.isEquipmentConnected, isEquipmentConnected) || other.isEquipmentConnected == isEquipmentConnected)&&const DeepCollectionEquality().equals(other._foundDeviceNames, _foundDeviceNames)&&(identical(other.hasConnectedOnce, hasConnectedOnce) || other.hasConnectedOnce == hasConnectedOnce));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _GymDeviceConnectState&&(identical(other.isSearching, isSearching) || other.isSearching == isSearching)&&(identical(other.isBluetoothConnected, isBluetoothConnected) || other.isBluetoothConnected == isBluetoothConnected)&&(identical(other.isEquipmentConnected, isEquipmentConnected) || other.isEquipmentConnected == isEquipmentConnected)&&const DeepCollectionEquality().equals(other._foundDeviceNames, _foundDeviceNames)&&(identical(other.hasConnectedOnce, hasConnectedOnce) || other.hasConnectedOnce == hasConnectedOnce)&&(identical(other.isConnecting, isConnecting) || other.isConnecting == isConnecting));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,isSearching,isEquipmentConnected,const DeepCollectionEquality().hash(_foundDeviceNames),hasConnectedOnce);
+int get hashCode => Object.hash(runtimeType,isSearching,isBluetoothConnected,isEquipmentConnected,const DeepCollectionEquality().hash(_foundDeviceNames),hasConnectedOnce,isConnecting);
 
 @override
 String toString() {
-  return 'GymDeviceConnectState(isSearching: $isSearching, isEquipmentConnected: $isEquipmentConnected, foundDeviceNames: $foundDeviceNames, hasConnectedOnce: $hasConnectedOnce)';
+  return 'GymDeviceConnectState(isSearching: $isSearching, isBluetoothConnected: $isBluetoothConnected, isEquipmentConnected: $isEquipmentConnected, foundDeviceNames: $foundDeviceNames, hasConnectedOnce: $hasConnectedOnce, isConnecting: $isConnecting)';
 }
 
 
@@ -263,7 +275,7 @@ abstract mixin class _$GymDeviceConnectStateCopyWith<$Res> implements $GymDevice
   factory _$GymDeviceConnectStateCopyWith(_GymDeviceConnectState value, $Res Function(_GymDeviceConnectState) _then) = __$GymDeviceConnectStateCopyWithImpl;
 @override @useResult
 $Res call({
- bool isSearching, bool isEquipmentConnected, List<String> foundDeviceNames, bool hasConnectedOnce
+ bool isSearching, bool isBluetoothConnected, bool isEquipmentConnected, List<String> foundDeviceNames, bool hasConnectedOnce, bool isConnecting
 });
 
 
@@ -280,12 +292,14 @@ class __$GymDeviceConnectStateCopyWithImpl<$Res>
 
 /// Create a copy of GymDeviceConnectState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? isSearching = null,Object? isEquipmentConnected = null,Object? foundDeviceNames = null,Object? hasConnectedOnce = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? isSearching = null,Object? isBluetoothConnected = null,Object? isEquipmentConnected = null,Object? foundDeviceNames = null,Object? hasConnectedOnce = null,Object? isConnecting = null,}) {
   return _then(_GymDeviceConnectState(
 isSearching: null == isSearching ? _self.isSearching : isSearching // ignore: cast_nullable_to_non_nullable
+as bool,isBluetoothConnected: null == isBluetoothConnected ? _self.isBluetoothConnected : isBluetoothConnected // ignore: cast_nullable_to_non_nullable
 as bool,isEquipmentConnected: null == isEquipmentConnected ? _self.isEquipmentConnected : isEquipmentConnected // ignore: cast_nullable_to_non_nullable
 as bool,foundDeviceNames: null == foundDeviceNames ? _self._foundDeviceNames : foundDeviceNames // ignore: cast_nullable_to_non_nullable
 as List<String>,hasConnectedOnce: null == hasConnectedOnce ? _self.hasConnectedOnce : hasConnectedOnce // ignore: cast_nullable_to_non_nullable
+as bool,isConnecting: null == isConnecting ? _self.isConnecting : isConnecting // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

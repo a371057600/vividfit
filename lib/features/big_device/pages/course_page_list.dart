@@ -76,10 +76,7 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
         child: Center(
           child: Text(
             tr.noDataTapToRetry,
-            style: TextStyle(
-              color: FitTheme.textColor,
-              fontSize: 20,
-            ),
+            style: TextStyle(color: FitTheme.textColor, fontSize: 20),
           ),
         ),
       );
@@ -144,10 +141,7 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
                 context.go('/big-device-entry');
               }
             },
-            child: Icon(
-              Icons.arrow_back_ios,
-              color: FitTheme.textColor,
-            ),
+            child: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
           ),
         ),
       ],
@@ -157,10 +151,7 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
   List<Widget> _buildCourseList() {
     final notifier = ref.read(courseCatalogProvider.notifier);
     final courses = notifier.currentCourseList;
-    return List.generate(
-      courses.length,
-      (i) => _buildCourseCard(i, courses),
-    );
+    return List.generate(courses.length, (i) => _buildCourseCard(i, courses));
   }
 
   Widget _buildCourseCard(int index, List<CourseEntry> courses) {
@@ -173,14 +164,15 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
       onTap: () {
         notifier.selectCourse(index);
         final courseId = notifier.currentCourseId;
-        context.go('/gym-course-detail', extra: courseId);
+        context.push(
+          '/gym-course-detail',
+          extra: {'courseId': courseId, 'deviceType': widget.deviceType},
+        );
       },
       child: Container(
         alignment: Alignment.center,
         clipBehavior: Clip.hardEdge,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(11),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(11)),
         child: Image.network(
           course.imagePath ?? '',
           fit: BoxFit.fill,
@@ -190,7 +182,7 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
               child: CircularProgressIndicator(
                 value: progress.expectedTotalBytes != null
                     ? progress.cumulativeBytesLoaded /
-                        progress.expectedTotalBytes!
+                          progress.expectedTotalBytes!
                     : null,
                 color: Colors.white,
               ),

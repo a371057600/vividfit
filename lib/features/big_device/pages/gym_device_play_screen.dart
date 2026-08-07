@@ -1,16 +1,18 @@
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:step_progress_indicator/step_progress_indicator.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/them_change.dart';
 import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/sport_metric_icons.dart';
 import '../notifiers/gym_course_play_notifier.dart';
 import '../states/gym_course_play_state.dart';
+import '../widgets/triple_ring_progress.dart';
 
 /// 大设备运动播放页 (对应原版 big_device_play_screen.dart)
 ///
@@ -21,8 +23,9 @@ import '../states/gym_course_play_state.dart';
 /// - [FtmsDeviceType.rower] 划船机
 ///
 /// 三态: loading / playing / finished
+/// 所有尺寸基于屏幕宽高占比计算（不使用ScreenUtil）
 class GymDevicePlayScreen extends ConsumerStatefulWidget {
-  final String courseId;
+  final int? courseId;
   final FtmsDeviceType deviceType;
 
   const GymDevicePlayScreen({
@@ -32,11 +35,101 @@ class GymDevicePlayScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<GymDevicePlayScreen> createState() => _GymDevicePlayScreenState();
+  ConsumerState<GymDevicePlayScreen> createState() =>
+      _GymDevicePlayScreenState();
 }
 
 class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
-  // ── 等级相关数据 (对应原版 stageList / stateExTitleList) ──
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
+  String _tr(String en) {
+    const map = {
+      'Sport Time': 'finishedSportTime',
+      'Total Distance': 'finishedTotalDistance',
+      'Total Calories': 'finishedTotalCalories',
+      'Pace': 'finishedPace',
+      'Avg Cadence': 'finishedAvgCadence',
+      'Max Cadence': 'finishedMaxCadence',
+      'Max Heart Rate': 'finishedMaxHeartRate',
+      'Total Cadence': 'finishedTotalCadence',
+      'Rest Time': 'finishedRestTime',
+      'Completion': 'completion',
+      'Stability': 'stability',
+      'Pedaling Eff.': 'pedalingEff',
+      'Coherence': 'cadence',
+      'Slope Control': 'pedalingEff',
+      'Exercise Coherence': 'cadence',
+      'Endurance': 'cadence',
+      'Exercise Eff.': 'pedalingEff',
+      'Course Over': 'courseOver',
+    };
+    final key = map[en];
+    if (key == null) return en;
+    switch (key) {
+      case 'finishedSportTime':
+        return l10n.finishedSportTime;
+      case 'finishedTotalDistance':
+        return l10n.finishedTotalDistance;
+      case 'finishedTotalCalories':
+        return l10n.finishedTotalCalories;
+      case 'finishedPace':
+        return l10n.finishedPace;
+      case 'finishedAvgCadence':
+        return l10n.finishedAvgCadence;
+      case 'finishedMaxCadence':
+        return l10n.finishedMaxCadence;
+      case 'finishedMaxHeartRate':
+        return l10n.finishedMaxHeartRate;
+      case 'finishedTotalCadence':
+        return l10n.finishedTotalCadence;
+      case 'finishedRestTime':
+        return l10n.finishedRestTime;
+      case 'completion':
+        return l10n.completion;
+      case 'stability':
+        return l10n.stability;
+      case 'pedalingEff':
+        return l10n.pedalingEff;
+      case 'cadence':
+        return l10n.cadence;
+      case 'courseOver':
+        return l10n.courseOver;
+      default:
+        return en;
+    }
+  }
+
+  String _stageTitle(int index) {
+    switch (index) {
+      case 0:
+        return l10n.easyAdaptation;
+      case 1:
+        return l10n.moderateImprovement;
+      case 2:
+        return l10n.moderateChallenge;
+      case 3:
+        return l10n.intenseLoad;
+      case 4:
+        return l10n.extremeBreakthrough;
+      default:
+        return '';
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final notifier = ref.read(gymCoursePlayProvider.notifier);
+      notifier.resetToLoading();
+      notifier.initCourseContext(
+        courseId: widget.courseId,
+        deviceType: widget.deviceType,
+      );
+    });
+  }
+
   final List<String> _stageIcons = const [
     'images/newUIScreen/bigScreenAnimation/icons/stage0.png',
     'images/newUIScreen/bigScreenAnimation/icons/stage1.png',
@@ -45,26 +138,6 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     'images/newUIScreen/bigScreenAnimation/icons/stage4.png',
   ];
 
-  final List<String> _stageTitles = const [
-    'Easy Adaptation',
-    'Moderate Improvement',
-    'Moderate Challenge',
-    'Intense Load',
-    'Extreme Breakthrough',
-  ];
-
-  // ── 进度条分段颜色 (对应 uniqueColors) ──
-  final List<Color> _segmentColors = const [
-    Color(0xFF80FFCC),
-    Color(0xFF7B93FF),
-    Color(0xFFFFDD66),
-    Color(0xFFFF9999),
-    Color(0xFF66CCFF),
-    Color(0xFFCCAA88),
-    Color(0xFFAAAAAA),
-  ];
-
-  // ── 评分等级图片 (对应 motoLeaveListImage) ──
   final List<String> _ratingLevelIcons = const [
     'images/newUIScreen/bigScreenAnimation/icons/leveContainer0.png',
     'images/newUIScreen/bigScreenAnimation/icons/leveContainer1.png',
@@ -78,32 +151,44 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(gymCoursePlayProvider);
+    final size = MediaQuery.of(context).size;
+    final sw = size.width;
+    final sh = size.height;
 
     return PopScope(
-      canPop: false,
-      child: SafeArea(
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          body: _buildBody(state, l10n, context),
-        ),
+      canPop: state.screenStatus != GymPlayScreenStatus.playing,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) {
+          debugPrint('📤 [PlayScreen] PopScope popped');
+          ref.read(gymCoursePlayProvider.notifier).exitToDetail();
+        } else {
+          debugPrint('📤 [PlayScreen] System back → manualFinish');
+          ref.read(gymCoursePlayProvider.notifier).manualFinish();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: _buildBody(state, l10n, sw, sh),
       ),
     );
   }
 
-  // ══════════════════════════════════════════════════════════
-  // 四态分发: loading / playing / paused / finished
-  // ══════════════════════════════════════════════════════════
-  Widget _buildBody(GymCoursePlayState state, AppLocalizations l10n, BuildContext context) {
+  Widget _buildBody(
+    GymCoursePlayState state,
+    AppLocalizations l10n,
+    double sw,
+    double sh,
+  ) {
     if (state.screenStatus == GymPlayScreenStatus.loading) {
-      return _buildLoadingState(state, l10n);
+      return _buildLoadingState(l10n, sw, sh);
     }
     if (state.isStopScreen) {
-      return _buildFinishedState(state, l10n, context);
+      return _buildFinishedState(state, sw, sh);
     }
     return Stack(
       children: [
-        _buildPlayingState(state, l10n, context),
-        if (state.isPauseScreen) _buildPauseOverlay(state),
+        _buildPlayingState(state, sw, sh),
+        if (state.isPauseScreen) _buildPauseOverlay(sw, sh),
       ],
     );
   }
@@ -111,106 +196,239 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   // ══════════════════════════════════════════════════════════
   // Loading 态
   // ══════════════════════════════════════════════════════════
-  Widget _buildLoadingState(GymCoursePlayState state, AppLocalizations l10n) {
+  Widget _buildLoadingState(AppLocalizations l10n, double sw, double sh) {
     return SizedBox.expand(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
+          const CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
-          SizedBox(height: 20.h),
-          if (state.allowTouch)
-            Container(
+          SizedBox(height: sh * 0.025),
+          GestureDetector(
+            onTap: () {
+              if (context.canPop()) context.pop();
+            },
+            child: Container(
               decoration: BoxDecoration(
-                color: Color(0xFF242424),
-                borderRadius: BorderRadius.circular(40.r),
+                color: FitTheme.buttonColor,
+                borderRadius: BorderRadius.circular(sh * 0.04),
               ),
-              padding: EdgeInsets.all(15),
+              padding: EdgeInsets.all(sh * 0.02),
               child: Text(
                 l10n.back,
-                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                style: TextStyle(color: Colors.white, fontSize: sh * 0.02),
               ),
             ),
+          ),
         ],
       ),
     );
   }
 
   // ══════════════════════════════════════════════════════════
-  // Playing 态 (完整播放界面)
+  // Playing 态 - 去除ScreenUtil，全比例尺寸
+  // Stack 子节点顺序（Z轴从底到顶）：
+  //   1. 背景层（双层Image：0.png底层fill + 动画帧上层contain）
+  //   2. 顶部蒙版
+  //   3. 底部蒙版
+  //   4. 顶部数据条
+  //   5. 左侧课程信息
+  //   6. 进度条
+  //   7. 红色箭头
+  //   8. 返回按钮（右上）
+  //   9. 控制按钮（阻力/速度/坡度，右侧，BPM下方）
+  //  10. 右侧动作列表
+  //  11. 中央Play按钮覆盖层
   // ══════════════════════════════════════════════════════════
-  Widget _buildPlayingState(GymCoursePlayState state, AppLocalizations l10n, BuildContext context) {
-    return Stack(
-      children: [
-        // 1. 背景动画层 (按设备类型切换)
-        ..._buildDeviceBackground(state),
-
-        // 2. 顶部数据条
-        _buildTopDataBar(state, l10n),
-
-        // 3. 左侧课程信息
-        _buildLeftCourseInfo(state),
-
-        // 4. 右侧动作列表
-        _buildRightActionList(state, context),
-
-        // 5. 底部进度条分段
-        _buildProgressSegments(state),
-
-        // 6. 播放进度箭头
-        _buildProgressArrow(state, context),
-
-        // 7. 中央 Play 按钮
-        if (state.showPlayButton) _buildCenterPlayButton(state),
-
-        // 8. 控制按钮 (按设备类型)
-        ..._buildControlButtons(state),
-
-        // 9. 返回按钮
-        _buildBackButton(state),
-
-        // 10. 底部/顶部蒙版 (渐隐效果)
-        _buildBottomFadeMask(),
-        _buildTopFadeMask(),
-      ],
+  Widget _buildPlayingState(GymCoursePlayState state, double sw, double sh) {
+    return SizedBox.expand(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          _buildBackgroundLayer(state, sw, sh),
+          _buildTopMask(sh, sw),
+          _buildBottomMask(sh, sw),
+          _buildTopDataBar(state, sw, sh),
+          _buildLeftCourseInfo(state, sw, sh),
+          _buildProgressBar(state, sw, sh),
+          _buildProgressArrow(state, sw, sh),
+          _buildBackButton(sw, sh),
+          ..._buildControlButtons(state, sw, sh),
+          _buildRightActionList(state, sw, sh),
+          if (state.showPlayButton) _buildCenterPlayButton(sw, sh),
+        ],
+      ),
     );
   }
 
-  // ── 1. 背景动画层 ──
-  List<Widget> _buildDeviceBackground(GymCoursePlayState state) {
-    final deviceType = state.deviceType;
+  // ── 1. 背景层（双层结构） ──
+  Widget _buildBackgroundLayer(GymCoursePlayState state, double sw, double sh) {
     final actions = state.courseActions;
-    if (actions.isEmpty) return [const SizedBox.shrink()];
+    if (actions.isEmpty) {
+      return SizedBox.expand(child: Container(color: const Color(0xFF121212)));
+    }
+    final idx = state.playIndex.clamp(0, actions.length - 1);
+    final cur = actions[idx];
+    final isRest = cur.isRestStage;
+    final frameIdx = state.imagePlayIndex;
 
-    final currentAction = actions[state.playIndex.clamp(0, actions.length - 1)];
-    final isRest = currentAction.isRestStage;
+    final bgMargin = sh * 0.12;
 
-    return [
-      // 动作帧 (占位 Container, 等待实装动画)
-      Positioned(
-        top: 200.h,
-        bottom: 200.h,
+    debugPrint(
+      '🌅 [Background] rest=$isRest, frame=$frameIdx, '
+      'img=${cur.imageName}, rootPath=${state.rootImagePath}',
+    );
+
+    if (isRest) {
+      return Positioned(
+        top: bgMargin,
+        bottom: bgMargin,
         left: 0,
         right: 0,
+        child: Image.file(
+          File('${state.rootImagePath}${cur.imageName}/$frameIdx.png'),
+          fit: BoxFit.contain,
+          gaplessPlayback: true,
+          errorBuilder: (_, _, _) => _buildImageFallback(cur, isRest, sw, sh),
+        ),
+      );
+    }
+
+    return Positioned(
+      top: bgMargin,
+      bottom: bgMargin,
+      left: 0,
+      right: 0,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.file(
+              File('${state.rootImagePath}${cur.imageName}/0.png'),
+              fit: BoxFit.fill,
+              gaplessPlayback: true,
+              errorBuilder: (_, _, _) =>
+                  Container(color: const Color(0xFF121212)),
+            ),
+          ),
+          Positioned.fill(
+            child: Image.file(
+              File('${state.rootImagePath}${cur.imageName}/$frameIdx.png'),
+              fit: BoxFit.contain,
+              gaplessPlayback: true,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageFallback(
+    ActionItemState cur,
+    bool isRest,
+    double sw,
+    double sh,
+  ) {
+    final titleEn = isRest ? 'REST' : cur.name.toUpperCase();
+    final titleZh = isRest ? '休息调整' : _actionNameToZh(cur.name);
+    return Container(
+      color: const Color(0xFF121212),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.image_not_supported_outlined,
+              color: Colors.white24,
+              size: sh * 0.05,
+            ),
+            SizedBox(height: sh * 0.015),
+            Text(
+              titleEn,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: sh * 0.03,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: sh * 0.008),
+            Text(
+              titleZh,
+              style: TextStyle(color: Colors.white70, fontSize: sh * 0.02),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _actionNameToZh(String name) {
+    final map = {
+      'warmup': '热身动作准备',
+      'warm up': '热身动作准备',
+      'jog': '慢跑',
+      'run': '快跑',
+      'sprint': '冲刺',
+      'fast run': '快跑',
+      'slow run': '慢跑',
+      'relax': '放松',
+      'cooldown': '放松调整',
+      'cool down': '放松调整',
+      'rest': '休息调整',
+    };
+    return map[name.toLowerCase()] ?? name;
+  }
+
+  // ── 2. 顶部蒙版 ──
+  Widget _buildTopMask(double sh, double sw) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        height: sh * 0.20,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xB1000000), Color(0xB1000000), Colors.transparent],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── 3. 底部蒙版 ──
+  Widget _buildBottomMask(double sh, double sw) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: IgnorePointer(
         child: Container(
-          color: const Color(0xFF121212),
-          child: Center(
-            child: Text(
-              isRest ? 'REST' : currentAction.name,
-              style: TextStyle(color: Colors.white, fontSize: 40.sp),
+          height: sh * 0.25,
+          width: sw,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.transparent,
+                Color(0xB1000000),
+                Color(0xB1000000),
+              ],
             ),
           ),
         ),
       ),
-    ];
+    );
   }
 
-  // ── 2. 顶部数据条 ──
-  Widget _buildTopDataBar(GymCoursePlayState state, AppLocalizations l10n) {
+  // ── 4. 顶部数据条 ──
+  Widget _buildTopDataBar(GymCoursePlayState state, double sw, double sh) {
     final deviceType = state.deviceType;
-
-    // 划船机: 第 4 项显示桨频
     final fourthIcon = deviceType == FtmsDeviceType.rower
         ? SportMetricIcons.strokeCount
         : SportMetricIcons.speed;
@@ -219,168 +437,191 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
         : state.sportSpeed;
 
     return Container(
-      margin: EdgeInsets.only(left: 140.w, top: 40.r, right: 20.w),
-      height: 80.h,
+      margin: EdgeInsets.only(
+        left: sw * 0.23,
+        top: sh * 0.03,
+        right: sw * 0.16,
+      ),
+      height: sh * 0.12,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _topDataItem(SportMetricIcons.time, state.sportTime),
-          _topDataItem(SportMetricIcons.distance, state.sportDistance),
-          _topDataItem(SportMetricIcons.calories, state.sportCalories),
-          _topDataItem(fourthIcon, fourthValue),
-          _topDataItem(SportMetricIcons.heartRate, state.sportHeartRate),
+          _topDataItem(SportMetricIcons.time, state.sportTime, sh, sw),
+          _topDataItem(SportMetricIcons.distance, state.sportDistance, sh, sw),
+          _topDataItem(SportMetricIcons.calories, state.sportCalories, sh, sw),
+          _topDataItem(fourthIcon, fourthValue, sh, sw),
+          _topDataItem(
+            SportMetricIcons.heartRate,
+            state.sportHeartRate,
+            sh,
+            sw,
+          ),
         ],
       ),
     );
   }
 
-  Widget _topDataItem(String iconPath, String value) {
+  Widget _topDataItem(String iconPath, String value, double sh, double sw) {
+    final iconH = sh * 0.05;
     return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Image.asset(iconPath, height: 30, color: Colors.white),
-        SizedBox(width: 3.w),
-        SizedBox(
-          width: 60.w,
-          child: Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 25.sp,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Bebas',
-            ),
+        Image.asset(
+          iconPath,
+          height: iconH,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) {
+            return Icon(Icons.circle, size: iconH, color: Colors.white);
+          },
+        ),
+        SizedBox(width: sw * 0.006),
+        Text(
+          value,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: sh * 0.038,
+            fontWeight: FontWeight.w500,
+            height: 1.0,
           ),
         ),
       ],
     );
   }
 
-  // ── 3. 左侧课程信息 ──
-  Widget _buildLeftCourseInfo(GymCoursePlayState state) {
+  // ── 5. 左侧课程信息 ──
+  Widget _buildLeftCourseInfo(GymCoursePlayState state, double sw, double sh) {
     final actions = state.courseActions;
     final currentAction = actions.isNotEmpty
         ? actions[state.playIndex.clamp(0, actions.length - 1)]
         : null;
+    final panelW = sw * 0.20;
+    final subFs = sh * 0.026;
 
     return Positioned(
-      top: 50.h,
-      left: 20.w,
-      child: Container(
-        width: 180.w,
+      top: 25,
+      left: sw * 0.02,
+      child: SizedBox(
+        width: panelW,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // 课程标题 (跑马灯)
-            _AutoScrollText(
-              text: state.courseTitle,
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            SizedBox(
+              width: panelW,
+              child: _AutoScrollText(
+                text: state.courseTitle,
+                style: TextStyle(
+                  fontSize: sh * 0.048,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+                parentWidth: panelW,
               ),
             ),
-            SizedBox(height: 30.h),
-            // 难度 + 星级
+            SizedBox(height: 20),
             Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   state.difficulty,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: subFs,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                    height: 1.0,
+                  ),
                 ),
-                SizedBox(width: 5.w),
-                _buildStarRating(state.level),
+                SizedBox(width: 20),
+                _buildStarRating(state.level, subFs),
               ],
             ),
-            SizedBox(height: 20.h),
-            // 当前动作
-            Row(
-              children: [
-                Text(
-                  currentAction?.name ?? '',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white),
-                ),
-                SizedBox(width: 5.w),
-                Text(
-                  _formatCurrentDuration(state),
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white),
-                ),
-              ],
+            SizedBox(height: 20),
+            // 当前动作 + 时间
+            SizedBox(
+              width: panelW,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  SizedBox(
+                    width: panelW * 0.58,
+                    child: Text(
+                      currentAction?.name ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: subFs,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    _formatCurrentDuration(state),
+                    style: TextStyle(
+                      fontSize: subFs,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 20.h),
-            // 当前组
-            Row(
-              children: [
-                Text(
-                  'Current Set',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white),
-                ),
-                SizedBox(width: 5.w),
-                Text(
-                  '${state.playIndex + 1}/${actions.length}',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white),
-                ),
-              ],
+            SizedBox(height: 20),
+            // 当前组数
+            SizedBox(
+              width: panelW,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  SizedBox(
+                    width: panelW * 0.58,
+                    child: Text(
+                      '当前组数',
+                      style: TextStyle(
+                        fontSize: subFs,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${state.playIndex + 1}/${actions.length}',
+                    style: TextStyle(
+                      fontSize: subFs,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                      height: 1.0,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 30.h),
-            // 训练等级图标
-            _buildTrainingLevel(state.level),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStarRating(int level) {
+  Widget _buildStarRating(int level, double starSize) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         return Icon(
           i < level ? Icons.star : Icons.star_border,
           color: Colors.yellow,
-          size: 12.sp,
+          size: starSize,
         );
       }),
-    );
-  }
-
-  Widget _buildTrainingLevel(int level) {
-    final index = level.clamp(1, 5) - 1;
-    return Container(
-      width: 160.w,
-      height: 200.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFF121212),
-        borderRadius: BorderRadius.circular(30.r),
-      ),
-      padding: EdgeInsets.all(30.r),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'Training Intensity',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Expanded(
-            child: Image.asset(
-              _stageIcons[index],
-              fit: BoxFit.fill,
-              errorBuilder: (_, __, ___) => Container(
-                color: Colors.grey.shade800,
-                child: Center(child: Text('L${level + 1}', style: TextStyle(color: Colors.white))),
-              ),
-            ),
-          ),
-          SizedBox(height: 10.h),
-          Text(
-            _stageTitles[index],
-            style: TextStyle(fontSize: 8.sp, color: Colors.white),
-          ),
-        ],
-      ),
     );
   }
 
@@ -391,184 +632,116 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
-  // ── 4. 右侧动作列表 ──
-  Widget _buildRightActionList(GymCoursePlayState state, BuildContext context) {
-    final names = state.currentActionNameList;
-    final screenHeight = MediaQuery.of(context).size.height;
+  // ── 6. 进度条（静态波浪，色块高度一致+位置落差，生成后永恒不变） ──
+  Widget _buildProgressBar(GymCoursePlayState state, double sw, double sh) {
+    final barBottom = sh * 0.07;
+    final barH = sh * 0.055;
     return Positioned(
-      right: 20.w,
-      top: 300.h,
-      child: Container(
-        height: screenHeight * 0.35,
-        width: 100.w,
-        margin: EdgeInsets.only(top: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF383838),
-          borderRadius: BorderRadius.circular(40.r),
-        ),
-        child: ListView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: names.length,
-          itemBuilder: (context, index) {
-            final isCurrent = index == 0;
-            return Container(
-              margin: EdgeInsets.only(left: 30, top: index == 0 ? 30 : 0).r,
-              width: 200,
-              height: 100.h,
-              alignment: Alignment.centerLeft,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Text(
-                  names[index],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isCurrent ? Colors.white : const Color(0xFF555555),
-                    fontSize: 12.sp,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+      bottom: barBottom,
+      left: sw * 0.02,
+      child: _WavePositionProgressBar(
+        segments: state.progressSegments,
+        actions: state.courseActions,
+        barWidth: sw * 0.96,
+        barHeight: barH,
+        blockH: sh * 0.012,
+        radius: sh * 0.005,
       ),
     );
   }
 
-  // ── 5. 底部进度条分段 ──
-  Widget _buildProgressSegments(GymCoursePlayState state) {
-    final segments = state.progressSegments;
-    if (segments.isEmpty) return const SizedBox.shrink();
+  // ── 7. 红色三角箭头（跟随进度百分比连续移动，紧贴进度条下方） ──
+  Widget _buildProgressArrow(GymCoursePlayState state, double sw, double sh) {
+    final barWidth = sw * 0.96;
+    final barLeft = sw * 0.02;
+    final barBottom = sh * 0.07;
+    final arrowW = sw * 0.014;
+    final arrowH = sh * 0.030;
+    final clampedP = state.playProgressPercent.clamp(0.0, 1.0);
+    final x = barWidth * clampedP - arrowW / 2;
 
     return Positioned(
-      bottom: 50.h,
-      left: 20.w,
-      right: 20.w,
-      child: Container(
-        height: 200.h,
-        child: Row(
-          children: segments.asMap().entries.map((entry) {
-            final index = entry.key;
-            final segment = entry.value;
-            final colorIndex = segment.posture.clamp(0, _segmentColors.length - 1);
-            final color = _segmentColors[colorIndex];
-
-            // 高度因子: 越高阻力/速度 → 高度越高
-            final heightBase = 180.h - segment.heightFactor * 20.h;
-            final clampedHeight = heightBase.clamp(20.h, 200.h);
-
-            return Expanded(
-              flex: (segment.percentage * 1000).round(),
-              child: Container(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  margin: EdgeInsets.only(left: 1),
-                  height: clampedHeight,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
+      bottom: barBottom - arrowH + sh * 0.002,
+      left: barLeft + x,
+      child: CustomPaint(
+        size: Size(arrowW, arrowH),
+        painter: _UpTrianglePainter(),
       ),
     );
   }
 
-  // ── 6. 播放进度箭头 ──
-  Widget _buildProgressArrow(GymCoursePlayState state, BuildContext context) {
-    final percent = state.playProgressPercent.clamp(0.0, 1.0);
-    final screenWidth = MediaQuery.of(context).size.width;
+  // ── 8. 返回按钮（图片资源） ──
+  Widget _buildBackButton(double sw, double sh) {
+    final iconH = sh * 0.045;
     return Positioned(
-      bottom: 0,
-      left: 20.w,
-      right: 20.w,
-      child: Container(
-        height: 40.h,
-        child: Stack(
-          children: [
-            Positioned(
-              left: (screenWidth - 40.w) * percent - 5.w,
-              bottom: 0,
-              child: SizedBox(
-                width: 10.w,
-                height: 50.h,
-                child: Icon(Icons.arrow_upward, color: Colors.red, size: 20.sp),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── 7. 中央 Play 按钮 ──
-  Widget _buildCenterPlayButton(GymCoursePlayState state) {
-    return Center(
+      right: sw * 0.025,
+      top: sh * 0.06,
       child: GestureDetector(
         onTap: () {
-          // 仅当设备速度为 0 时启动
-          if (state.sportDeviceSpeed == 0) {
-            ref.read(gymCoursePlayProvider.notifier).togglePlay();
-          }
+          debugPrint(
+            '👆 [PlayScreen] Back button tapped, 统一走 manualFinish 停止音频',
+          );
+          ref.read(gymCoursePlayProvider.notifier).manualFinish();
         },
-        child: Container(
-          width: 120.w,
-          height: 120.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withAlpha(125),
-            border: Border.all(
-              color: Colors.white.withAlpha(125),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withAlpha(77),
-                blurRadius: 10,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Icon(Icons.play_arrow, size: 60.w, color: Colors.white),
+        child: Image.asset(
+          'images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/icon_get_back.png',
+          height: iconH,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) =>
+              Icon(Icons.arrow_forward_ios, color: Colors.white, size: iconH),
         ),
       ),
     );
   }
 
-  // ── 8. 控制按钮 (按设备类型) ──
-  List<Widget> _buildControlButtons(GymCoursePlayState state) {
+  // ── 9. 控制按钮（阻力/速度/坡度，右侧BPM下方） ──
+  List<Widget> _buildControlButtons(
+    GymCoursePlayState state,
+    double sw,
+    double sh,
+  ) {
     final notifier = ref.read(gymCoursePlayProvider.notifier);
     final deviceType = state.deviceType;
+    final btnW = sw * 0.14;
+    final btnRadius = sh * 0.022;
+    final titleFs = sh * 0.022;
+    final valueFs = sh * 0.034;
+    final iconSize = sh * 0.042;
+    final firstTop = sh * 0.18;
+    final gap = sh * 0.13;
 
     switch (deviceType) {
       case FtmsDeviceType.treadmill:
         return [
-          // 坡度按钮 (底部偏上)
           if (state.hasInclinationSupport)
             Positioned(
-              bottom: 700.h,
-              left: 20.w,
-              child: _buildSingleButton(
-                title: '坡度',
-                value: state.sportInclinationButton.toStringAsFixed(1),
-                onAdd: notifier.inclinationAdd,
-                onSub: notifier.inclinationDown,
+              right: sw * 0.02,
+              top: firstTop,
+              child: _buildControlButton(
+                title: '速度',
+                value: state.sportSpeedButton.toStringAsFixed(1),
+                btnW: btnW,
+                radius: btnRadius,
+                titleFs: titleFs,
+                valueFs: valueFs,
+                iconSize: iconSize,
+                onAdd: notifier.speedAdd,
+                onSub: notifier.speedDown,
               ),
             ),
-          // 速度按钮 (底部偏下)
           Positioned(
-            bottom: 300.h,
-            left: 20.w,
-            child: _buildSingleButton(
-              title: '速度',
-              value: state.sportSpeedButton.toStringAsFixed(1),
-              onAdd: notifier.speedAdd,
-              onSub: notifier.speedDown,
-              longPressAdd: notifier.speedAdd,
-              longPressSub: notifier.speedDown,
+            right: sw * 0.02,
+            top: state.hasInclinationSupport ? firstTop + gap + 20 : firstTop,
+            child: _buildControlButton(
+              title: '坡度',
+              value: state.sportInclinationButton.toStringAsFixed(0),
+              btnW: btnW,
+              radius: btnRadius,
+              titleFs: titleFs,
+              valueFs: valueFs,
+              iconSize: iconSize,
+              onAdd: notifier.inclinationAdd,
+              onSub: notifier.inclinationDown,
             ),
           ),
         ];
@@ -576,14 +749,19 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
       case FtmsDeviceType.indoorBike:
       case FtmsDeviceType.crossTrainer:
       case FtmsDeviceType.rower:
-      default:
+      case FtmsDeviceType.strengthStation:
         return [
           Positioned(
-            bottom: 700.h,
-            left: 20.w,
-            child: _buildSingleButton(
+            right: sw * 0.02,
+            top: firstTop,
+            child: _buildControlButton(
               title: '阻力',
               value: state.sportResistanceButton.toStringAsFixed(1),
+              btnW: btnW,
+              radius: btnRadius,
+              titleFs: titleFs,
+              valueFs: valueFs,
+              iconSize: iconSize,
               onAdd: notifier.resistanceAdd,
               onSub: notifier.resistanceDown,
             ),
@@ -592,60 +770,72 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     }
   }
 
-  Widget _buildSingleButton({
+  Widget _buildControlButton({
     required String title,
     required String value,
+    required double btnW,
+    required double radius,
+    required double titleFs,
+    required double valueFs,
+    required double iconSize,
     required VoidCallback onAdd,
     required VoidCallback onSub,
-    VoidCallback? longPressAdd,
-    VoidCallback? longPressSub,
   }) {
+    final padH = btnW * 0.12;
+    final padV = iconSize * 0.25;
+    final tapPad = iconSize * 0.45;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF242424),
-        borderRadius: BorderRadius.circular(30.r),
+        borderRadius: BorderRadius.circular(radius),
       ),
-      width: 110.w,
+      width: btnW,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: double.infinity,
-            margin: EdgeInsets.all(20).r,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
             child: Text(
               title,
-              style: TextStyle(color: Colors.white, fontSize: 12.sp),
+              style: TextStyle(color: Colors.white, fontSize: titleFs),
             ),
           ),
-          Divider(height: 5.h, thickness: 1),
-          Container(
-            width: double.infinity,
-            margin: EdgeInsets.all(20).r,
+          Divider(height: 1, thickness: 0.5, color: Colors.white24),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: padH * 0.4,
+              vertical: padV * 0.5,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: onAdd,
-                  onLongPress: longPressAdd,
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Icon(Icons.add, size: 30.sp, color: Colors.white),
+                  child: Padding(
+                    padding: EdgeInsets.all(tapPad),
+                    child: Icon(Icons.add, size: iconSize, color: Colors.white),
                   ),
                 ),
                 Text(
                   value,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20.sp,
-                    fontFamily: 'Bebas',
+                    fontSize: valueFs,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: onSub,
-                  onLongPress: longPressSub,
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: Icon(Icons.remove, size: 30.sp, color: Colors.white),
+                  child: Padding(
+                    padding: EdgeInsets.all(tapPad),
+                    child: Icon(
+                      Icons.remove,
+                      size: iconSize,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -656,60 +846,95 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     );
   }
 
-  // ── 9. 返回按钮 ──
-  Widget _buildBackButton(GymCoursePlayState state) {
+  // ── 10. 右侧动作列表 ──
+  Widget _buildRightActionList(GymCoursePlayState state, double sw, double sh) {
+    final names = state.currentActionNameList;
+    final listW = sw * 0.14;
+    final listTop = sh * 0.45;
+    final itemH = sh * 0.055;
+    final radius = sh * 0.025;
+    final fs = sh * 0.022;
+
     return Positioned(
-      right: 25.w,
-      top: 100.h,
+      right: sw * 0.02,
+      top: listTop + 40,
+      child: Container(
+        // constraints: BoxConstraints(maxHeight: sh * 0.35),
+        height: sh * 0.25,
+        width: listW,
+        decoration: BoxDecoration(
+          color: const Color(0xFF383838),
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        child: ListView.builder(
+          padding: EdgeInsets.symmetric(vertical: sh * 0.008),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: names.length,
+          itemBuilder: (context, index) {
+            final isCurrent = index == 0;
+            return Container(
+              margin: EdgeInsets.only(
+                left: listW * 0.15,
+                right: listW * 0.06,
+                top: itemH * 0.10,
+                bottom: index == names.length - 1 ? itemH * 0.10 : 0,
+              ),
+              height: itemH,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                names[index],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isCurrent ? Colors.white : const Color(0xFF555555),
+                  fontSize: fs,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // ── 11. 中央Play按钮 ──
+  Widget _buildCenterPlayButton(double sw, double sh) {
+    final btnSize = sh * 0.22;
+    final iconSize = sh * 0.10;
+    return SizedBox.expand(
       child: GestureDetector(
         onTap: () {
-          debugPrint('👆 [PlayScreen] Back button tapped → entering pause');
-          final notifier = ref.read(gymCoursePlayProvider.notifier);
-          notifier.pauseSport();
+          debugPrint('👆 [PlayScreen] 中央Play按钮点击');
+          ref.read(gymCoursePlayProvider.notifier).togglePlay();
         },
-        child: SizedBox(
-          height: 20.sp,
-          child: Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20.sp),
-        ),
-      ),
-    );
-  }
-
-  // ── 10. 蒙版 ──
-  Widget _buildTopFadeMask() {
-    return Container(
-      height: 320.h,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            const Color(0xB1000000),
-            const Color(0xB1000000),
-            Colors.transparent,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomFadeMask() {
-    return Positioned(
-      bottom: 0,
-      child: Container(
-        height: 400.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.transparent,
-              const Color(0xB1000000),
-              const Color(0xB1000000),
-            ],
+        child: Container(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              width: btnSize,
+              height: btnSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.25),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    blurRadius: btnSize * 0.15,
+                    spreadRadius: btnSize * 0.03,
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.play_arrow,
+                size: iconSize,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
@@ -719,73 +944,100 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   // ══════════════════════════════════════════════════════════
   // Finished 态 (结束页)
   // ══════════════════════════════════════════════════════════
-  Widget _buildFinishedState(GymCoursePlayState state, AppLocalizations l10n, BuildContext context) {
+  Widget _buildFinishedState(GymCoursePlayState state, double sw, double sh) {
     return Container(
-      alignment: Alignment.center,
-      margin: EdgeInsets.all(25).r,
+      margin: EdgeInsets.all(sh * 0.025),
       color: Colors.black,
       child: Column(
         children: [
-          // 顶部: 三环 + 数据 + 评分 + 速度图
-          _buildFinishedFirstRow(state),
-
-          // 10 项数据网格
+          _buildFinishedFirstRow(state, sw, sh),
           Expanded(
             child: Container(
-              margin: EdgeInsets.only(top: 100, bottom: 25).r,
-              child: _buildFinishedDataGrid(state),
+              margin: EdgeInsets.only(
+                top: sh * 0.035,
+                bottom: sh * 0.02,
+                left: 30,
+              ),
+              child: _buildFinishedDataGrid(state, sw, sh),
             ),
           ),
-
-          // Course Over 按钮
-          _buildCourseOverButton(state, l10n, context),
+          _buildCourseOverButton(sw, sh),
         ],
       ),
     );
   }
 
-  Widget _buildFinishedFirstRow(GymCoursePlayState state) {
-    return Container(
-      height: 600.h,
+  Widget _buildFinishedFirstRow(
+    GymCoursePlayState state,
+    double sw,
+    double sh,
+  ) {
+    return SizedBox(
+      height: sh * 0.35,
       child: Row(
         children: [
-          // 三环 + 运动数据
-          _buildFinishedCircularData(state),
-          // 训练等级
-          Expanded(child: _buildTrainingLevel(state.level)),
-          // 评分
-          Expanded(child: _buildRatingPanel(state)),
-          // 速度条形图
-          Expanded(child: _buildSpeedChartPanel(state)),
+          _buildFinishedCircularData(state, sw, sh),
+          _buildTrainingLevel(state.level, sw, sh),
+
+          _buildRatingPanel(state, sw, sh),
+          _buildSpeedChartPanel(state, sw, sh),
         ],
       ),
     );
   }
 
-  Widget _buildFinishedCircularData(GymCoursePlayState state) {
+  Widget _buildFinishedCircularData(
+    GymCoursePlayState state,
+    double sw,
+    double sh,
+  ) {
+    final panelPad = sh * 0.025;
+    final ringSize = sh * 0.32;
+    final ringStep = sh * 0.026;
     return Expanded(
       child: Container(
         alignment: Alignment.topLeft,
-        margin: EdgeInsets.only(right: 25).r,
-        padding: EdgeInsets.all(25).r,
-        height: 600.h,
+        margin: EdgeInsets.only(right: sw * 0.015),
+        padding: EdgeInsets.all(panelPad),
         decoration: BoxDecoration(
           color: const Color(0xFF121212),
-          borderRadius: BorderRadius.circular(30.r),
+          borderRadius: BorderRadius.circular(sh * 0.02),
         ),
         child: Row(
           children: [
-            SizedBox(width: 30.r),
-            _buildTripleRing(state),
-            SizedBox(width: 30.r),
+            // SizedBox(width: panelPad),
+            _buildTripleRing(state, ringSize, ringStep),
+            // SizedBox(width: panelPad),
             Expanded(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildFinishedDataText('Time', state.sportTime),
+                  _finishedDataText(
+                    l10n.finishedTime,
+                    state.sportTime,
+                    sh,
+                    l10n,
+                  ),
                   state.deviceType == FtmsDeviceType.rower
-                      ? _buildFinishedDataText('Counts', state.sportStrokeCount)
-                      : _buildFinishedDataText('Distance', state.sportDistance),
-                  _buildFinishedDataText('Calories', state.sportCalories),
+                      ? _finishedDataText(
+                          l10n.finishedCounts,
+                          state.sportStrokeCount,
+                          sh,
+                          l10n,
+                        )
+                      : _finishedDataText(
+                          l10n.finishedDistance,
+                          state.sportDistance,
+                          sh,
+                          l10n,
+                        ),
+                  _finishedDataText(
+                    l10n.finishedCalories,
+                    state.sportCalories,
+                    sh,
+                    l10n,
+                  ),
                 ],
               ),
             ),
@@ -795,70 +1047,74 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     );
   }
 
-  Widget _buildTripleRing(GymCoursePlayState state) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // 外圈 (时间)
-        CircularStepProgressIndicator(
-          totalSteps: 120,
-          currentStep: state.playTotalDuration.clamp(0, 101),
-          stepSize: 18.r,
-          startingAngle: -3.14 * 0.9,
-          selectedColor: Colors.white,
-          unselectedColor: Colors.transparent,
-          padding: 0,
-          width: 200.r,
-          height: 200.r,
-          selectedStepSize: 18.r,
-          roundedCap: (_, __) => true,
-          child: CircularStepProgressIndicator(
-            totalSteps: 115,
-            currentStep: state.courseActions.isNotEmpty
-                ? state.courseActions.fold<int>(0, (a, b) => a + b.duration).clamp(0, 101)
-                : 0,
-            stepSize: 18.r,
-            startingAngle: -3.14 * 0.87,
-            selectedColor: Colors.blue,
-            unselectedColor: Colors.transparent,
-            padding: 0,
-            selectedStepSize: 18.r,
-            roundedCap: (_, __) => true,
-            child: CircularStepProgressIndicator(
-              totalSteps: 120,
-              currentStep: int.tryParse(state.sportCalories)?.clamp(0, 101) ?? 0,
-              stepSize: 18.r,
-              startingAngle: -3.14 * 0.8,
-              selectedColor: Colors.green,
-              unselectedColor: Colors.transparent,
-              padding: 0,
-              selectedStepSize: 18.r,
-              roundedCap: (_, __) => true,
-            ),
-          ),
-        ),
-      ],
+  Widget _buildTripleRing(GymCoursePlayState state, double size, double step) {
+    final ringWidth = step * 0.7;
+    final ringGap = step * 0.35;
+
+    // 外圈：时间进度
+    final totalDuration = state.totalPlayProgressDuration > 0
+        ? state.totalPlayProgressDuration
+        : 525;
+    final outerProgress = (state.playTotalDuration / totalDuration).clamp(
+      0.0,
+      1.0,
+    );
+
+    // 中圈：距离（划船机用桨频）
+    final middleProgressRaw = state.deviceType == FtmsDeviceType.rower
+        ? (double.tryParse(state.sportStrokeRate) ?? 0) / 100.0
+        : (double.tryParse(state.sportDistance) ?? 0) / 10.0;
+    final middleProgress = middleProgressRaw.clamp(0.0, 1.0);
+
+    // 内圈：卡路里
+    final innerProgressRaw =
+        (double.tryParse(state.sportCalories) ?? 0) / 500.0;
+    final innerProgress = innerProgressRaw.clamp(0.0, 1.0);
+
+    debugPrint(
+      '🎯 [TripleRing] outer=${outerProgress.toStringAsFixed(2)} '
+      'middle=${middleProgress.toStringAsFixed(2)} '
+      'inner=${innerProgress.toStringAsFixed(2)}',
+    );
+
+    return TripleRingProgress(
+      data: TripleRingData(
+        outerProgress: outerProgress,
+        middleProgress: middleProgress,
+        innerProgress: innerProgress,
+      ),
+      size: size,
+      ringWidth: ringWidth,
+      ringGap: ringGap,
     );
   }
 
-  Widget _buildFinishedDataText(String title, String data) {
+  Widget _finishedDataText(
+    String titleKey,
+    String data,
+    double sh,
+    AppLocalizations l10n,
+  ) {
     return Expanded(
       child: Container(
-        height: 80.h,
         color: const Color(0xFF121212),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(5),
+              padding: EdgeInsets.all(sh * 0.008),
               child: Text(
-                title,
-                style: TextStyle(fontSize: 10.sp, color: Colors.white),
+                titleKey,
+                style: TextStyle(fontSize: sh * 0.024, color: Colors.white70),
               ),
             ),
-            Text(
-              data,
-              style: TextStyle(fontSize: 16.sp, color: Colors.white),
+            Padding(
+              padding: EdgeInsets.only(left: sh * 0.008),
+              child: Text(
+                data,
+                style: TextStyle(fontSize: sh * 0.026, color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -866,72 +1122,126 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     );
   }
 
-  Widget _buildRatingPanel(GymCoursePlayState state) {
-    final titles = state.ratingTitles;
-    final scores = state.ratingScores;
-    final indices = state.ratingImageIndices;
-
+  Widget _buildTrainingLevel(int level, double sw, double sh) {
+    final index = level.clamp(1, 5) - 1;
+    final pad = sh * 0.025;
     return Container(
-      height: 600.h,
-      margin: EdgeInsets.only(left: 25, right: 25).r,
-      padding: EdgeInsets.all(30).r,
+      width: sw * 0.23,
+      margin: EdgeInsets.only(left: sw * 0.008, right: sw * 0.008),
+      padding: EdgeInsets.all(pad),
       decoration: BoxDecoration(
         color: const Color(0xFF121212),
-        borderRadius: BorderRadius.circular(30.r),
+        borderRadius: BorderRadius.circular(sh * 0.02),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Course Rating',
+            l10n.trainingIntensity,
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 12.sp,
+              fontSize: sh * 0.022,
               fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
+          SizedBox(height: sh * 0.012),
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: List.generate(titles.length, (i) {
-                return _buildSingleRatingRow(
-                  titles[i],
-                  indices.isNotEmpty && i < indices.length ? indices[i] : 0,
-                );
-              }),
+            child: Image.asset(
+              _stageIcons[index],
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => Container(
+                color: Colors.grey.shade800,
+                child: Center(
+                  child: Text(
+                    'L${level + 1}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
             ),
           ),
+          // SizedBox(height: sh * 0.010),
           Text(
-            state.scoreLevel,
-            style: TextStyle(fontSize: 10.sp, color: Colors.white),
+            _stageTitle(index),
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: sh * 0.020, color: Colors.white),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSingleRatingRow(String title, int levelIndex) {
-    return Container(
-      height: 40.h,
+  Widget _buildRatingPanel(GymCoursePlayState state, double sw, double sh) {
+    final titles = state.ratingTitles;
+    final indices = state.ratingImageIndices;
+    final pad = sh * 0.025;
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.only(left: sw * 0.008, right: sw * 0.008),
+        padding: EdgeInsets.all(pad),
+        decoration: BoxDecoration(
+          color: const Color(0xFF121212),
+          borderRadius: BorderRadius.circular(sh * 0.02),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.courseRating,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: sh * 0.022,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(titles.length, (i) {
+                  return _buildRatingRow(
+                    titles[i],
+                    indices.isNotEmpty && i < indices.length ? indices[i] : 0,
+                    sw,
+                    sh,
+                  );
+                }),
+              ),
+            ),
+            Text(
+              state.scoreLevel,
+              style: TextStyle(fontSize: sh * 0.021, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRatingRow(String title, int levelIdx, double sw, double sh) {
+    return SizedBox(
+      height: sh * 0.05,
       child: Row(
         children: [
           SizedBox(
-            width: 80.w,
+            width: sw * 0.05,
             child: Text(
-              title,
-              style: TextStyle(fontSize: 10.sp, color: Colors.white),
+              _tr(title),
+              style: TextStyle(fontSize: sh * 0.020, color: Colors.white),
             ),
           ),
           Expanded(
             child: Container(
-              margin: EdgeInsets.only(left: 5),
-              height: 15,
+              margin: EdgeInsets.only(left: sw * 0.005),
+              height: sh * 0.022,
               child: Image.asset(
-                _ratingLevelIcons[levelIndex.clamp(0, _ratingLevelIcons.length - 1)],
+                _ratingLevelIcons[levelIdx.clamp(
+                  0,
+                  _ratingLevelIcons.length - 1,
+                )],
                 fit: BoxFit.fitWidth,
-                errorBuilder: (_, __, ___) => Container(color: Colors.grey),
+                errorBuilder: (_, _, _) => Container(color: Colors.grey),
               ),
             ),
           ),
@@ -940,39 +1250,38 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     );
   }
 
-  Widget _buildSpeedChartPanel(GymCoursePlayState state) {
+  Widget _buildSpeedChartPanel(GymCoursePlayState state, double sw, double sh) {
     final data = state.speedChartData;
+    if (data.isEmpty) return const SizedBox.shrink();
     final isRower = state.deviceType == FtmsDeviceType.rower;
-
-    return Container(
-      height: 600.h,
-      padding: EdgeInsets.all(30).r,
-      margin: EdgeInsets.only(left: 25, right: 25).r,
-      decoration: BoxDecoration(
-        color: const Color(0xFF121212),
-        borderRadius: BorderRadius.circular(30).r,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: EdgeInsets.only(top: 10, bottom: 20).r,
-            child: Text(
-              'Speed Bar Chart',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
+    final pad = sh * 0.025;
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.all(pad),
+        margin: EdgeInsets.only(left: sw * 0.008),
+        decoration: BoxDecoration(
+          color: const Color(0xFF121212),
+          borderRadius: BorderRadius.circular(sh * 0.02),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: sh * 0.008, bottom: sh * 0.015),
+              child: Text(
+                l10n.speedBarChart,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: sh * 0.022,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: SizedBox(
-              height: 250.h,
+            Expanded(
               child: BarChart(
                 BarChartData(
-                  titlesData: FlTitlesData(
+                  titlesData: const FlTitlesData(
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
@@ -988,7 +1297,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
                   ),
                   minY: 0,
                   maxY: 40,
-                  gridData: FlGridData(show: false),
+                  gridData: const FlGridData(show: false),
                   borderData: FlBorderData(show: false),
                   barGroups: List.generate(data.length, (i) {
                     return BarChartGroupData(
@@ -1008,102 +1317,134 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
                 curve: Curves.linear,
               ),
             ),
-          ),
-          Text(
-            isRower ? 'spm/group' : 'km/h',
-            style: TextStyle(fontSize: 10.sp, color: Colors.white),
-          ),
-        ],
+            Text(
+              isRower ? 'spm/group' : 'km/h',
+              style: TextStyle(fontSize: sh * 0.016, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFinishedDataGrid(GymCoursePlayState state) {
+  Widget _buildFinishedDataGrid(
+    GymCoursePlayState state,
+    double sw,
+    double sh,
+  ) {
     final icons = state.finishDataIcons;
     final titles = state.finishDataTitles;
     final values = state.finishDataValues;
     final units = state.finishDataUnits;
-
     if (icons.isEmpty) return const SizedBox.shrink();
 
+    final iconWidth = sw * 0.032;
+    final iconGap = sw * 0.008;
+    final valueIndent = iconWidth + iconGap;
+    final labelFontSize = sh * 0.028;
+    final valueFontSize = sh * 0.042;
+    final labelRowHeight = sh * 0.042;
+
     return GridView.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 5,
-        mainAxisSpacing: 25,
-        childAspectRatio: 2,
-        crossAxisSpacing: 12.5,
+        mainAxisSpacing: sh * 0.060,
+        childAspectRatio: 2.4,
+        crossAxisSpacing: sw * 0.010,
       ),
       itemCount: icons.length,
       itemBuilder: (context, index) {
-        return Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.only(left: 25).r,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 40.h,
-                child: Row(
-                  children: [
-                    Image.asset(
-                      icons[index],
-                      height: 30,
-                      width: 40,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey,
-                        height: 30,
-                        width: 40,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final cellWidth = constraints.maxWidth;
+            final textWidth = cellWidth - valueIndent - sw * 0.008;
+            final titleText = '${_tr(titles[index])}${units[index]}';
+
+            return Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(left: sw * 0.006, right: sw * 0.004),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: labelRowHeight,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          icons[index],
+                          height: labelFontSize * 1.2,
+                          width: iconWidth,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => Container(
+                            color: Colors.grey,
+                            height: labelFontSize * 1.2,
+                            width: iconWidth,
+                          ),
+                        ),
+                        SizedBox(width: iconGap),
+                        Expanded(
+                          child: _AutoScrollText(
+                            text: titleText,
+                            style: TextStyle(
+                              fontSize: labelFontSize,
+                              color: Colors.white,
+                              height: 1.2,
+                            ),
+                            parentWidth: textWidth,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  Padding(
+                    padding: EdgeInsets.only(left: valueIndent),
+                    child: Text(
+                      values[index],
+                      style: TextStyle(
+                        fontSize: valueFontSize,
+                        color: Colors.white,
+                        height: 1.1,
                       ),
                     ),
-                    SizedBox(width: 10.w),
-                    Flexible(
-                      child: Text(
-                        '${titles[index]}${units[index]}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 10.sp, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(height: 10.h),
-              Text(
-                values[index],
-                style: TextStyle(fontSize: 20, color: Colors.white),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildCourseOverButton(GymCoursePlayState state, AppLocalizations l10n, BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    return Container(
-      height: 160.h,
-      width: double.infinity,
+  Widget _buildCourseOverButton(double sw, double sh) {
+    return SizedBox(
+      height: sh * 0.10,
+      width: sw,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xFF242424),
-              borderRadius: BorderRadius.circular(30),
+              color: const Color(0xFFFF6B35),
+              borderRadius: BorderRadius.circular(sh * 0.03),
             ),
-            width: screenWidth / 4,
+            width: sw / 4,
             child: InkWell(
               onTap: () {
-                debugPrint('👆 [PlayScreen] Course Over button tapped → exiting to detail');
-                final notifier = ref.read(gymCoursePlayProvider.notifier);
-                notifier.exitToDetail();
-                Navigator.of(context).pop();
+                debugPrint('👆 [PlayScreen] Course Over button tapped');
+                ref.read(gymCoursePlayProvider.notifier).exitToDetail();
+                context.pop();
               },
               child: Text(
-                'Course Over',
-                style: TextStyle(fontSize: 16.sp, color: Colors.white),
+                l10n.courseOver,
+                style: TextStyle(
+                  fontSize: sh * 0.032,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -1115,84 +1456,97 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   // ══════════════════════════════════════════════════════════
   // Pause 暂停覆盖层
   // ══════════════════════════════════════════════════════════
-  Widget _buildPauseOverlay(GymCoursePlayState state) {
+  Widget _buildPauseOverlay(double sw, double sh) {
     return Positioned.fill(
       child: GestureDetector(
-        onTap: () {},  // 阻止点击穿透
+        onTap: () {},
         child: Container(
           color: Colors.black.withAlpha(200),
           child: Center(
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 50.w),
-              padding: EdgeInsets.all(40.r),
+              margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
+              padding: EdgeInsets.all(sh * 0.035),
               decoration: BoxDecoration(
                 color: const Color(0xFF1E1E1E),
-                borderRadius: BorderRadius.circular(30.r),
+                borderRadius: BorderRadius.circular(sh * 0.025),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 暂停图标
-                  Icon(Icons.pause_circle, size: 100.sp, color: Colors.white),
-                  SizedBox(height: 30.h),
-                  // 标题
+                  Icon(
+                    Icons.pause_circle,
+                    size: sh * 0.08,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: sh * 0.025),
                   Text(
-                    'PAUSED',
+                    l10n.paused,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 40.sp,
+                      fontSize: sh * 0.045,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  SizedBox(height: sh * 0.01),
                   Text(
-                    '运动已暂停',
-                    style: TextStyle(color: Colors.white70, fontSize: 14.sp),
+                    l10n.sportPaused,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: sh * 0.022,
+                    ),
                   ),
-                  SizedBox(height: 50.h),
-                  // 按钮行
+                  SizedBox(height: sh * 0.045),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 继续按钮
                       GestureDetector(
                         onTap: () {
-                          final notifier = ref.read(gymCoursePlayProvider.notifier);
-                          notifier.resumeSport();
+                          ref
+                              .read(gymCoursePlayProvider.notifier)
+                              .resumeSport();
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 20.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sw * 0.03,
+                            vertical: sh * 0.015,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(30.r),
+                            borderRadius: BorderRadius.circular(sh * 0.025),
                           ),
                           child: Text(
-                            '继续',
+                            l10n.continueBtn,
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 18.sp,
+                              fontSize: sh * 0.024,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(width: 40.w),
-                      // 退出课程按钮
+                      SizedBox(width: sw * 0.025),
                       GestureDetector(
                         onTap: () {
-                          final notifier = ref.read(gymCoursePlayProvider.notifier);
-                          notifier.exitToDetail();
-                          Navigator.of(context).pop();
+                          ref
+                              .read(gymCoursePlayProvider.notifier)
+                              .manualFinish();
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 20.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sw * 0.025,
+                            vertical: sh * 0.015,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF333333),
-                            borderRadius: BorderRadius.circular(30.r),
+                            color: const Color(0xFFFF6B35),
+                            borderRadius: BorderRadius.circular(sh * 0.025),
                           ),
                           child: Text(
-                            '退出课程',
-                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                            l10n.exitCourse,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: sh * 0.022,
+                            ),
                           ),
                         ),
                       ),
@@ -1209,15 +1563,17 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
 }
 
 // ══════════════════════════════════════════════════════════
-// 跑马灯文本组件 (对应原版 AutoScrollText)
+// 可手动滑动的文本组件（替换自动走马灯）
 // ══════════════════════════════════════════════════════════
 class _AutoScrollText extends StatefulWidget {
   final String text;
   final TextStyle style;
+  final double parentWidth;
 
   const _AutoScrollText({
     required this.text,
     required this.style,
+    required this.parentWidth,
   });
 
   @override
@@ -1226,22 +1582,46 @@ class _AutoScrollText extends StatefulWidget {
 
 class _AutoScrollTextState extends State<_AutoScrollText> {
   final _controller = ScrollController();
-  bool _isScrolling = false;
+  bool _needsScroll = false;
 
   @override
   void initState() {
     super.initState();
-    _startScroll();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkOverflow();
+    });
   }
 
   @override
   void didUpdateWidget(covariant _AutoScrollText oldWidget) {
-    if (oldWidget.text != widget.text) {
-      _controller.jumpTo(0);
-      _isScrolling = false;
-      _startScroll();
+    if (oldWidget.text != widget.text ||
+        oldWidget.parentWidth != widget.parentWidth ||
+        oldWidget.style != widget.style) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkOverflow();
+      });
     }
     super.didUpdateWidget(oldWidget);
+  }
+
+  void _checkOverflow() {
+    final textPainter = TextPainter(
+      text: TextSpan(text: widget.text, style: widget.style),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout(minWidth: 0, maxWidth: double.infinity);
+
+    final textWidth = textPainter.width;
+    final shouldScroll = textWidth > widget.parentWidth;
+    if (mounted && shouldScroll != _needsScroll) {
+      setState(() => _needsScroll = shouldScroll);
+    }
+    debugPrint(
+      '📜 [AutoScroll] text="${widget.text}", '
+      'textWidth=${textWidth.toStringAsFixed(1)}, '
+      'parentWidth=${widget.parentWidth.toStringAsFixed(1)}, '
+      'needsScroll=$_needsScroll',
+    );
   }
 
   @override
@@ -1250,63 +1630,141 @@ class _AutoScrollTextState extends State<_AutoScrollText> {
     super.dispose();
   }
 
-  void _startScroll() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    _performScroll();
-  }
-
-  void _performScroll() async {
-    if (_isScrolling) return;
-    setState(() => _isScrolling = true);
-
-    final textPainter = TextPainter(
-      text: TextSpan(text: widget.text, style: widget.style),
-      maxLines: 1,
-      textDirection: TextDirection.ltr,
-    )..layout(minWidth: 0, maxWidth: double.infinity);
-
-    final textWidth = textPainter.width;
-    final scrollDistance = textWidth + 40;
-    const scrollSpeed = 30.0;
-    final scrollDuration =
-        Duration(milliseconds: (scrollDistance / scrollSpeed * 1000).toInt());
-
-    await _controller.animateTo(
-      scrollDistance,
-      duration: scrollDuration,
-      curve: Curves.linear,
-    );
-
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (!mounted) return;
-
-    _controller.jumpTo(0);
-    setState(() => _isScrolling = false);
-
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-    _performScroll();
-  }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 180.w,
+      width: widget.parentWidth,
+      height: widget.style.fontSize != null
+          ? widget.style.fontSize! * 1.4
+          : null,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         controller: _controller,
-        physics: _isScrolling ? const NeverScrollableScrollPhysics() : null,
+        // 始终允许用户手动横向滑动
+        physics: const BouncingScrollPhysics(),
         child: Row(
-          children: [
-            Text(widget.text, maxLines: 1, style: widget.style),
-            SizedBox(width: 40),
-            Text(widget.text, maxLines: 1, style: widget.style),
-          ],
+          children: [Text(widget.text, maxLines: 1, style: widget.style)],
         ),
       ),
     );
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// 静态波浪进度条（色块高度一致，通过垂直位置落差形成波浪）
+// 复刻原版逻辑：生成后永恒不变，仅箭头在上方滑动
+// ══════════════════════════════════════════════════════════
+class _WavePositionProgressBar extends StatelessWidget {
+  final List<GymProgressSegment> segments;
+  final List<ActionItemState> actions;
+  final double barWidth;
+  final double barHeight;
+  final double blockH;
+  final double radius;
+
+  const _WavePositionProgressBar({
+    required this.segments,
+    required this.actions,
+    required this.barWidth,
+    required this.barHeight,
+    required this.blockH,
+    required this.radius,
+  });
+
+  // 颜色映射顺序严格对齐旧版 uniqueColors:
+  // 0=青绿, 1=蓝紫, 2=浅黄, 3=粉红, 4=天蓝, 5=棕褐, 6=灰
+  static const List<Color> _colors = [
+    Color(0xFF80FFCC), // 0: 青绿
+    Color(0xFF7B93FF), // 1: 蓝紫
+    Color(0xFFFFDD66), // 2: 浅黄
+    Color(0xFFFF9999), // 3: 粉红
+    Color(0xFF66CCFF), // 4: 天蓝
+    Color(0xFFCCAA88), // 5: 棕褐
+    Color(0xFFAAAAAA), // 6: 灰色
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    if (segments.isEmpty || actions.isEmpty) {
+      return SizedBox(width: barWidth, height: barHeight);
+    }
+    final count = segments.length.clamp(0, actions.length);
+    final waveRange = barHeight - blockH;
+    // 复刻旧版 20.h 单位比例（相对于总高 200.h 约 10%）
+    // 当前 barH ≈ sh*0.055，unitHeight 约为 barH * 0.1
+    final unitHeight = barHeight * 0.1;
+
+    debugPrint(
+      '📊 [ProgressBar] segments=$count, barW=$barWidth, barH=$barHeight, '
+      'waveRange=$waveRange, unitHeight=$unitHeight',
+    );
+
+    return SizedBox(
+      width: barWidth,
+      height: barHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(count, (i) {
+          final seg = segments[i];
+          final color = _colors[seg.posture % _colors.length];
+          final w = seg.percentage * barWidth;
+
+          // 使用 segments 中预计算的 heightFactor，不再双重计算
+          final positionHeight = seg.heightFactor;
+          // 复刻旧版公式：top = barHeight - blockH - positionHeight * unitHeight
+          // 允许负值（由 Stack 自动裁剪，高踏频时条块钉在顶部）
+          final rawTop = waveRange - positionHeight * unitHeight;
+          final top = rawTop;
+
+          debugPrint(
+            '📊 [ProgressBar] #$i posture=${seg.posture} color=$color '
+            'heightFactor=$positionHeight top=$top width=${w.toStringAsFixed(1)}',
+          );
+
+          return SizedBox(
+            width: w,
+            height: barHeight,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  top: top,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: blockH,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(radius),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// 红色正三角 painter
+// ══════════════════════════════════════════════════════════
+class _UpTrianglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+    final path = Path()
+      ..moveTo(size.width / 2, 0)
+      ..lineTo(0, size.height)
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

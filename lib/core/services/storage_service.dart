@@ -147,4 +147,17 @@ class StorageService {
     await _prefs.remove(StorageKeys.hasPassword);
     await _prefs.remove(StorageKeys.headImageHash);
   }
+
+  // ---- 头像选择 ----
+  int? get selectedAvatarIndex => _prefs.getInt(StorageKeys.selectedAvatarIndex);
+  Future<void> setSelectedAvatarIndex(int v) =>
+      _prefs.setInt(StorageKeys.selectedAvatarIndex, v);
+
+  String? get customAvatarPath => _prefs.getString(StorageKeys.customAvatarPath);
+  Future<void> setCustomAvatarPath(String v) =>
+      _prefs.setString(StorageKeys.customAvatarPath, v);
+
+  // ---- 目标体重 ----
+  int get goalWeight => _prefs.getInt(StorageKeys.goalWeight) ?? 70;
+  Future<void> setGoalWeight(int v) => _prefs.setInt(StorageKeys.goalWeight, v);
 }

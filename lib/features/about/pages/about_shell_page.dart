@@ -28,8 +28,6 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     "icon_shop1",
   ];
 
-
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -397,29 +395,39 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
       child: Container(
         padding: const EdgeInsets.all(20).r,
         alignment: Alignment.center,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _buildCharacterRadio(0, l10n.coachMichael, state, notifier),
-                _buildCharacterRadio(1, l10n.coachVicky, state, notifier),
-                _buildCharacterRadio(2, l10n.coachFiona, state, notifier),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _buildCharacterRadio(3, l10n.coachPaul, state, notifier),
-                _buildCharacterRadio(4, l10n.coachLucy, state, notifier),
-                _buildCharacterRadio(5, l10n.coachJack, state, notifier),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [_buildCharacterRadio(6, l10n.coachCarol, state, notifier)],
-            ),
-          ],
+        child: RadioGroup<int>(
+          groupValue: state.selectedImageIndex,
+          onChanged: (int? value) {
+            if (value != null) {
+              notifier.updateSelectedImageIndex(value);
+            }
+          },
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _buildCharacterRadio(0, l10n.coachMichael, state, notifier),
+                  _buildCharacterRadio(1, l10n.coachVicky, state, notifier),
+                  _buildCharacterRadio(2, l10n.coachFiona, state, notifier),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _buildCharacterRadio(3, l10n.coachPaul, state, notifier),
+                  _buildCharacterRadio(4, l10n.coachLucy, state, notifier),
+                  _buildCharacterRadio(5, l10n.coachJack, state, notifier),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _buildCharacterRadio(6, l10n.coachCarol, state, notifier),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -430,12 +438,13 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
       children: [
         Radio<int>(
           value: index,
-          groupValue: state.selectedImageIndex,
-          onChanged: (value) {
-            notifier.updateSelectedImageIndex(value!);
-          },
+          fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return FitTheme.buttonColor;
+            }
+            return null;
+          }),
           hoverColor: Colors.transparent,
-          activeColor: FitTheme.buttonColor,
         ),
         SizedBox(
           width: 120.w,

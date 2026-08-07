@@ -123,10 +123,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
           ),
           content: Text(
             l10n.warningDeleteDevice,
-            style: TextStyle(
-              color: FitTheme.textColor,
-              fontSize: 25.sp,
-            ),
+            style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
           ),
           actions: [
             Container(
@@ -220,10 +217,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
                     width: screenWidth,
                     child: Text(
                       l10n.searchDevice,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 40.sp,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 40.sp),
                     ),
                   ),
                 ),

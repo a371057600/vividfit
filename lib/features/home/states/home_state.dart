@@ -34,5 +34,11 @@ abstract class HomeState with _$HomeState {
 
     /// 是否正在加载(首次进入)
     @Default(true) bool isLoading,
+
+    /// 动画帧索引(1~123,初始1)
+    @Default(1) int animationIndex,
+
+    /// 防重复点击锁(6秒冷却)
+    @Default(true) bool allowTouch,
   }) = _HomeState;
 }
