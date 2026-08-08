@@ -22,120 +22,118 @@ class HomeShellScreen extends ConsumerWidget {
     final notifier = ref.read(homeProvider.notifier);
     return PopScope(
       canPop: false,
-      child: SafeArea(
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: FitTheme.backgroundColor,
-            shadowColor: Colors.transparent,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            toolbarHeight: state.currentIndex == 0 ? 0 : 100.r,
-            leading: Container(
-              alignment: Alignment.bottomLeft,
-              margin: EdgeInsets.only(left: 45).r,
-              width: MediaQuery.of(context).size.width,
-              child: _buildLeftTitle(l10n, state.currentIndex),
-            ),
-            leadingWidth: 300,
-            centerTitle: false,
-          ),
+      child: Scaffold(
+        appBar: AppBar(
           backgroundColor: FitTheme.backgroundColor,
-          body: IndexedStack(
-            index: state.currentIndex,
-            children: [
-              HomeTabScreen(),
-              const CourseListPage(),
-              const DeviceSearchScreen(),
-              const AboutShellPage(),
-            ],
+          shadowColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          toolbarHeight: state.currentIndex == 0 ? 0 : 100.r,
+          leading: Container(
+            alignment: Alignment.bottomLeft,
+            margin: EdgeInsets.only(left: 45).r,
+            width: MediaQuery.of(context).size.width,
+            child: _buildLeftTitle(l10n, state.currentIndex),
           ),
-          bottomNavigationBar: Theme(
-            data: ThemeData(
-              bottomNavigationBarTheme: BottomNavigationBarThemeData(
-                elevation: 1,
-                type: BottomNavigationBarType.fixed,
-                selectedItemColor: FitTheme.buttonColor,
-                unselectedItemColor: FitTheme.textColor,
-                selectedLabelStyle: TextStyle(fontSize: 25.sp),
-                unselectedLabelStyle: TextStyle(fontSize: 25.sp),
-                showSelectedLabels: true,
-                showUnselectedLabels: true,
-              ),
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-            ),
-            child: BottomNavigationBar(
-              selectedLabelStyle: TextStyle(
-                fontFamily: AppFonts.hofontmedium,
-                fontSize: 30.sp,
-              ),
-              unselectedLabelStyle: TextStyle(
-                fontFamily: AppFonts.hofontregular,
-                color: FitTheme.textColor,
-                fontSize: 30.sp,
-              ),
-              elevation: 20.r,
-              items: [
-                BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'images/newUIScreen/healthUn.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  activeIcon: Image.asset(
-                    'images/newUIScreen/health.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: l10n.health,
-                ),
-                BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'images/newUIScreen/courseUn.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  activeIcon: Image.asset(
-                    'images/newUIScreen/course.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: l10n.sport,
-                ),
-                BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'images/newUIScreen/icons/icon_device.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  activeIcon: Image.asset(
-                    'images/newUIScreen/icons/icon_device_sel.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: l10n.device,
-                ),
-                BottomNavigationBarItem(
-                  icon: Image.asset(
-                    'images/newUIScreen/icons/meUn.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  activeIcon: Image.asset(
-                    'images/newUIScreen/icons/me.png',
-                    width: 24,
-                    height: 24,
-                  ),
-                  label: l10n.me,
-                ),
-              ],
-              backgroundColor: FitTheme.backgroundColor,
-              currentIndex: state.currentIndex,
+          leadingWidth: 300,
+          centerTitle: false,
+        ),
+        backgroundColor: FitTheme.backgroundColor,
+        body: IndexedStack(
+          index: state.currentIndex,
+          children: [
+            HomeTabScreen(),
+            const CourseListPage(),
+            const DeviceSearchScreen(),
+            const AboutShellPage(),
+          ],
+        ),
+        bottomNavigationBar: Theme(
+          data: ThemeData(
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              elevation: 1,
               type: BottomNavigationBarType.fixed,
               selectedItemColor: FitTheme.buttonColor,
               unselectedItemColor: FitTheme.textColor,
-              onTap: (i) => notifier.changePage(i),
+              selectedLabelStyle: TextStyle(fontSize: 25.sp),
+              unselectedLabelStyle: TextStyle(fontSize: 25.sp),
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
             ),
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+          ),
+          child: BottomNavigationBar(
+            selectedLabelStyle: TextStyle(
+              fontFamily: AppFonts.hofontmedium,
+              fontSize: 30.sp,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontFamily: AppFonts.hofontregular,
+              color: FitTheme.textColor,
+              fontSize: 30.sp,
+            ),
+            elevation: 20.r,
+            items: [
+              BottomNavigationBarItem(
+                icon: Image.asset(
+                  'images/newUIScreen/healthUn.png',
+                  width: 24,
+                  height: 24,
+                ),
+                activeIcon: Image.asset(
+                  'images/newUIScreen/health.png',
+                  width: 24,
+                  height: 24,
+                ),
+                label: l10n.health,
+              ),
+              BottomNavigationBarItem(
+                icon: Image.asset(
+                  'images/newUIScreen/courseUn.png',
+                  width: 24,
+                  height: 24,
+                ),
+                activeIcon: Image.asset(
+                  'images/newUIScreen/course.png',
+                  width: 24,
+                  height: 24,
+                ),
+                label: l10n.sport,
+              ),
+              BottomNavigationBarItem(
+                icon: Image.asset(
+                  'images/newUIScreen/icons/icon_device.png',
+                  width: 24,
+                  height: 24,
+                ),
+                activeIcon: Image.asset(
+                  'images/newUIScreen/icons/icon_device_sel.png',
+                  width: 24,
+                  height: 24,
+                ),
+                label: l10n.device,
+              ),
+              BottomNavigationBarItem(
+                icon: Image.asset(
+                  'images/newUIScreen/icons/meUn.png',
+                  width: 24,
+                  height: 24,
+                ),
+                activeIcon: Image.asset(
+                  'images/newUIScreen/icons/me.png',
+                  width: 24,
+                  height: 24,
+                ),
+                label: l10n.me,
+              ),
+            ],
+            backgroundColor: FitTheme.backgroundColor,
+            currentIndex: state.currentIndex,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: FitTheme.buttonColor,
+            unselectedItemColor: FitTheme.textColor,
+            onTap: (i) => notifier.changePage(i),
           ),
         ),
       ),

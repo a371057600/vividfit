@@ -4,10 +4,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/notifiers/auth_notifier.dart';
 import '../../features/auth/pages/account_login_page.dart';
+import '../../features/auth/pages/avatar_setup_page.dart';
 import '../../features/auth/pages/email_login_page.dart';
 import '../../features/auth/pages/find_password_page.dart';
 import '../../features/auth/pages/get_code_page.dart';
 import '../../features/auth/pages/login_page.dart';
+import '../../features/auth/pages/nickname_setup_page.dart';
 import '../../features/auth/pages/phone_login_page.dart';
 import '../../features/auth/pages/splash_page.dart';
 import '../../features/home/pages/body_data_page.dart';
@@ -61,14 +63,42 @@ GoRouter appRouter(Ref ref) {
     redirect: (context, state) {
       final authState = ref.read(authProvider);
       final isLoggedIn = authState.isAuthenticated;
+      final isNewUser = authState.isNewUser;
       final location = state.matchedLocation;
       // splash 页总是允许显示,由其自行决定跳转
       if (location == '/splash') return null;
       // 测试页面免登录
       if (_testRoutes.contains(location)) return null;
+      // 注册流程路由集合
+      const registerFlowRoutes = {
+        '/nickname-setup',
+        '/body-data',
+        '/avatar-setup',
+        '/goal-setting',
+      };
       final inLoginFlow = _loginFlowRoutes.contains(location);
-      if (isLoggedIn && inLoginFlow) return '/home-shell';
-      if (!isLoggedIn && !inLoginFlow) return '/login';
+      final inRegisterFlow = registerFlowRoutes.contains(location);
+
+      // 已登录 + 新用户:强制走注册流程(但如果在跳首页,允许通过)
+      if (isLoggedIn && isNewUser && location != '/home-shell') {
+        if (!inRegisterFlow) {
+          return '/nickname-setup';
+        }
+        return null;
+      }
+
+      // 已登录 + 老用户:跳主页(但如果在 home-shell,允许通过)
+      if (isLoggedIn && !isNewUser) {
+        if (inLoginFlow && location != '/home-shell') {
+          return '/home-shell';
+        }
+        return null;
+      }
+
+      // 未登录:跳登录(注册流程除外,允许未登录走注册流程)
+      if (!isLoggedIn && !inLoginFlow && !inRegisterFlow) {
+        return '/login';
+      }
       return null;
     },
     routes: [
@@ -107,6 +137,21 @@ GoRouter appRouter(Ref ref) {
         name: 'find-password',
         builder: (context, state) => const FindPasswordPage(),
       ),
+      // 注册流程路由
+      GoRoute(
+        path: '/nickname-setup',
+        name: 'nickname-setup',
+        builder: (context, state) => const NicknameSetupPage(),
+      ),
+      GoRoute(
+        path: '/avatar-setup',
+        name: 'avatar-setup',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final isRegistration = extra?['isRegistration'] as bool? ?? false;
+          return AvatarSetupPage(isRegistration: isRegistration);
+        },
+      ),
       GoRoute(
         path: '/home-shell',
         name: 'home-shell',
@@ -115,12 +160,20 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/goal-setting',
         name: 'goal-setting',
-        builder: (context, state) => const GoalSettingPage(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final isRegistration = extra?['isRegistration'] as bool? ?? false;
+          return GoalSettingPage(isRegistration: isRegistration);
+        },
       ),
       GoRoute(
         path: '/body-data',
         name: 'body-data',
-        builder: (context, state) => const BodyDataPage(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final isRegistration = extra?['isRegistration'] as bool? ?? false;
+          return BodyDataPage(isRegistration: isRegistration);
+        },
       ),
       GoRoute(
         path: '/placeholder',
@@ -381,7 +434,8 @@ GoRouter appRouter(Ref ref) {
         name: 'record-detail',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final equipmentType = extra?['equipmentType'] as RecordEquipmentType? ??
+          final equipmentType =
+              extra?['equipmentType'] as RecordEquipmentType? ??
               RecordEquipmentType.all;
           return RecordDetailPage(equipmentType: equipmentType);
         },

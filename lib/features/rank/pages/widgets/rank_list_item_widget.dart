@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_fonts.dart';
 import '../../../../core/constants/them_change.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../data/models/rank_leaderboard_entity.dart';
 import '../../domain/rank_device_type.dart';
 import 'rank_avatar_widget.dart';
@@ -19,9 +20,11 @@ class RankListItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (leaderboardList.isEmpty) {
-      return const Center(
-        child: Text('No data'),
+      return Center(
+        child: Text(l10n.rankNoData),
       );
     }
 
@@ -45,7 +48,6 @@ class RankListItemWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Rank number
           SizedBox(
             width: 60.w,
             child: Text(
@@ -58,7 +60,6 @@ class RankListItemWidget extends StatelessWidget {
               ),
             ),
           ),
-          // Avatar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10).r,
             child: entity.headImg == null || entity.headImg!.isEmpty
@@ -75,7 +76,6 @@ class RankListItemWidget extends StatelessWidget {
                     size: 60,
                   ),
           ),
-          // Nickname
           Expanded(
             child: Text(
               entity.nickName,
@@ -87,7 +87,6 @@ class RankListItemWidget extends StatelessWidget {
               ),
             ),
           ),
-          // Score
           Text(
             deviceType == RankDeviceType.all
                 ? entity.calories.toStringAsFixed(0)

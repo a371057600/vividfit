@@ -41,9 +41,16 @@ class _SplashPageState extends ConsumerState<SplashPage>
     await Future.delayed(const Duration(milliseconds: 1000));
     if (!mounted || _navigated) return;
     _navigated = true;
-    final isLoggedIn = ref.read(authProvider).isAuthenticated;
+    final authState = ref.read(authProvider);
+    final isLoggedIn = authState.isAuthenticated;
+    final isNewUser = authState.isNewUser;
     if (mounted) {
-      context.go(isLoggedIn ? '/home-shell' : '/login');
+      // 已登录 + 新用户:跳注册流程
+      if (isLoggedIn && isNewUser) {
+        context.go('/nickname-setup');
+      } else {
+        context.go(isLoggedIn ? '/home-shell' : '/login');
+      }
     }
   }
 

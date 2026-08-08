@@ -167,7 +167,13 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
                       child: Row(
                         children: [
                           _buildCourseImage(state, screenWidth, screenHeight),
-                          _buildMiddleContent(state, l10n, screenWidth),
+                          Expanded(
+                            child: _buildMiddleContent(
+                              state,
+                              l10n,
+                              screenWidth,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -262,7 +268,7 @@ class _GymCourseDetailScreenState extends ConsumerState<GymCourseDetailScreen> {
     final cp = state.courseProperties;
     return Container(
       margin: EdgeInsets.all(10),
-      width: screenWidth * 0.4,
+      // width: screenWidth * 0.4,
       child: Container(
         margin: EdgeInsets.only(left: 10),
         child: ListView(

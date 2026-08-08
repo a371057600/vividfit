@@ -1005,7 +1005,13 @@ class HomeTabScreen extends ConsumerWidget {
       child: InkWell(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        onTap: () => context.push('/placeholder'),
+        onTap: () {
+          if (config.key == 'burnRank' || config.key == 'ranks') {
+            context.push('/ranking');
+          } else {
+            context.push('/placeholder');
+          }
+        },
         child: Container(
           padding: EdgeInsets.all(20).r,
           width: MediaQuery.of(context).size.width / 2 - 40.r,

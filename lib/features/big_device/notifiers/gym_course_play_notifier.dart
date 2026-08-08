@@ -33,6 +33,20 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   /// Voice 播放器（单次模式）
   final AudioPlayer _voicePlayer = AudioPlayer();
 
+  /// 🔴 同步"音频终止"布尔（100%防御 await 穿透
+  /// 语义：true= 已经触发了 manualFinish/_finishPlay → 音频必须立刻停止，任何后续异步启动/切换都不准再执行。
+  /// 不放入 state（state 是 Riverpod 异步的，而 audioPlayer 的 await 穿透在 setState 之后无法同步检查
+  bool _audioTerminated = false;
+
+  /// 🔴 音频守卫快捷 check helper：同步布尔守卫，true=允许继续执行；false=已终止，打印日志并 return。
+  bool _checkAudioGuard(String tag) {
+    if (_audioTerminated) {
+      debugPrint('🛑 [AudioGuard] $tag 被 _audioTerminated 布尔拦截（禁止再启动/切换音频');
+      return false;
+    }
+    return true;
+  }
+
   @override
   GymCoursePlayState build() {
     // Notifier 销毁时清理定时器，避免泄漏
@@ -55,28 +69,127 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // Mock 数据构建
   // ══════════════════════════════════════════════════════════
 
-  /// 基于设备类型构建 mock 数据（兜底空壳，保留函数签名）
+  /// 基于设备类型构建 mock 数据
   Future<GymCoursePlayState> _buildMockData(FtmsDeviceType deviceType) async {
+    // 课程动作列表（6 段：热身→冲刺→爬坡→恢复→耐力→放松）
+    const actions = [
+      ActionItemState(
+        name: '热身',
+        imageName: 'warm_up',
+        bgmName: 'bgm_warm',
+        voiceName: 'voice_warm',
+        duration: 11,
+        resistance: 2,
+        cadence: 20,
+        posture: 0,
+        isRestStage: true,
+        imageFps: 10,
+        imageLength: 110,
+        orderId: 0,
+      ),
+      ActionItemState(
+        name: '快跑',
+        imageName: 'sprint',
+        bgmName: 'bgm_run',
+        voiceName: 'voice_run',
+        duration: 75,
+        resistance: 5,
+        cadence: 45,
+        posture: 2,
+        isRestStage: false,
+        imageFps: 10,
+        imageLength: 750,
+        orderId: 1,
+      ),
+      ActionItemState(
+        name: '快跑',
+        imageName: 'climb',
+        bgmName: 'bgm_climb',
+        voiceName: 'voice_climb',
+        duration: 45,
+        resistance: 8,
+        cadence: 30,
+        posture: 3,
+        isRestStage: false,
+        imageFps: 10,
+        imageLength: 450,
+        orderId: 2,
+      ),
+      ActionItemState(
+        name: '快跑',
+        imageName: 'recovery',
+        bgmName: 'bgm_recov',
+        voiceName: 'voice_recov',
+        duration: 30,
+        resistance: 2,
+        cadence: 15,
+        posture: 0,
+        isRestStage: true,
+        imageFps: 10,
+        imageLength: 300,
+        orderId: 3,
+      ),
+      ActionItemState(
+        name: '慢跑',
+        imageName: 'endurance',
+        bgmName: 'bgm_endur',
+        voiceName: 'voice_endur',
+        duration: 60,
+        resistance: 6,
+        cadence: 35,
+        posture: 1,
+        isRestStage: false,
+        imageFps: 10,
+        imageLength: 600,
+        orderId: 4,
+      ),
+      ActionItemState(
+        name: '放松',
+        imageName: 'cool_down',
+        bgmName: 'bgm_cool',
+        voiceName: 'voice_cool',
+        duration: 44,
+        resistance: 1,
+        cadence: 10,
+        posture: 0,
+        isRestStage: true,
+        imageFps: 10,
+        imageLength: 440,
+        orderId: 5,
+      ),
+    ];
+
+    final actionNames = _buildRightActionNameList(actions);
+    final progressSegments = _buildProgressSegments(actions, deviceType);
+    final totalDuration = actions.fold<int>(0, (a, b) => a + b.duration);
+
+    // 图片根路径（本地 courses/课程ID/pictures 目录）
     final rootImagePath = await _resolveRootImagePath();
 
+    // BGM / Voice 根路径（本地 courses/bgm 和 courses/voice 目录）
     final dir = await getApplicationDocumentsDirectory();
     final rootBgmPath = '${dir.path}/course/bgm/';
     final rootVoicePath = '${dir.path}/course/voice/';
     debugPrint('🎵 [PlayNotifier] BGM根路径: $rootBgmPath');
     debugPrint('🎵 [PlayNotifier] Voice根路径: $rootVoicePath');
 
+    // 按设备类型生成结束页数据
+    final finishData = _buildFinishData(deviceType);
+    final ratingData = _buildRatingData(deviceType);
+
     return GymCoursePlayState(
       deviceType: deviceType,
       screenStatus: GymPlayScreenStatus.playing,
       allowTouch: true,
-      showPlayButton: true,
+      showPlayButton: true, // ⚠️ 初始显示中央 Play（需要用户点击启动）
       isPlaying: false,
       isPause: false,
       isStopScreen: false,
-      courseTitle: '训练课程',
+      courseTitle: '金字塔变速跑',
       difficulty: '进阶',
       level: 3,
       targetResistanceLevel: 3,
+      // 实时数据（初始值0，由后续定时器累加）
       sportTime: '00:00',
       sportDistance: '0.00',
       sportCalories: '0.0',
@@ -88,33 +201,39 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       sportStrokeCount: '0',
       sportInclination: '0.0',
       sportResistance: '3',
+      // 按钮值
       sportSpeedButton: 0.0,
       sportInclinationButton: 3.0,
       sportResistanceButton: 3.0,
       hasInclinationSupport: deviceType == FtmsDeviceType.treadmill,
+      // 进度
       playIndex: 0,
-      currentDuration: 0,
+      currentDuration: actions.first.duration,
       playIndexDuration: 0,
       playTotalDuration: 0,
-      totalPlayProgressDuration: 1,
+      totalPlayProgressDuration: totalDuration,
       imagePlayIndex: 0,
       imageFps: 10,
       rootImagePath: rootImagePath,
       rootBgmPath: rootBgmPath,
       rootVoicePath: rootVoicePath,
-      courseActions: const [],
-      currentActionNameList: const ['开始'],
-      progressSegments: const [],
       playProgressPercent: 0.0,
-      finishDataIcons: const <String>[],
-      finishDataTitles: const <String>[],
-      finishDataValues: const <String>[],
-      finishDataUnits: const <String>[],
-      ratingTitles: const <String>[],
-      ratingScores: const <int>[],
-      scoreLevel: '',
-      ratingImageIndices: const <int>[],
-      speedChartData: const [],
+      // 动作
+      courseActions: actions,
+      currentActionNameList: actionNames,
+      progressSegments: progressSegments,
+      // 结束页
+      finishDataIcons: finishData.$1,
+      finishDataTitles: finishData.$2,
+      finishDataValues: finishData.$3,
+      finishDataUnits: finishData.$4,
+      // 评分
+      ratingTitles: ratingData.$1,
+      ratingScores: ratingData.$2,
+      scoreLevel: ratingData.$3,
+      ratingImageIndices: ratingData.$4,
+      // 速度图（由定时器逐步填充，初始为空）
+      speedChartData: [],
     );
   }
 
@@ -157,6 +276,15 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
   /// 首次启动：加载 BGM（循环）+ Voice（单次）并播放
   Future<void> _startBgmAndVoice() async {
+    // 🔴 守卫 1：同步布尔（第一重拦截
+    if (!_checkAudioGuard('_startBgmAndVoice.entry')) return;
+    // 🔴 屏态守卫：中间态/结算态 不允许再启动
+    if (state.isPauseScreen || state.isStopScreen) {
+      debugPrint(
+        '🛑 [Audio] _startBgmAndVoice 被屏态守卫拦截 (isPauseScreen=${state.isPauseScreen}, isStopScreen=${state.isStopScreen})',
+      );
+      return;
+    }
     final actions = state.courseActions;
     if (actions.isEmpty) return;
 
@@ -169,7 +297,9 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     // 加载并播放 BGM（循环模式）
     try {
       await _bgmPlayer.setFilePath(bgmPath);
+      if (!_checkAudioGuard('_startBgmAndVoice.afterBgmSet')) return;
       await _bgmPlayer.setLoopMode(LoopMode.one);
+      if (!_checkAudioGuard('_startBgmAndVoice.afterBgmLoop')) return;
       await _bgmPlayer.play();
       debugPrint('🎵 [Audio] BGM 播放启动: $bgmPath');
     } catch (e) {
@@ -178,8 +308,11 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
     // 加载并播放 Voice（单次模式）
     try {
+      if (!_checkAudioGuard('_startBgmAndVoice.beforeVoiceSet')) return;
       await _voicePlayer.setFilePath(voicePath);
+      if (!_checkAudioGuard('_startBgmAndVoice.afterVoiceSet')) return;
       await _voicePlayer.setLoopMode(LoopMode.off);
+      if (!_checkAudioGuard('_startBgmAndVoice.afterVoiceLoop')) return;
       await _voicePlayer.play();
       debugPrint('🎵 [Audio] Voice 播放启动: $voicePath');
     } catch (e) {
@@ -189,6 +322,15 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
   /// 阶段切换：停止旧 Voice，加载并播放新 Voice（BGM 保持不变）
   Future<void> _switchVoice() async {
+    // 🔴 守卫 1：同步布尔（第一重）
+    if (!_checkAudioGuard('_switchVoice.entry')) return;
+    // 🔴 屏态守卫：中间态/结算态 不允许再切换 Voice
+    if (state.isPauseScreen || state.isStopScreen) {
+      debugPrint(
+        '🛑 [Audio] _switchVoice 被屏态守卫拦截 (isPauseScreen=${state.isPauseScreen}, isStopScreen=${state.isStopScreen})',
+      );
+      return;
+    }
     final actions = state.courseActions;
     if (actions.isEmpty) return;
 
@@ -197,8 +339,11 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
     try {
       await _voicePlayer.stop();
+      if (!_checkAudioGuard('_switchVoice.afterStop')) return;
       await _voicePlayer.setFilePath(voicePath);
+      if (!_checkAudioGuard('_switchVoice.afterSet')) return;
       await _voicePlayer.setLoopMode(LoopMode.off);
+      if (!_checkAudioGuard('_switchVoice.afterLoop')) return;
       await _voicePlayer.play();
       debugPrint('🔊 [Audio] Voice 切换: ${curAction.voiceName}');
     } catch (e) {
@@ -206,21 +351,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     }
   }
 
-  /// 暂停所有音频
-  void _pauseAudio() {
-    _bgmPlayer.pause();
-    _voicePlayer.pause();
-    debugPrint('⏸️ [Audio] 音乐暂停');
-  }
-
-  /// 恢复所有音频
-  void _resumeAudio() {
-    _bgmPlayer.play();
-    _voicePlayer.play();
-    debugPrint('▶️ [Audio] 音乐恢复');
-  }
-
-  /// 停止所有音频
+  /// 停止所有音频（同步设置终止布尔）
   void _stopAudio() {
     _bgmPlayer.stop();
     _voicePlayer.stop();
@@ -293,45 +424,6 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   (List<String>, List<String>, List<String>, List<String>) _buildFinishData(
     FtmsDeviceType deviceType,
   ) {
-    // 公共值：从真实 state 取值
-    final totalSecs = state.playTotalDuration;
-    final totalDuration = state.totalPlayProgressDuration > 0
-        ? state.totalPlayProgressDuration
-        : 1;
-    final sportTime = formatDuration(totalSecs);
-    final distance = state.sportDistance.isEmpty ? '0.00' : state.sportDistance;
-    final calories = state.sportCalories.isEmpty ? '0.0' : state.sportCalories;
-    final distanceNum = double.tryParse(distance) ?? 0.0;
-    // 配速 Pace: min/km，distance>0 时 = (totalSecs/60) / distance
-    final paceMinPerKm = distanceNum > 0
-        ? '${((totalSecs / 60.0) / distanceNum).toStringAsFixed(0).padLeft(2, '0')}:${(((totalSecs / 60.0 / distanceNum) % 1) * 60).round().clamp(0, 59).toString().padLeft(2, '0')}'
-        : '00:00';
-    final cadence = state.sportCadence.isEmpty ? '0' : state.sportCadence;
-    final cadenceNum = int.tryParse(cadence) ?? 0;
-    final maxCadence = (cadenceNum * 1.1).round().clamp(0, 300).toString();
-    final heartRate = state.sportHeartRate.isEmpty ? '0' : state.sportHeartRate;
-    final heartRateNum = int.tryParse(heartRate) ?? 0;
-    final maxHeartRate = (heartRateNum * 1.1).round().clamp(0, 220).toString();
-    final strokeRate = state.sportStrokeRate.isEmpty
-        ? '28'
-        : state.sportStrokeRate;
-    final strokeRateNum = double.tryParse(strokeRate) ?? 28.0;
-    final maxStrokeRate = (strokeRateNum * 1.1).toStringAsFixed(0);
-    final strokeCount = state.sportStrokeCount.isEmpty
-        ? '0'
-        : state.sportStrokeCount;
-    final resistance = state.sportResistanceButton.toStringAsFixed(0);
-    final avgResistance = resistance; // 近似取当前阻力按钮值
-    // Completion 完成率：
-    final completionPct = totalDuration > 0
-        ? ((totalSecs / totalDuration) * 100).toStringAsFixed(1)
-        : '0.0';
-    final restTime = '00:00'; // state 暂无独立 restTime 字段，先用 0
-    final totalCadence = (cadenceNum * (totalSecs / 60.0))
-        .round()
-        .clamp(0, 99999)
-        .toString();
-
     const iconBase =
         'images/newUIScreen/bigScreenAnimation/bigDevicePlayCourseIcon';
 
@@ -363,16 +455,16 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
             'Completion',
           ],
           [
-            sportTime,
-            distance,
-            calories,
-            paceMinPerKm,
-            cadence,
-            maxCadence,
-            maxHeartRate,
-            totalCadence,
-            restTime,
-            completionPct,
+            '05:30',
+            '1.25',
+            '46',
+            '02:24',
+            '85',
+            '95',
+            '142',
+            '560',
+            '00:00',
+            '85.5',
           ],
           [
             '',
@@ -414,16 +506,16 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
             'Completion',
           ],
           [
-            sportTime,
-            distance,
-            calories,
-            paceMinPerKm,
-            paceMinPerKm,
-            cadence,
-            maxHeartRate,
-            cadence,
-            totalCadence,
-            completionPct,
+            '05:30',
+            '1.25',
+            '46',
+            '02:24',
+            '02:40',
+            '95',
+            '142',
+            '85',
+            '560',
+            '85.5',
           ],
           [
             '',
@@ -465,16 +557,16 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
             'Completion',
           ],
           [
-            sportTime,
-            distance,
-            calories,
-            paceMinPerKm,
-            cadence,
-            totalCadence,
-            maxCadence,
-            maxHeartRate,
-            restTime,
-            completionPct,
+            '05:30',
+            '1.25',
+            '46',
+            '02:24',
+            '85',
+            '560',
+            '95',
+            '142',
+            '00:00',
+            '85.5',
           ],
           [
             '',
@@ -516,16 +608,16 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
             'Completion',
           ],
           [
-            sportTime,
-            distance,
-            calories,
-            strokeRate,
-            avgResistance,
-            strokeCount,
-            maxStrokeRate,
-            maxHeartRate,
-            restTime,
-            completionPct,
+            '05:30',
+            '1.25',
+            '46',
+            '28',
+            '3',
+            '156',
+            '35',
+            '128',
+            '00:00',
+            '85.5',
           ],
           [
             '',
@@ -549,106 +641,32 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   (List<String>, List<int>, String, List<int>) _buildRatingData(
     FtmsDeviceType deviceType,
   ) {
-    // 公共计算
-    final totalSecs = state.playTotalDuration;
-    final totalDur = state.totalPlayProgressDuration > 0
-        ? state.totalPlayProgressDuration
-        : 1;
-    final completionRatio = (totalSecs / totalDur).clamp(0.0, 1.0);
-    final caloriesNum = double.tryParse(state.sportCalories) ?? 0.0;
-    final cadenceNum = int.tryParse(state.sportCadence) ?? 0;
-    final hasCadence = cadenceNum > 0;
-    // 1. Completion 完成率评分 1~5
-    final completionScore = (completionRatio * 5.0).round().clamp(1, 5);
-    // 2. Stability 稳定性：默认3；踏频存在且较高(>=70)时+1；完成率高时(>=0.8)再+0
-    final stabilityBase = hasCadence ? 3 : 2;
-    final stabilityBonus = (hasCadence && cadenceNum >= 70) ? 1 : 0;
-    final stabilityScore = (stabilityBase + stabilityBonus).clamp(1, 5);
-    // 3. Effort 努力评分：与卡路里正相关，>=500kcal=5，>=250=4，>=100=3，>=30=2，否则1
-    final effortScore = caloriesNum >= 500
-        ? 5
-        : caloriesNum >= 250
-        ? 4
-        : caloriesNum >= 100
-        ? 3
-        : caloriesNum >= 30
-        ? 2
-        : 1;
-    // 4. Coherence 连贯性：与完成率正相关，近似 completionScore-1 再 clamp 1~5
-    final coherenceScore = (completionScore - 1).clamp(1, 5);
-    // Level 映射：平均>=4 A, >=3 B, >=2 C 否则 D
-    final allScoresAvg =
-        (completionScore + stabilityScore + effortScore + coherenceScore) / 4;
-    final scoreLevel = allScoresAvg >= 4.0
-        ? 'Level A'
-        : allScoresAvg >= 3.0
-        ? 'Level B'
-        : allScoresAvg >= 2.0
-        ? 'Level C'
-        : 'Level D';
-
     switch (deviceType) {
       case FtmsDeviceType.treadmill:
         return (
           ['Completion', 'Stability', 'Slope Control', 'Exercise Coherence'],
-          [completionScore, stabilityScore, effortScore, coherenceScore],
-          scoreLevel,
-          [
-            (completionScore - 1).clamp(0, 3),
-            (stabilityScore - 1).clamp(0, 3),
-            (effortScore - 1).clamp(0, 3),
-            (coherenceScore - 1).clamp(0, 3),
-          ],
+          [4, 4, 3, 3],
+          'Level A',
+          [0, 0, 0, 2],
         );
       case FtmsDeviceType.indoorBike:
-        return (
-          ['Completion', 'Stability', 'Pedaling Eff.', 'Coherence'],
-          [completionScore, stabilityScore, effortScore, coherenceScore],
-          scoreLevel,
-          [
-            (completionScore - 1).clamp(0, 3),
-            (stabilityScore - 1).clamp(0, 3),
-            (effortScore - 1).clamp(0, 3),
-            (coherenceScore - 1).clamp(0, 3),
-          ],
-        );
       case FtmsDeviceType.crossTrainer:
         return (
           ['Completion', 'Stability', 'Pedaling Eff.', 'Coherence'],
-          [completionScore, effortScore, stabilityScore, coherenceScore],
-          scoreLevel,
-          [
-            (completionScore - 1).clamp(0, 3),
-            (effortScore - 1).clamp(0, 3),
-            (stabilityScore - 1).clamp(0, 3),
-            (coherenceScore - 1).clamp(0, 3),
-          ],
+          [4, 3, 4, 3],
+          'Level A',
+          [0, 0, 0, 2],
         );
       case FtmsDeviceType.rower:
         return (
           ['Completion', 'Endurance', 'Exercise Eff.', 'Stability'],
-          [completionScore, stabilityScore, effortScore, coherenceScore],
-          scoreLevel,
-          [
-            (completionScore - 1).clamp(0, 3),
-            (stabilityScore - 1).clamp(0, 3),
-            (effortScore - 1).clamp(0, 3),
-            (coherenceScore - 1).clamp(0, 3),
-          ],
+          [4, 3, 4, 3],
+          'Level A',
+          [0, 0, 0, 2],
         );
       case FtmsDeviceType.strengthStation:
         // 力量站预留：评分与单车一致
-        return (
-          ['Completion', 'Stability', 'Pedaling Eff.', 'Coherence'],
-          [completionScore, stabilityScore, effortScore, coherenceScore],
-          scoreLevel,
-          [
-            (completionScore - 1).clamp(0, 3),
-            (stabilityScore - 1).clamp(0, 3),
-            (effortScore - 1).clamp(0, 3),
-            (coherenceScore - 1).clamp(0, 3),
-          ],
-        );
+        return _buildRatingData(FtmsDeviceType.indoorBike);
     }
   }
 
@@ -660,9 +678,6 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     _playTickTimer?.cancel();
     _imageFrameTimer?.cancel();
     _stopAudio();
-    unawaited(_bgmPlayer.seek(Duration.zero));
-    unawaited(_voicePlayer.seek(Duration.zero));
-    debugPrint('🧹 [PlayNotifier] resetToLoading: audio cursor seek(zero)');
     state = state.copyWith(
       screenStatus: GymPlayScreenStatus.loading,
       isPause: false,
@@ -680,6 +695,9 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     debugPrint(
       '📦 [PlayInit] initCourseContext called, courseId=$courseId, deviceType=$deviceType',
     );
+    // 🔴 重置"音频终止"布尔（新一轮课程开始，允许启音）
+    _audioTerminated = false;
+    debugPrint('🛑 [AudioGuard] _audioTerminated = false（新课程初始化，允许启音）');
     if (deviceType != null) {
       // 优先从详情页 Provider 读取真实课程数据（已下载完成的课程）
       final detailState = ref.read(gymCourseDetailProvider);
@@ -808,13 +826,23 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // 纯本地模拟播放（无蓝牙）
   // ══════════════════════════════════════════════════════════
 
-  /// 用户点击中央 Play → 启动定时器
+  /// 用户点击中央 Play → 启动定时器（播放中再点击=直接结束→结算页）
   void togglePlay() {
+    // 🔴 屏态守卫：已进入中间态 / 已结算 → 不再响应 Play
+    if (state.isPauseScreen || state.isStopScreen) {
+      debugPrint(
+        '🛑 [Play] togglePlay 被屏态守卫拦截 (isPauseScreen=${state.isPauseScreen}, isStopScreen=${state.isStopScreen})',
+      );
+      return;
+    }
     if (state.isPlaying) {
-      // 暂停：停止定时器 + 显示覆盖层
-      pauseSport();
+      // 🔴 播放中再次点中央 Play → 直接结束课程 → 进结算页（不弹中间确认）
+      debugPrint('▶️⏹️ [Play] togglePlay(playing) → manualFinish（直接结算）');
+      manualFinish();
     } else {
-      // 启动：隐藏按钮 + 启动定时器
+      // 启动：重置音频终止布尔 + 隐藏按钮 + 启动定时器
+      _audioTerminated = false;
+      debugPrint('🛑 [AudioGuard] _audioTerminated = false（用户点击中央 Play，允许启音）');
       state = state.copyWith(
         isPlaying: true,
         showPlayButton: false,
@@ -829,6 +857,13 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
   /// 启动双定时器（播放 tick + 帧动画 tick）
   void _startTimers() {
+    // 🔴 屏态守卫：中间态/结算态 不允许启动定时器
+    if (state.isPauseScreen || state.isStopScreen) {
+      debugPrint(
+        '🛑 [Play] _startTimers 被屏态守卫拦截 (isPauseScreen=${state.isPauseScreen}, isStopScreen=${state.isStopScreen})',
+      );
+      return;
+    }
     _playTickTimer?.cancel();
     _imageFrameTimer?.cancel();
 
@@ -843,15 +878,15 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     });
   }
 
-  /// 暂停定时器（不改变 showPlayButton，由调用方控制）
-  void _pauseTimers() {
-    _playTickTimer?.cancel();
-    _imageFrameTimer?.cancel();
-  }
-
   /// 每秒 tick：累加 playIndexDuration / playTotalDuration + 计算进度 + 模拟运动数据
   void _tickPlaySecond() {
-    if (state.isPause || state.isStopScreen || !state.isPlaying) return;
+    // 🔴 屏态守卫：isPauseScreen 中间态 / isStopScreen 结算态 → 一律不执行 tick（不触发 _switchVoice / _finishPlay）
+    if (state.isPause ||
+        state.isPauseScreen ||
+        state.isStopScreen ||
+        !state.isPlaying) {
+      return;
+    }
 
     final actions = state.courseActions;
     if (actions.isEmpty) return;
@@ -943,7 +978,13 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
   /// 每 100ms tick：推进 imagePlayIndex 帧
   void _tickImageFrame() {
-    if (state.isPause || state.isStopScreen || !state.isPlaying) return;
+    // 🔴 屏态守卫：isPauseScreen 中间态 / isStopScreen 结算态 → 不推进图片帧
+    if (state.isPause ||
+        state.isPauseScreen ||
+        state.isStopScreen ||
+        !state.isPlaying) {
+      return;
+    }
     final actions = state.courseActions;
     if (actions.isEmpty) return;
     final cur = actions[state.playIndex.clamp(0, actions.length - 1)];
@@ -953,10 +994,14 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   }
 
   /// 播放完成 → 进入结束页
+  /// 🔴 顺序：先 setState + _audioTerminated=true（同步锁，防 await 穿透
   void _finishPlay() {
-    _playTickTimer?.cancel();
-    _imageFrameTimer?.cancel();
-    _stopAudio();
+    // 🔴 第 0 步：同步锁布尔（优先级最高，比 setState 还先）
+    _audioTerminated = true;
+    debugPrint(
+      '🛑 [AudioGuard] _finishPlay() → _audioTerminated = true（禁止再启音）',
+    );
+    // 🔴 第一步：先写 state（锁 isStopScreen=true）
     state = state.copyWith(
       isPlaying: false,
       isStopScreen: true,
@@ -964,14 +1009,24 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       showPlayButton: false,
       sportTime: formatDuration(state.totalPlayProgressDuration),
     );
-    debugPrint('🏁 [Play] 课程播放完成，已进入结束页');
-  }
-
-  /// 用户主动结束课程 → 进入结束页（复刻原版返回按钮逻辑）
-  void manualFinish() {
+    // 🔴 第二步：cancel + stop + seek zero
     _playTickTimer?.cancel();
     _imageFrameTimer?.cancel();
     _stopAudio();
+    unawaited(_bgmPlayer.seek(Duration.zero));
+    unawaited(_voicePlayer.seek(Duration.zero));
+    debugPrint('🏁 [Play] 课程播放完成，已进入结束页（先锁屏再stop）');
+  }
+
+  /// 用户主动结束课程 → 进入结束页（复刻原版返回按钮逻辑）
+  /// 🔴 顺序：先 _audioTerminated=true（同步锁
+  void manualFinish() {
+    // 🔴 第 0 步：同步锁布尔（优先级最高，在任何 setState/await 之前）
+    _audioTerminated = true;
+    debugPrint(
+      '🛑 [AudioGuard] manualFinish() → _audioTerminated = true（禁止再启音）',
+    );
+    // 🔴 第一步：锁屏态（先写 state，拦截 _switchVoice/_tickPlaySecond）
     state = state.copyWith(
       isPlaying: false,
       isPause: false,
@@ -981,7 +1036,13 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       showPlayButton: false,
       sportTime: formatDuration(state.playTotalDuration),
     );
-    debugPrint('🏁 [Play] 用户主动结束课程，进入结束页');
+    // 🔴 第二步：cancel + stop + seek zero
+    _playTickTimer?.cancel();
+    _imageFrameTimer?.cancel();
+    _stopAudio();
+    unawaited(_bgmPlayer.seek(Duration.zero));
+    unawaited(_voicePlayer.seek(Duration.zero));
+    debugPrint('🏁 [Play] 用户主动结束课程，进入结束页（先锁屏再stop）');
   }
 
   // ══════════════════════════════════════════════════════════
@@ -989,37 +1050,14 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // ══════════════════════════════════════════════════════════
 
   void pauseSport() {
-    _pauseTimers();
-    _pauseAudio();
-    state = state.copyWith(
-      isPause: true,
-      isPauseScreen: true,
-      showPlayButton: true,
+    debugPrint(
+      '⚠️ [PlayNotifier] pauseSport 已废弃（流程=直接结算→manualFinish，不再弹中间确认）',
     );
-    debugPrint('⏸️ [Play] 暂停，定时器已挂起');
+    manualFinish();
   }
 
   void resumeSport() {
-    state = state.copyWith(
-      isPause: false,
-      isPauseScreen: false,
-      showPlayButton: false,
-      isPlaying: true,
-    );
-    _startTimers();
-    _resumeAudio();
-    debugPrint('▶️ [Play] 恢复，定时器已重启');
-  }
-
-  void disposeAll() {
-    _playTickTimer?.cancel();
-    _imageFrameTimer?.cancel();
-    _stopAudio();
-    unawaited(_bgmPlayer.seek(Duration.zero));
-    unawaited(_voicePlayer.seek(Duration.zero));
-    debugPrint(
-      '🧹 [PlayNotifier] disposeAll: timers canceled + audio stopped + seek zero',
-    );
+    debugPrint('⚠️ [PlayNotifier] resumeSport 已被禁用（流程=结束后不能再返回播放，直接走结算）');
   }
 
   void exitToDetail() {

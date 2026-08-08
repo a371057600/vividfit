@@ -46,10 +46,8 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final languageNum =
-        ref.watch(authProvider.select((s) => s.languageNum));
-    final agreed =
-        ref.watch(authProvider.select((s) => s.agreedToPrivacy));
+    final languageNum = ref.watch(authProvider.select((s) => s.languageNum));
+    final agreed = ref.watch(authProvider.select((s) => s.agreedToPrivacy));
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
 
@@ -67,7 +65,10 @@ class LoginPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(width: 150, margin: const EdgeInsets.only(top: 300).r),
+                  Container(
+                    width: 150,
+                    margin: const EdgeInsets.only(top: 300).r,
+                  ),
                   SizedBox(height: 15.h),
                   Text(
                     l10n.madeFitnessFun,
@@ -79,7 +80,11 @@ class LoginPage extends ConsumerWidget {
                   ),
                   const Spacer(),
                   Container(
-                    margin: const EdgeInsets.only(left: 25, right: 25, bottom: 50).r,
+                    margin: const EdgeInsets.only(
+                      left: 25,
+                      right: 25,
+                      bottom: 50,
+                    ).r,
                     height: 600.h,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -110,8 +115,11 @@ class LoginPage extends ConsumerWidget {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.email_outlined,
-                                          color: Colors.white, size: 30.r),
+                                      Icon(
+                                        Icons.email_outlined,
+                                        color: Colors.white,
+                                        size: 30.r,
+                                      ),
                                       SizedBox(width: 10.r),
                                       Text(
                                         l10n.emailLogin,
@@ -206,39 +214,72 @@ class LoginPage extends ConsumerWidget {
                         ),
                         SizedBox(height: 20.r),
                         _buildPrivacy(context, ref, l10n, languageNum, agreed),
-                        if (kDebugMode) ...[
-                          SizedBox(height: 10.r),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 16.r,
-                            runSpacing: 8.r,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () async {
-                                  await ref.read(authProvider.notifier).devLogin();
-                                  if (context.mounted) context.go('/home-shell');
-                                },
-                                icon: const Icon(Icons.developer_board, color: Colors.orange),
-                                label: Text(l10n.devOneClickLogin, style: const TextStyle(color: Colors.orange)),
+                        SizedBox(height: 10.r),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 16.r,
+                          runSpacing: 8.r,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () async {
+                                await ref.read(authProvider.notifier).logout();
+                                if (context.mounted) {
+                                  Fluttertoast.showToast(msg: '已退出登录');
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.logout,
+                                color: Colors.redAccent,
                               ),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  // 模拟新用户注册(code=201 场景)→走一轮:昵称→目标→身体数据→首页
-                                  await ref
-                                      .read(authProvider.notifier)
-                                      .devSimulateRegister();
-                                  // 路由 redirect 会自动拉到 /nickname-setup
-                                },
-                                icon: const Icon(Icons.person_add_alt_1, color: Colors.lightGreenAccent),
-                                label: const Text('[调试]走注册流程(新用户)', style: TextStyle(color: Colors.lightGreenAccent)),
+                              label: const Text(
+                                '[调试]清除登录状态',
+                                style: TextStyle(color: Colors.redAccent),
                               ),
-                              ElevatedButton(
-                                onPressed: () => context.go('/api-test'),
-                                child: const Text('API 测试页'),
+                            ),
+                            TextButton.icon(
+                              onPressed: () async {
+                                await ref
+                                    .read(authProvider.notifier)
+                                    .devLogin();
+                                if (context.mounted) context.go('/home-shell');
+                              },
+                              icon: const Icon(
+                                Icons.developer_board,
+                                color: Colors.orange,
                               ),
-                            ],
-                          ),
-                        ],
+                              label: Text(
+                                l10n.devOneClickLogin,
+                                style: const TextStyle(color: Colors.orange),
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () async {
+                                // 模拟新用户注册(code=201 场景)→走一轮:昵称→目标→身体数据→首页
+                                // await ref
+                                //     .read(authProvider.notifier)
+                                //     .devSimulateRegister();
+                                // 直接跳转注册流程第一步
+                                if (context.mounted) {
+                                  context.go('/nickname-setup');
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.person_add_alt_1,
+                                color: Colors.lightGreenAccent,
+                              ),
+                              label: const Text(
+                                '[调试]走注册流程(新用户)',
+                                style: TextStyle(
+                                  color: Colors.lightGreenAccent,
+                                ),
+                              ),
+                            ),
+                            // ElevatedButton(
+                            //   onPressed: () => context.go('/api-test'),
+                            //   child: const Text('API 测试页'),
+                            // ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

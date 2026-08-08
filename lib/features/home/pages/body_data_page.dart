@@ -30,121 +30,119 @@ class BodyDataPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(bodyDataProvider);
     final notifier = ref.read(bodyDataProvider.notifier);
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: FitTheme.backgroundColor,
-        appBar: AppBar(
-          backgroundColor: FitTheme.backgroundColor,
-          shadowColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          toolbarHeight: 100.h,
-          leading: Container(
-            padding: EdgeInsets.only(left: 45).r,
-            width: MediaQuery.of(context).size.width,
-            child: InkWell(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: () {
-                context.pop();
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    alignment: Alignment.bottomCenter,
-                    padding: EdgeInsets.only(bottom: 10).r,
-                    height: 100.r,
-                    child: Icon(
-                      Icons.arrow_back_ios,
-                      color: FitTheme.textColor,
-                      size: 40.r,
-                    ),
+    return Scaffold(
+      backgroundColor: FitTheme.secondbackGround,
+      appBar: AppBar(
+        backgroundColor: FitTheme.secondbackGround,
+        shadowColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 100.h,
+        leading: Container(
+          padding: EdgeInsets.only(left: 45).r,
+          width: MediaQuery.of(context).size.width,
+          child: InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onTap: () {
+              context.pop();
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  padding: EdgeInsets.only(bottom: 10).r,
+                  height: 100.r,
+                  child: Icon(
+                    Icons.arrow_back_ios,
+                    color: FitTheme.textColor,
+                    size: 40.r,
                   ),
-                  Text(
-                    l10n.bodyData,
-                    style: TextStyle(
-                      color: FitTheme.textColor,
-                      fontSize: 40.sp,
-                      fontFamily: AppFonts.hofontmedium,
-                    ),
+                ),
+                Text(
+                  l10n.bodyData,
+                  style: TextStyle(
+                    color: FitTheme.textColor,
+                    fontSize: 40.sp,
+                    fontFamily: AppFonts.hofontmedium,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          leadingWidth: MediaQuery.of(context).size.width,
-          centerTitle: false,
         ),
-        body: Stack(
-          children: [
-            Container(
-              color: FitTheme.secondbackGround,
-              margin: EdgeInsets.all(25).r,
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              child: Column(
-                children: [
-                  _dataRow(
-                    context,
-                    l10n.gender,
-                    state.sexValue ? l10n.male : l10n.female,
-                    () => _sexPickerBottom(context, ref, l10n),
-                  ),
-                  _divider,
-                  _dataRow(
-                    context,
-                    l10n.birthday,
-                    state.birthday,
-                    () => _datePickerBottom(context, ref, l10n),
-                  ),
-                  _divider,
-                  _dataRow(
-                    context,
-                    l10n.height,
-                    '${state.bodyHeight} cm',
-                    () => _heightPickerBottom(context, ref, l10n),
-                  ),
-                  _divider,
-                  _dataRow(
-                    context,
-                    l10n.weight,
-                    '${state.bodyWeight} kg',
-                    () => _weightPickerBottom(context, ref, l10n),
-                  ),
-                  const Spacer(),
-                  if (isRegistration)
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: const EdgeInsets.all(20).r,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: FitTheme.buttonColor,
-                        ),
-                        onPressed: () async {
-                          await notifier.save();
-                          if (!context.mounted) return;
-                          context.push(
-                            '/avatar-setup',
-                            extra: {'isRegistration': true},
-                          );
-                        },
-                        child: Text(
-                          // TODO(l10n): 待补充 next 文案
-                          '下一步',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: FitTheme.fonSizeBigBig,
-                            fontWeight: FontWeight.bold,
-                          ),
+        leadingWidth: MediaQuery.of(context).size.width,
+        centerTitle: false,
+      ),
+      body: Stack(
+        children: [
+          Container(
+            color: FitTheme.secondbackGround,
+            margin: EdgeInsets.all(25).r,
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              children: [
+                _dataRow(
+                  context,
+                  l10n.gender,
+                  state.sexValue ? l10n.male : l10n.female,
+                  () => _sexPickerBottom(context, ref, l10n),
+                ),
+                _divider,
+                _dataRow(
+                  context,
+                  l10n.birthday,
+                  state.birthday,
+                  () => _datePickerBottom(context, ref, l10n),
+                ),
+                _divider,
+                _dataRow(
+                  context,
+                  l10n.height,
+                  '${state.bodyHeight} cm',
+                  () => _heightPickerBottom(context, ref, l10n),
+                ),
+                _divider,
+                _dataRow(
+                  context,
+                  l10n.weight,
+                  '${state.bodyWeight} kg',
+                  () => _weightPickerBottom(context, ref, l10n),
+                ),
+                const Spacer(),
+                if (isRegistration)
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: const EdgeInsets.all(20).r,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FitTheme.buttonColor,
+                      ),
+                      onPressed: () async {
+                        await notifier.save();
+                        if (!context.mounted) return;
+                        context.push(
+                          '/avatar-setup',
+                          extra: {'isRegistration': true},
+                        );
+                      },
+                      child: Text(
+                        // TODO(l10n): 待补充 next 文案
+                        '下一步',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: FitTheme.fonSizeBigBig,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

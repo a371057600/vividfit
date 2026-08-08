@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_fonts.dart';
 import '../../../../core/constants/them_change.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../notifiers/rank_notifier.dart';
 import '../states/rank_state.dart';
 import 'widgets/rank_date_filter_widget.dart';
@@ -38,6 +39,7 @@ class RankingScreen extends ConsumerWidget {
   }
 
   Widget _buildDeviceSelector(BuildContext context, RankState state, RankNotifier notifier) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(right: 45, bottom: 2).r,
       child: InkWell(
@@ -62,7 +64,7 @@ class RankingScreen extends ConsumerWidget {
           height: 100.r,
           width: 300.r,
           child: Text(
-            state.deviceType.displayName,
+            state.deviceType.localizedName(l10n),
             style: TextStyle(
               color: FitTheme.textColor,
               fontSize: 25.sp,
@@ -75,6 +77,7 @@ class RankingScreen extends ConsumerWidget {
   }
 
   Widget _buildBackButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(left: 45).r,
       child: InkWell(
@@ -97,7 +100,7 @@ class RankingScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              'Ranking',
+              l10n.rankPageTitle,
               style: TextStyle(
                 color: FitTheme.textColor,
                 fontSize: 40.sp,
@@ -113,6 +116,7 @@ class RankingScreen extends ConsumerWidget {
   Widget _buildBody(BuildContext context, WidgetRef ref) {
     final state = ref.watch(rankProvider);
     final notifier = ref.read(rankProvider.notifier);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -120,7 +124,6 @@ class RankingScreen extends ConsumerWidget {
       margin: const EdgeInsets.only(left: 25, right: 25, top: 40).r,
       child: Column(
         children: [
-          // 日期筛选
           Container(
             margin: const EdgeInsets.only(bottom: 25).r,
             padding: EdgeInsets.all(2).r,
@@ -132,7 +135,6 @@ class RankingScreen extends ConsumerWidget {
               onChanged: (range) => notifier.changeTimeRange(range),
             ),
           ),
-          // 加载中 / Top3 / 列表
           state.isLoading
               ? Expanded(
                   child: Center(
@@ -149,15 +151,16 @@ class RankingScreen extends ConsumerWidget {
                         deviceType: state.deviceType,
                       ),
                       Expanded(
-                        child: RankListItemWidget(
-                          leaderboardList: state.leaderboardList.skip(3).toList(),
-                          deviceType: state.deviceType,
-                        ),
+                        child: state.leaderboardList.length <= 3
+                            ? Center(child: Text(l10n.rankNoData))
+                            : RankListItemWidget(
+                                leaderboardList: state.leaderboardList.skip(3).toList(),
+                                deviceType: state.deviceType,
+                              ),
                       ),
                     ],
                   ),
                 ),
-          // 用户卡片
           RankUserCardWidget(
             userNickName: state.userNickName ?? '',
             userHeadImage: state.userHeadImage ?? '',

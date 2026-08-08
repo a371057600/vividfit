@@ -33,6 +33,7 @@ class QuickStartTrainingPage extends ConsumerStatefulWidget {
 class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _animation;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
@@ -58,6 +59,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       duration: const Duration(seconds: 10),
       vsync: this,
     )..repeat();
+    _animation = Tween<double>(begin: 0, end: 1).animate(_controller);
   }
 
   @override
@@ -65,6 +67,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     _controller.dispose();
     _audioPlayer.stop();
     _audioPlayer.dispose();
+    // 页面销毁时清理所有目标弹窗 Timer，避免回调时页面已卸载抛异常
+    ref.read(quickStartProvider.notifier).disposeGoalTimers();
     super.dispose();
   }
 
@@ -97,6 +101,39 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   top: 40.h,
                   child: _buildMusicButton(state),
                 ),
+                // ==================== 3 个目标达成弹窗（最顶层） ====================
+                if (state.showTimeGoalDialog)
+                  _buildGoalDialog(
+                    iconPath: SportMetricIcons.byIndex(0),
+                    title: '恭喜达成运动时长目标',
+                    valueText: ref
+                        .read(quickStartProvider.notifier)
+                        .convertSecondsToTime(state.currentTimeGoalSec),
+                    unitText: '',
+                    onDismiss: ref
+                        .read(quickStartProvider.notifier)
+                        .dismissTimeGoalDialog,
+                  ),
+                if (state.showDistanceGoalDialog)
+                  _buildGoalDialog(
+                    iconPath: SportMetricIcons.byIndex(1),
+                    title: '恭喜达成运动距离目标',
+                    valueText: state.currentDistanceGoalKm.toStringAsFixed(1),
+                    unitText: 'km',
+                    onDismiss: ref
+                        .read(quickStartProvider.notifier)
+                        .dismissDistanceGoalDialog,
+                  ),
+                if (state.showEnergyGoalDialog)
+                  _buildGoalDialog(
+                    iconPath: SportMetricIcons.byIndex(2),
+                    title: '恭喜达成消耗目标',
+                    valueText: state.currentEnergyGoalKcal.toStringAsFixed(0),
+                    unitText: 'kcal',
+                    onDismiss: ref
+                        .read(quickStartProvider.notifier)
+                        .dismissEnergyGoalDialog,
+                  ),
               ],
         ),
       ),
@@ -292,7 +329,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         padding: padding,
         child: Container(
           width: containerWidth,
-          height: 80.h,
+          height: 150.h + kTopDataBarBottomPadding.h,
+          padding: EdgeInsets.only(bottom: kTopDataBarBottomPadding.h),
           child: Row(
             mainAxisAlignment: mainAxisAlignment,
             children: metrics
@@ -349,16 +387,25 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     }
   }
 
-  Widget _buildBikeController(QuickStartState state) {
+  Widget _buildBikeController(
+    QuickStartState state, {
+    // ===== 用户可调节的控制按钮容器参数（均有默认值） =====
+    double? controllerWidthFactor,
+    double? controllerHeightFactor,
+    EdgeInsetsGeometry? controllerMargin,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final margin =
+        controllerMargin ??
+        EdgeInsets.only(
+          top: kControllerTopPaddingBike.h,
+          left: 40.w,
+          right: 40.w,
+          bottom: kControllerBottomPadding.h,
+        );
     return Container(
-      margin: EdgeInsets.only(
-        top: 120.h,
-        left: 40.w,
-        right: 40.w,
-        bottom: 40.h,
-      ),
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height,
+      margin: margin,
+      width: screenWidth,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -369,6 +416,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
             fourth: (state.buttonResistanceList[1]).toStringAsFixed(1),
             fifth: (state.buttonResistanceList[0]).toStringAsFixed(1),
             type: "Resistance",
+            widthFactor: controllerWidthFactor,
+            heightFactor: controllerHeightFactor,
             onTap: () {
               final n = ref.read(quickStartProvider.notifier);
               n.numberButton(state.buttonResistanceList[3], 2);
@@ -413,6 +462,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               fourth: (state.buttonInclinationList[1]).toStringAsFixed(1),
               fifth: (state.buttonInclinationList[0]).toStringAsFixed(1),
               type: "Inclination",
+              widthFactor: controllerWidthFactor,
+              heightFactor: controllerHeightFactor,
               onTap: () {
                 final n = ref.read(quickStartProvider.notifier);
                 n.numberButton(state.buttonInclinationList[3], 1);
@@ -441,16 +492,25 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
   }
 
-  Widget _buildTreadmillController(QuickStartState state) {
+  Widget _buildTreadmillController(
+    QuickStartState state, {
+    // ===== 用户可调节的控制按钮容器参数（均有默认值） =====
+    double? controllerWidthFactor,
+    double? controllerHeightFactor,
+    EdgeInsetsGeometry? controllerMargin,
+  }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final margin =
+        controllerMargin ??
+        EdgeInsets.only(
+          top: kControllerTopPaddingTreadmill.h,
+          left: 40.w,
+          right: 40.w,
+          bottom: kControllerBottomPadding.h,
+        );
     return Container(
-      margin: EdgeInsets.only(
-        top: 150.h,
-        left: 40.w,
-        right: 40.w,
-        bottom: 40.h,
-      ),
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height,
+      margin: margin,
+      width: screenWidth,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -462,6 +522,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               fourth: (state.buttonInclinationList[1]).toStringAsFixed(1),
               fifth: (state.buttonInclinationList[0]).toStringAsFixed(1),
               type: "Inclination",
+              widthFactor: controllerWidthFactor,
+              heightFactor: controllerHeightFactor,
               onTap: () {
                 final n = ref.read(quickStartProvider.notifier);
                 n.numberButton(state.buttonInclinationList[3], 1);
@@ -493,6 +555,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
             fourth: (state.buttonSpeedList[1]).toStringAsFixed(1),
             fifth: (state.buttonSpeedList[0]).toStringAsFixed(1),
             type: "Speed",
+            widthFactor: controllerWidthFactor,
+            heightFactor: controllerHeightFactor,
             onTap: () {
               final n = ref.read(quickStartProvider.notifier);
               n.numberButton(state.buttonSpeedList[3], 0);
@@ -533,7 +597,10 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
   }
 
-  /// 5 档控制按钮组件（完全还原旧版尺寸）。
+  /// 5 档控制按钮组件。
+  ///
+  /// 暴露 [widthFactor] / [heightFactor] 供用户按比例缩放整体尺寸。
+  /// 样式（色值、圆角、边框、布局）保持不变。
   Widget _buildLevelControlButton({
     required String first,
     required String second,
@@ -551,7 +618,18 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     Function(LongPressEndDetails)? onLongPressEnd2,
     Function()? onLongPress3,
     Function(LongPressEndDetails)? onLongPressEnd3,
+    // ===== 用户可调节的尺寸参数（均有默认值） =====
+    double? widthFactor,
+    double? heightFactor,
   }) {
+    final wf = widthFactor ?? kControllerWidthFactor;
+    final hf = heightFactor ?? kControllerHeightFactor;
+    final scaleFactor = wf < hf ? wf : hf; // 文字/图标取较小系数，保证不溢出
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final buttonWidth = 70.w * wf;
+    final buttonHeight = screenHeight * kControllerUsableHeightRatio * hf;
+
     final buttonDecoration = BoxDecoration(
       color: const Color.fromARGB(255, 25, 25, 25),
       borderRadius: BorderRadius.circular(3),
@@ -562,12 +640,16 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     );
 
     final textStyle = TextStyle(
-      fontSize: 18.sp,
+      fontSize: 18.sp * scaleFactor,
       height: 0.8,
       fontWeight: FontWeight.w500,
       fontFamily: AppFonts.bebas,
       color: Colors.white,
     );
+
+    final innerMargin =
+        EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r * scaleFactor;
+    final innerBottomPadding = 4 * scaleFactor;
 
     Widget buildButton(String value, Function()? onTapCallback) {
       return Expanded(
@@ -576,8 +658,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           onTap: onTapCallback,
           child: Container(
             alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: 4),
-            margin: EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r,
+            padding: EdgeInsets.only(bottom: innerBottomPadding),
+            margin: innerMargin,
             decoration: buttonDecoration,
             child: Text(value, style: textStyle),
           ),
@@ -586,8 +668,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     }
 
     return SizedBox(
-      width: 70.w,
-      height: MediaQuery.of(context).size.height,
+      width: buttonWidth,
+      height: buttonHeight,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -596,7 +678,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           Expanded(
             flex: 3,
             child: Container(
-              margin: EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r,
+              margin: innerMargin,
               decoration: buttonDecoration,
               child: Column(
                 children: [
@@ -609,7 +691,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.add,
-                          size: 30.sp,
+                          size: 30.sp * scaleFactor,
                           color: Colors.white,
                         ),
                       ),
@@ -622,11 +704,11 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(third, style: textStyle),
-                          SizedBox(height: 8.sp),
+                          SizedBox(height: 8.sp * scaleFactor),
                           Text(
                             type,
                             style: TextStyle(
-                              fontSize: 8.sp,
+                              fontSize: 8.sp * scaleFactor,
                               color: Colors.white,
                             ),
                           ),
@@ -643,7 +725,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                         alignment: Alignment.center,
                         child: Icon(
                           Icons.remove,
-                          size: 30.sp,
+                          size: 30.sp * scaleFactor,
                           color: Colors.white,
                         ),
                       ),
@@ -847,7 +929,186 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
             ),
           );
   }
+
+  // ==================== 目标达成弹窗 UI ====================
+
+  /// 通用目标达成弹窗。
+  ///
+  /// - 蒙层不拦截点击（IgnorePointer 包裹蒙层），弹窗内部按钮可正常响应；
+  /// - 30 秒自动消失逻辑在 Notifier 层的 Timer 中实现；
+  /// - 点击弹窗内「关闭」按钮立刻关闭并取消 30 秒倒计时。
+  Widget _buildGoalDialog({
+    required String iconPath,
+    required String title,
+    required String valueText,
+    required String unitText,
+    required VoidCallback onDismiss,
+  }) {
+    return Positioned.fill(
+      // 弹窗外层不吸收点击：用户仍可操作下方控制按钮/返回按钮等
+      child: IgnorePointer(
+        child: Container(
+          color: Colors.black.withValues(alpha: 0.2),
+          // 弹窗内部吸收点击
+          child: IgnorePointer(
+            ignoring: false,
+            child: Center(
+              child: Container(
+                width: 480.w,
+                padding: EdgeInsets.symmetric(horizontal: 28.r, vertical: 30.r),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161618),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 22.r,
+                      spreadRadius: 2.r,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 顶部祝贺图标
+                    Container(
+                      width: 72.r,
+                      height: 72.r,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color.fromARGB(
+                          255,
+                          255,
+                          193,
+                          7,
+                        ).withValues(alpha: 0.15),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text('🎉', style: TextStyle(fontSize: 40.sp)),
+                    ),
+                    SizedBox(height: 20.r),
+                    // 目标类型小图标 + 标题
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          height: 22.sp,
+                          child: Image.asset(iconPath, fit: BoxFit.fill),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 22.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            fontFamily: AppFonts.bebas,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.r),
+                    // 数值大字展示
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          valueText,
+                          style: TextStyle(
+                            fontSize: 54.sp,
+                            fontWeight: FontWeight.bold,
+                            color: const Color.fromARGB(255, 255, 193, 7),
+                            fontFamily: AppFonts.bebas,
+                            height: 0.9,
+                          ),
+                        ),
+                        if (unitText.isNotEmpty) ...[
+                          SizedBox(width: 8.w),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 6.r),
+                            child: Text(
+                              unitText,
+                              style: TextStyle(
+                                fontSize: 22.sp,
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontFamily: AppFonts.bebas,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    SizedBox(height: 24.r),
+                    // 关闭按钮
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12.r),
+                      onTap: onDismiss,
+                      child: Container(
+                        width: 220.w,
+                        padding: EdgeInsets.symmetric(vertical: 14.r),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12.r),
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 80, 140, 255),
+                              Color.fromARGB(255, 40, 100, 240),
+                            ],
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '关闭',
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 6.r),
+                    Text(
+                      '30 秒后自动关闭',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.white.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+
+/// ==================== 控制按钮缩放与间距常量（集中调节入口） ====================
+/// 控制按钮整体宽度缩放系数，用户可直接调此值控制整体大小。
+const double kControllerWidthFactor = 1;
+
+/// 控制按钮整体高度缩放系数。
+const double kControllerHeightFactor = 0.98;
+
+/// 控制按钮可用高度占屏幕高度的比例（0.82 × 0.86 ≈ 70% 屏占比）。
+const double kControllerUsableHeightRatio = 0.82;
+
+/// 控制按钮距顶部的额外间距（避免遮挡顶部数据栏）。
+const double kControllerTopPaddingBike = 200.0;
+const double kControllerTopPaddingTreadmill = 200.0;
+
+/// 控制按钮距底部的额外间距（避免遮挡实时图表）。
+const double kControllerBottomPadding = 70.0;
+
+/// 顶部数据栏底部额外安全间隙。
+const double kTopDataBarBottomPadding = 25.0;
 
 /// 顶部数据栏单项配置。
 class _MetricConfig {

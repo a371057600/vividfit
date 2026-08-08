@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/bluetooth/bluetooth_permission.dart';
 import '../../../core/devices/device_whitelist.dart';
 import '../../../core/ftms/ftms_device_type.dart';
 import '../../../core/ftms/ftms_service_base.dart';
@@ -142,13 +144,57 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
     }
   }
 
-  Future<void> startDeviceScan() async {
+  /// 启动设备扫描（带权限前置检查 + 蓝牙开关检查）。
+  ///
+  /// - 首次调用时通过 [context] 请求系统蓝牙权限（iOS弹窗关键入口）
+  /// - [context] 为 null 时降级为：仅检查权限是否已授予，不主动弹窗（用于后台/非UI场景）
+  /// - 权限被拒或蓝牙未开 → 显示 Toast，return 不继续扫描
+  Future<void> startDeviceScan([BuildContext? context]) async {
     final whitelist = DeviceWhitelist.forType(_deviceCategory);
-    debugPrint('[ConnectNotifier] startDeviceScan, type=$_deviceCategory, whitelist=$whitelist');
+    debugPrint('🔐 [BTPerm] startDeviceScan called, type=$_deviceCategory, whitelist=$whitelist');
+
+    // 防重复：已搜索中直接 return
+    if (state.isSearching) {
+      debugPrint('🔐 [BTPerm] already searching, skip');
+      return;
+    }
+
+    // === 1. 权限检查 + 主动请求（有 context 才请求） ===
+    bool permissionOk;
+    if (context != null && context.mounted) {
+      permissionOk = await BluetoothPermission.ensureInformedAndRequest(context);
+      debugPrint('🔐 [BTPerm] ensureInformedAndRequest result = $permissionOk');
+    } else {
+      permissionOk = await BluetoothPermission.isGranted();
+      debugPrint('🔐 [BTPerm] no context, fallback isGranted = $permissionOk');
+    }
+
+    if (!permissionOk) {
+      // 权限未授予 → 取提示文案 Toast 提示
+      final deniedMsg = await BluetoothPermission.checkPermissions();
+      debugPrint('🔐 [BTPerm] permission denied, deniedMsg=${deniedMsg?.substring(0, deniedMsg.length > 60 ? 60 : deniedMsg.length)}...');
+      if (deniedMsg != null) {
+        Fluttertoast.showToast(msg: deniedMsg);
+      }
+      return;
+    }
+    debugPrint('🔐 [BTPerm] permission check passed');
+
+    // === 2. 蓝牙适配器开关检查 ===
+    final adapterOn = await BluetoothPermission.isAdapterOn();
+    debugPrint('🔐 [BTPerm] adapter is ON = $adapterOn');
+    if (!adapterOn) {
+      debugPrint('🔐 [BTPerm] adapter is OFF, show toast');
+      Fluttertoast.showToast(msg: 'pleaseOpenBluetooth');
+      return;
+    }
+
+    // === 3. 开始扫描 ===
+    debugPrint('🔐 [BTPerm] all checks passed, start scan');
     try {
       await _service.startScan(whitelist);
     } on BluetoothNotEnabledException {
-      debugPrint('[ConnectNotifier] startDeviceScan: BluetoothNotEnabledException');
+      debugPrint('🔐 [BTPerm] startDeviceScan: BluetoothNotEnabledException');
       Fluttertoast.showToast(msg: 'pleaseOpenBluetooth');
     }
   }

@@ -974,4 +974,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get warningDeleteAccount =>
       'Warning: Do you want to cancel your account so that you will delete personal information?';
+
+  @override
+  String get rankTotal => 'Total';
+
+  @override
+  String get rankAnnual => 'Annual';
+
+  @override
+  String get rankMonthly => 'Monthly';
+
+  @override
+  String get rankSelectDevice => 'Select Device';
+
+  @override
+  String get rankCalories => 'Calories';
+
+  @override
+  String get rankCount => 'Count';
+
+  @override
+  String get rankNoData => 'No data';
+
+  @override
+  String get rankPageTitle => 'Ranking';
+
+  @override
+  String get rankAllDevice => 'All Device';
+
+  @override
+  String get rankSpinBike => 'Spin Bike';
+
+  @override
+  String get rankTreadmill => 'Treadmill';
+
+  @override
+  String get rankElliptical => 'Elliptical';
+
+  @override
+  String get rankRower => 'Rower';
 }

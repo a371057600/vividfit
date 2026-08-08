@@ -70,5 +70,33 @@ abstract class QuickStartState with _$QuickStartState {
 
     /// 是否支持坡度。
     @Default(false) bool hasInclinationSupport,
+
+    // ==================== 目标达成弹窗相关状态 ====================
+    /// 已达成的时间目标档位索引（避免重复弹窗）。
+    @Default(<int>[]) List<int> achievedTimeLevels,
+
+    /// 已达成的距离目标档位索引。
+    @Default(<int>[]) List<int> achievedDistanceLevels,
+
+    /// 已达成的卡路里目标档位索引。
+    @Default(<int>[]) List<int> achievedEnergyLevels,
+
+    /// 是否显示【时间目标达成】弹窗。
+    @Default(false) bool showTimeGoalDialog,
+
+    /// 是否显示【距离目标达成】弹窗。
+    @Default(false) bool showDistanceGoalDialog,
+
+    /// 是否显示【卡路里目标达成】弹窗。
+    @Default(false) bool showEnergyGoalDialog,
+
+    /// 当前触发的时间目标值（秒），供 UI 展示。
+    @Default(0) int currentTimeGoalSec,
+
+    /// 当前触发的距离目标值（公里），供 UI 展示。
+    @Default(0.0) double currentDistanceGoalKm,
+
+    /// 当前触发的卡路里目标值（千卡），供 UI 展示。
+    @Default(0.0) double currentEnergyGoalKcal,
   }) = _QuickStartState;
 }

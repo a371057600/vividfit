@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_fonts.dart';
 import '../../../../core/constants/them_change.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/rank_device_type.dart';
 import 'rank_avatar_widget.dart';
 
@@ -24,6 +25,8 @@ class RankUserCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       margin: const EdgeInsets.only(top: 10).r,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10).r,
@@ -34,7 +37,6 @@ class RankUserCardWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Rank number
           SizedBox(
             width: 80.w,
             child: Text(
@@ -47,7 +49,6 @@ class RankUserCardWidget extends StatelessWidget {
               ),
             ),
           ),
-          // Avatar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15).r,
             child: RankAvatarWidget(
@@ -55,7 +56,6 @@ class RankUserCardWidget extends StatelessWidget {
               size: 70,
             ),
           ),
-          // Nickname
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,8 +73,8 @@ class RankUserCardWidget extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   deviceType == RankDeviceType.all
-                      ? 'Calories'
-                      : 'Count',
+                      ? l10n.rankCalories
+                      : l10n.rankCount,
                   style: TextStyle(
                     color: FitTheme.textColor.withValues(alpha: 0.6),
                     fontSize: 20.sp,
@@ -83,7 +83,6 @@ class RankUserCardWidget extends StatelessWidget {
               ],
             ),
           ),
-          // Score
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

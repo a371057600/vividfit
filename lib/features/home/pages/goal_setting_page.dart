@@ -44,126 +44,125 @@ class GoalSettingPage extends ConsumerWidget {
       [l10n.stage1Area, l10n.stage2Area, l10n.stage3Area],
     ];
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: false,
-          leadingWidth: 300,
-          backgroundColor: FitTheme.backgroundColor,
-          scrolledUnderElevation: 0,
-          leading: Container(
-            margin: EdgeInsets.only(left: 45).r,
-            child: InkWell(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: () {
-                if (isRegistration) {
-                  context.pop();
-                } else {
-                  context.go('/home-shell');
-                }
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    alignment: Alignment.bottomCenter,
-                    padding: EdgeInsets.only(bottom: 10).r,
-                    height: 100.r,
-                    child: Icon(
-                      Icons.arrow_back_ios,
-                      color: FitTheme.textColor,
-                      size: 40.sp,
-                    ),
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: false,
+        leadingWidth: 300,
+        backgroundColor: FitTheme.secondbackGround,
+        scrolledUnderElevation: 0,
+        leading: Container(
+          margin: EdgeInsets.only(left: 45).r,
+          child: InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onTap: () {
+              if (isRegistration) {
+                context.pop();
+              } else {
+                context.go('/home-shell');
+              }
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  padding: EdgeInsets.only(bottom: 10).r,
+                  height: 100.r,
+                  child: Icon(
+                    Icons.arrow_back_ios,
+                    color: FitTheme.textColor,
+                    size: 40.sp,
                   ),
-                  Text(
-                    l10n.sportsGoalSetting,
-                    style: TextStyle(
-                      color: FitTheme.textColor,
-                      fontSize: 40.sp,
-                      fontFamily: AppFonts.hofontmedium,
-                    ),
+                ),
+                Text(
+                  l10n.sportsGoalSetting,
+                  style: TextStyle(
+                    color: FitTheme.textColor,
+                    fontSize: 40.sp,
+                    fontFamily: AppFonts.hofontmedium,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
-        backgroundColor: FitTheme.backgroundColor,
-        body: state.isLoading
-            ? Center(
-                child: Text(
-                  l10n.loading,
-                  style: TextStyle(
-                    fontSize: 25.sp,
-                    color: FitTheme.textColor,
-                    fontFamily: AppFonts.bebas,
-                  ),
-                ),
-              )
-            : Container(
-                alignment: Alignment.topCenter,
-                height: MediaQuery.of(context).size.height,
-                width: MediaQuery.of(context).size.width,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: 600.h,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        height: 600.h,
-                        child: Image.asset(
-                          'images/sportSettingPIC/${notifier.languageType()}/${notifier.goalSportTypeSelectIndex()}.png',
-                        ),
-                      ),
-                    ),
-                    _buildSportSettingWidget(
-                      context,
-                      ref,
-                      l10n,
-                      sportTypes,
-                      sportSubs,
-                      sportContents,
-                      sportAreas,
-                    ),
-                    const Spacer(),
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      margin: EdgeInsets.all(20).r,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: FitTheme.buttonColor,
-                        ),
-                        onPressed: () async {
-                          await notifier.saveGoal();
-                          if (!context.mounted) return;
-                          if (isRegistration) {
-                            // 注册流程:保存运动目标 → 提交注册数据 → 进首页
-                            await ref
-                                .read(authProvider.notifier)
-                                .completeRegistration();
-                            if (!context.mounted) return;
-                            context.go('/home-shell');
-                          } else {
-                            context.go('/home-shell');
-                          }
-                        },
-                        child: Text(
-                          l10n.confirm,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: FitTheme.fonSizeBigBig,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(height: 20),
-                  ],
+      ),
+      backgroundColor: FitTheme.secondbackGround,
+      body: state.isLoading
+          ? Center(
+              child: Text(
+                l10n.loading,
+                style: TextStyle(
+                  fontSize: 25.sp,
+                  color: FitTheme.textColor,
+                  fontFamily: AppFonts.bebas,
                 ),
               ),
-      ),
+            )
+          : Container(
+              alignment: Alignment.topCenter,
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: 600.h,
+                    child: Container(
+                      alignment: Alignment.bottomCenter,
+                      height: 600.h,
+                      child: Image.asset(
+                        'images/sportSettingPIC/${notifier.languageType()}/${notifier.goalSportTypeSelectIndex()}.png',
+                      ),
+                    ),
+                  ),
+                  _buildSportSettingWidget(
+                    context,
+                    ref,
+                    l10n,
+                    sportTypes,
+                    sportSubs,
+                    sportContents,
+                    sportAreas,
+                  ),
+                  const Spacer(),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: EdgeInsets.all(20).r,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FitTheme.buttonColor,
+                      ),
+                      onPressed: () async {
+                        await notifier.saveGoal();
+                        if (!context.mounted) return;
+                        if (isRegistration) {
+                          // 注册流程:保存运动目标 → 提交注册数据 → 进首页
+                          await ref
+                              .read(authProvider.notifier)
+                              .completeRegistration();
+                          if (!context.mounted) return;
+                          // 使用 go 清除路由栈,直接跳首页
+                          context.go('/home-shell');
+                        } else {
+                          context.go('/home-shell');
+                        }
+                      },
+                      child: Text(
+                        l10n.confirm,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: FitTheme.fonSizeBigBig,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(height: 20),
+                ],
+              ),
+            ),
     );
   }
 

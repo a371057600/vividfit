@@ -1988,6 +1988,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Warning: Do you want to cancel your account so that you will delete personal information?'**
   String get warningDeleteAccount;
+
+  /// No description provided for @rankTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get rankTotal;
+
+  /// No description provided for @rankAnnual.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get rankAnnual;
+
+  /// No description provided for @rankMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get rankMonthly;
+
+  /// No description provided for @rankSelectDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Device'**
+  String get rankSelectDevice;
+
+  /// No description provided for @rankCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get rankCalories;
+
+  /// No description provided for @rankCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get rankCount;
+
+  /// No description provided for @rankNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get rankNoData;
+
+  /// No description provided for @rankPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranking'**
+  String get rankPageTitle;
+
+  /// No description provided for @rankAllDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'All Device'**
+  String get rankAllDevice;
+
+  /// No description provided for @rankSpinBike.
+  ///
+  /// In en, this message translates to:
+  /// **'Spin Bike'**
+  String get rankSpinBike;
+
+  /// No description provided for @rankTreadmill.
+  ///
+  /// In en, this message translates to:
+  /// **'Treadmill'**
+  String get rankTreadmill;
+
+  /// No description provided for @rankElliptical.
+  ///
+  /// In en, this message translates to:
+  /// **'Elliptical'**
+  String get rankElliptical;
+
+  /// No description provided for @rankRower.
+  ///
+  /// In en, this message translates to:
+  /// **'Rower'**
+  String get rankRower;
 }
 
 class _AppLocalizationsDelegate

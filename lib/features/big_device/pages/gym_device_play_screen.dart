@@ -162,7 +162,10 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           debugPrint('📤 [PlayScreen] PopScope popped');
           ref.read(gymCoursePlayProvider.notifier).exitToDetail();
         } else {
-          debugPrint('📤 [PlayScreen] System back → manualFinish');
+          // 🔴 playing 拦截：立刻 manualFinish（停音频+直接结算，不弹确认）
+          debugPrint(
+            '📤 [PlayScreen] System back (playing拦截) → manualFinish（立刻停音频+直接结算）',
+          );
           ref.read(gymCoursePlayProvider.notifier).manualFinish();
         }
       },
@@ -185,12 +188,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     if (state.isStopScreen) {
       return _buildFinishedState(state, sw, sh);
     }
-    return Stack(
-      children: [
-        _buildPlayingState(state, sw, sh),
-        if (state.isPauseScreen) _buildPauseOverlay(sw, sh),
-      ],
-    );
+    return Stack(children: [_buildPlayingState(state, sw, sh)]);
   }
 
   // ══════════════════════════════════════════════════════════
@@ -253,10 +251,11 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           _buildLeftCourseInfo(state, sw, sh),
           _buildProgressBar(state, sw, sh),
           _buildProgressArrow(state, sw, sh),
-          _buildBackButton(sw, sh),
+
           ..._buildControlButtons(state, sw, sh),
           _buildRightActionList(state, sw, sh),
           if (state.showPlayButton) _buildCenterPlayButton(sw, sh),
+          _buildBackButton(sw, sh),
         ],
       ),
     );
@@ -672,16 +671,27 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
 
   // ── 8. 返回按钮（图片资源） ──
   Widget _buildBackButton(double sw, double sh) {
-    final iconH = sh * 0.045;
+    final iconH = sh * 0.055;
     return Positioned(
-      right: sw * 0.025,
-      top: sh * 0.06,
+      right: sw * 0.05,
+      top: sh * 0.055,
       child: GestureDetector(
         onTap: () {
-          debugPrint(
-            '👆 [PlayScreen] Back button tapped, 统一走 manualFinish 停止音频',
-          );
-          ref.read(gymCoursePlayProvider.notifier).manualFinish();
+          debugPrint('👆 [PlayScreen] Back button tapped');
+          final state = ref.read(gymCoursePlayProvider);
+          if (state.screenStatus == GymPlayScreenStatus.finished ||
+              state.isStopScreen) {
+            // 已在结算页：直接退出
+            ref.read(gymCoursePlayProvider.notifier).exitToDetail();
+            if (context.canPop()) context.pop();
+          } else {
+            // 🔴 播放中 / 任何未结算状态：立刻 manualFinish（先锁isStopScreen+停音频cancel timer，
+            // 然后进结算页）。不弹中间确认层。
+            debugPrint(
+              '👆 [PlayScreen] Back button → manualFinish（立刻停音频+直接结算，不弹确认）',
+            );
+            ref.read(gymCoursePlayProvider.notifier).manualFinish();
+          }
         },
         child: Image.asset(
           'images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/icon_get_back.png',
@@ -1051,28 +1061,35 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     final ringWidth = step * 0.7;
     final ringGap = step * 0.35;
 
-    // 外圈：时间进度
-    final totalDuration = state.totalPlayProgressDuration > 0
-        ? state.totalPlayProgressDuration
-        : 525;
-    final outerProgress = (state.playTotalDuration / totalDuration).clamp(
-      0.0,
-      1.0,
-    );
+    // ⚠️ 临时模拟数据用于本地调试三环显示效果
+    // 外圈=0.5 / 中圈=0.8 / 内圈=0.3
+    // 调试完成后请删除此 block，恢复下方真实数据计算
+    const outerProgress = 0.5;
+    const middleProgress = 0.8;
+    const innerProgress = 0.3;
 
-    // 中圈：距离（划船机用桨频）
-    final middleProgressRaw = state.deviceType == FtmsDeviceType.rower
-        ? (double.tryParse(state.sportStrokeRate) ?? 0) / 100.0
-        : (double.tryParse(state.sportDistance) ?? 0) / 10.0;
-    final middleProgress = middleProgressRaw.clamp(0.0, 1.0);
-
-    // 内圈：卡路里
-    final innerProgressRaw =
-        (double.tryParse(state.sportCalories) ?? 0) / 500.0;
-    final innerProgress = innerProgressRaw.clamp(0.0, 1.0);
+    // // 外圈：时间进度
+    // final totalDuration = state.totalPlayProgressDuration > 0
+    //     ? state.totalPlayProgressDuration
+    //     : 525;
+    // final outerProgress = (state.playTotalDuration / totalDuration).clamp(
+    //   0.0,
+    //   1.0,
+    // );
+    //
+    // // 中圈：距离（划船机用桨频）
+    // final middleProgressRaw = state.deviceType == FtmsDeviceType.rower
+    //     ? (double.tryParse(state.sportStrokeRate) ?? 0) / 100.0
+    //     : (double.tryParse(state.sportDistance) ?? 0) / 10.0;
+    // final middleProgress = middleProgressRaw.clamp(0.0, 1.0);
+    //
+    // // 内圈：卡路里
+    // final innerProgressRaw =
+    //     (double.tryParse(state.sportCalories) ?? 0) / 500.0;
+    // final innerProgress = innerProgressRaw.clamp(0.0, 1.0);
 
     debugPrint(
-      '🎯 [TripleRing] outer=${outerProgress.toStringAsFixed(2)} '
+      '🎯 [TripleRing-MOCK] outer=${outerProgress.toStringAsFixed(2)} '
       'middle=${middleProgress.toStringAsFixed(2)} '
       'inner=${innerProgress.toStringAsFixed(2)}',
     );
@@ -1251,8 +1268,26 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   }
 
   Widget _buildSpeedChartPanel(GymCoursePlayState state, double sw, double sh) {
-    final data = state.speedChartData;
-    if (data.isEmpty) return const SizedBox.shrink();
+    // ⚠️ 临时模拟数据用于查看速度图表组件
+    final data = state.speedChartData.isNotEmpty
+        ? state.speedChartData
+        : const [
+            5.0,
+            8.0,
+            12.0,
+            15.0,
+            18.0,
+            20.0,
+            22.0,
+            25.0,
+            23.0,
+            20.0,
+            18.0,
+            15.0,
+            12.0,
+            8.0,
+            5.0,
+          ];
     final isRower = state.deviceType == FtmsDeviceType.rower;
     final pad = sh * 0.025;
     return Expanded(
@@ -1449,114 +1484,6 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════
-  // Pause 暂停覆盖层
-  // ══════════════════════════════════════════════════════════
-  Widget _buildPauseOverlay(double sw, double sh) {
-    return Positioned.fill(
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          color: Colors.black.withAlpha(200),
-          child: Center(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: sw * 0.04),
-              padding: EdgeInsets.all(sh * 0.035),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
-                borderRadius: BorderRadius.circular(sh * 0.025),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.pause_circle,
-                    size: sh * 0.08,
-                    color: Colors.white,
-                  ),
-                  SizedBox(height: sh * 0.025),
-                  Text(
-                    l10n.paused,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: sh * 0.045,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: sh * 0.01),
-                  Text(
-                    l10n.sportPaused,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: sh * 0.022,
-                    ),
-                  ),
-                  SizedBox(height: sh * 0.045),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          ref
-                              .read(gymCoursePlayProvider.notifier)
-                              .resumeSport();
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: sw * 0.03,
-                            vertical: sh * 0.015,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(sh * 0.025),
-                          ),
-                          child: Text(
-                            l10n.continueBtn,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: sh * 0.024,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: sw * 0.025),
-                      GestureDetector(
-                        onTap: () {
-                          ref
-                              .read(gymCoursePlayProvider.notifier)
-                              .manualFinish();
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: sw * 0.025,
-                            vertical: sh * 0.015,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF6B35),
-                            borderRadius: BorderRadius.circular(sh * 0.025),
-                          ),
-                          child: Text(
-                            l10n.exitCourse,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: sh * 0.022,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

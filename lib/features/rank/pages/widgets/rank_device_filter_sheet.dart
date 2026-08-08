@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_fonts.dart';
 import '../../../../core/constants/them_change.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/rank_device_type.dart';
 
 class RankDeviceFilterSheet extends StatelessWidget {
@@ -17,6 +18,7 @@ class RankDeviceFilterSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final devices = RankDeviceType.values;
 
     return Container(
@@ -37,7 +39,7 @@ class RankDeviceFilterSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Select Device',
+            l10n.rankSelectDevice,
             style: TextStyle(
               color: FitTheme.textColor,
               fontSize: 35.sp,
@@ -65,7 +67,7 @@ class RankDeviceFilterSheet extends StatelessWidget {
                         : Border.all(color: Colors.grey.shade300, width: 0.5),
                   ),
                   child: Text(
-                    device.displayName,
+                    device.localizedName(l10n),
                     style: TextStyle(
                       color: FitTheme.textColor,
                       fontSize: 28.sp,

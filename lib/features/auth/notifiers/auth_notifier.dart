@@ -61,8 +61,10 @@ class AuthNotifier extends _$AuthNotifier {
         userInfo: userInfo,
       );
     }
-    print('🔐 [AuthNotifier.build] initial isAuth=${state.isAuthenticated} '
-        'userId=${state.userId} lang=${state.languageNum}');
+    print(
+      '🔐 [AuthNotifier.build] initial isAuth=${state.isAuthenticated} '
+      'userId=${state.userId} lang=${state.languageNum}',
+    );
     return state;
   }
 
@@ -105,8 +107,10 @@ class AuthNotifier extends _$AuthNotifier {
   Future<bool> _handleVerification(LoginResponse response) async {
     final code = response.code;
     state = state.copyWith(loginResultCode: code);
-    print('🔐 [AuthNotifier._handleVerification] code=$code '
-        'hasToken=${response.data?.token != null}');
+    print(
+      '🔐 [AuthNotifier._handleVerification] code=$code '
+      'hasToken=${response.data?.token != null}',
+    );
     if (code == '201') {
       // 新注册用户:存 session + 标记 isNewUser=true → 后续跳到昵称设置
       await _persistSession(response, isNewUser: true);
@@ -120,9 +124,7 @@ class AuthNotifier extends _$AuthNotifier {
     } else {
       // 错误码 → 弹对应 Toast
       _showToastByCode(code);
-      state = state.copyWith(
-        errorMessage: _localizedIncorrectCode(code),
-      );
+      state = state.copyWith(errorMessage: _localizedIncorrectCode(code));
       return false;
     }
   }
@@ -160,7 +162,10 @@ class AuthNotifier extends _$AuthNotifier {
 
   // ============ Session 持久化 ============
 
-  Future<void> _persistSession(LoginResponse response, {required bool isNewUser}) async {
+  Future<void> _persistSession(
+    LoginResponse response, {
+    required bool isNewUser,
+  }) async {
     final token = response.data?.token;
     final userInfo = response.data?.userInfo;
     final userId = userInfo?.id;
@@ -184,8 +189,10 @@ class AuthNotifier extends _$AuthNotifier {
         userInfo: userInfo,
         errorMessage: null,
       );
-      print('🔐 [AuthNotifier._persistSession] userId=$userId '
-          'isNewUser=$isNewUser token=${token.substring(0, token.length > 6 ? 6 : token.length)}...');
+      print(
+        '🔐 [AuthNotifier._persistSession] userId=$userId '
+        'isNewUser=$isNewUser token=${token.substring(0, token.length > 6 ? 6 : token.length)}...',
+      );
     }
   }
 
@@ -356,7 +363,8 @@ class AuthNotifier extends _$AuthNotifier {
       final accountId = await _repository.checkBindMail(state.emailAccount);
       if (accountId == null) {
         final msg = state.languageNum == 0 || state.languageNum == 2
-            ? '邮箱未绑定' : 'Mail not bound.';
+            ? '邮箱未绑定'
+            : 'Mail not bound.';
         Fluttertoast.showToast(msg: msg);
         state = state.copyWith(isLoading: false);
         return false;
@@ -368,7 +376,8 @@ class AuthNotifier extends _$AuthNotifier {
       state = state.copyWith(isLoading: false);
       if (ok) {
         final msg = state.languageNum == 0 || state.languageNum == 2
-            ? '密码修改成功' : 'Password updated.';
+            ? '密码修改成功'
+            : 'Password updated.';
         Fluttertoast.showToast(msg: msg);
       }
       return ok;
@@ -403,7 +412,9 @@ class AuthNotifier extends _$AuthNotifier {
       accessToken: 'dev_token',
       userId: 1,
     );
-    print('🔐 [AuthNotifier.devLogin] simulated code=200 old user → home-shell');
+    print(
+      '🔐 [AuthNotifier.devLogin] simulated code=200 old user → home-shell',
+    );
   }
 
   /// 调试按钮:模拟新用户注册(code 201 → 进入昵称设置流程)。
@@ -427,7 +438,9 @@ class AuthNotifier extends _$AuthNotifier {
         mailAddress: 'dev-new-user@example.com',
       ),
     );
-    print('🔐 [AuthNotifier.devSimulateRegister] simulated code=201 new user → nickname-setup');
+    print(
+      '🔐 [AuthNotifier.devSimulateRegister] simulated code=201 new user → nickname-setup',
+    );
     Fluttertoast.showToast(
       msg: state.languageNum == 0 || state.languageNum == 2
           ? '模拟注册成功(新用户),即将进入昵称设置'
@@ -439,7 +452,9 @@ class AuthNotifier extends _$AuthNotifier {
 
   /// 初始化微信 SDK(Fluwx registerApi)。
   Future<void> initWechatSdk() async {
-    print('🔐 [WeChat] initWechatSdk PLACEHOLDER - NOT IMPL (wx46759e30d588e056)');
+    print(
+      '🔐 [WeChat] initWechatSdk PLACEHOLDER - NOT IMPL (wx46759e30d588e056)',
+    );
     // TODO(wechat): 接入 Fluwx 后打开:
     // await fluwx.registerApi(
     //   appId: "wx46759e30d588e056",
@@ -466,7 +481,9 @@ class AuthNotifier extends _$AuthNotifier {
 
   /// 授权回调拿到 code 后调服务端 wechatLogin 接口(占位)。
   Future<void> handleWechatCode(String code) async {
-    print('🔐 [WeChat] handleWechatCode PLACEHOLDER code=${code.substring(0, code.length > 6 ? 6 : code.length)}...');
+    print(
+      '🔐 [WeChat] handleWechatCode PLACEHOLDER code=${code.substring(0, code.length > 6 ? 6 : code.length)}...',
+    );
     // TODO(wechat): final resp = await _repository.wechatLogin(code: code);
     // await _handleVerification(resp);
   }
@@ -495,14 +512,14 @@ class AuthNotifier extends _$AuthNotifier {
       'birthday': birthday,
     };
 
-    print('🏁 [Register.complete] userId=$userId nickName=$nickName '
-        'sex=$sex height=$height weight=$weight birthday=$birthday goalWeight=$goalWeight');
+    print(
+      '🏁 [Register.complete] userId=$userId nickName=$nickName '
+      'sex=$sex height=$height weight=$weight birthday=$birthday goalWeight=$goalWeight',
+    );
 
-    // 先强制更新状态:标记为已登录 + 非新用户(无论 API 成功与否)
-    state = state.copyWith(isNewUser: false, isAuthenticated: true);
+    // 先持久化数据
     await _storage.setFirstOpenApp(false);
     await _storage.setGoalWeight(goalWeight);
-    print('🏁 [Register.complete] state updated → isNewUser=false, isAuthenticated=true');
 
     // API 调用为 best-effort,失败不阻塞进入首页
     try {
@@ -511,5 +528,11 @@ class AuthNotifier extends _$AuthNotifier {
     } catch (e) {
       print('⚠️ [Register.complete] API error (ignored): $e');
     }
+
+    // 最后更新状态:标记为已登录 + 非新用户
+    state = state.copyWith(isNewUser: false, isAuthenticated: true);
+    print(
+      '🏁 [Register.complete] state updated → isNewUser=false, isAuthenticated=true',
+    );
   }
 }

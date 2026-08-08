@@ -106,16 +106,27 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
             InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
-              onTap: () {
+              onTap: () async {
+                // 先断开已有连接，避免状态冲突
+                connectNotifier.disconnectIfAny();
+                // 请求权限 + 启动蓝牙扫描（iOS首次触发系统权限弹窗的关键入口）
+                await connectNotifier.startDeviceScan(context);
+                if (!context.mounted) return;
+                // 弹出搜索对话框
                 showDialog(
                   context: context,
                   barrierDismissible: false,
                   builder: (_) => const DeviceSearchDialog(),
                 );
+                // 5.5s后自动关闭对话框（保持原行为）
+                final selfContext = context;
                 Future.delayed(
                   const Duration(seconds: 5, milliseconds: 500),
                   () {
-                    Navigator.pop(context);
+                    if (selfContext.mounted &&
+                        Navigator.of(selfContext).canPop()) {
+                      Navigator.pop(selfContext);
+                    }
                   },
                 );
               },
@@ -304,6 +315,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     GymDeviceConnectState connectState,
   ) async {
     final deviceType = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
+    final connectNotifier = ref.read(gymDeviceConnectProvider.notifier);
 
     // === 蓝牙连接守卫(临时隐藏,测试用) ===
     // TODO(恢复时): 取消注释下方代码,启用蓝牙连接守卫

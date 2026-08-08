@@ -51,7 +51,7 @@ final class QuickStartNotifierProvider
 }
 
 String _$quickStartNotifierHash() =>
-    r'29fb510b2fdf82b75a788b0c82a52e4606184513';
+    r'16b02587e1ca30615b4ac4deb942e9588f0bfa91';
 
 /// 快速开始 Notifier（Riverpod 3.0 代码生成，业务逻辑留白）。
 ///

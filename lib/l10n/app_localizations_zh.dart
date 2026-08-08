@@ -958,4 +958,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get warningDeleteAccount => '警告:您确定要注销账号吗?这将删除您的个人信息。';
+
+  @override
+  String get rankTotal => '总';
+
+  @override
+  String get rankAnnual => '年';
+
+  @override
+  String get rankMonthly => '月';
+
+  @override
+  String get rankSelectDevice => '选择设备';
+
+  @override
+  String get rankCalories => '卡路里';
+
+  @override
+  String get rankCount => '次数';
+
+  @override
+  String get rankNoData => '暂无数据';
+
+  @override
+  String get rankPageTitle => '排行榜';
+
+  @override
+  String get rankAllDevice => '全部设备';
+
+  @override
+  String get rankSpinBike => '动感单车';
+
+  @override
+  String get rankTreadmill => '跑步机';
+
+  @override
+  String get rankElliptical => '椭圆机';
+
+  @override
+  String get rankRower => '划船机';
 }

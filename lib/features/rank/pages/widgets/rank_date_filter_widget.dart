@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/constants/app_fonts.dart';
 import '../../../../core/constants/them_change.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../domain/rank_device_type.dart';
 
 class RankDateFilterWidget extends StatelessWidget {
@@ -17,10 +18,11 @@ class RankDateFilterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      (RankTimeRange.total, 'Total'),
-      (RankTimeRange.annual, 'Annual'),
-      (RankTimeRange.monthly, 'Monthly'),
+    final l10n = AppLocalizations.of(context)!;
+    final items = [
+      (RankTimeRange.total, l10n.rankTotal),
+      (RankTimeRange.annual, l10n.rankAnnual),
+      (RankTimeRange.monthly, l10n.rankMonthly),
     ];
 
     return Row(
