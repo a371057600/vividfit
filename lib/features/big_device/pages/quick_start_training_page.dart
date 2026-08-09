@@ -101,6 +101,38 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   top: 40.h,
                   child: _buildMusicButton(state),
                 ),
+                // [DEBUG-TEST-BUTTONS] 开始：调试测试按钮（测试完成后搜索本标记删除整块）
+                Positioned(
+                  bottom: 12.h,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildDebugTestButton(
+                        label: '时间',
+                        onTap: ref
+                            .read(quickStartProvider.notifier)
+                            .debugForceTriggerTimeDialog,
+                      ),
+                      SizedBox(width: 12.w),
+                      _buildDebugTestButton(
+                        label: '距离',
+                        onTap: ref
+                            .read(quickStartProvider.notifier)
+                            .debugForceTriggerDistanceDialog,
+                      ),
+                      SizedBox(width: 12.w),
+                      _buildDebugTestButton(
+                        label: '卡路里',
+                        onTap: ref
+                            .read(quickStartProvider.notifier)
+                            .debugForceTriggerEnergyDialog,
+                      ),
+                    ],
+                  ),
+                ),
+                // [DEBUG-TEST-BUTTONS] 结束
                 // ==================== 3 个目标达成弹窗（最顶层） ====================
                 if (state.showTimeGoalDialog)
                   _buildGoalDialog(
@@ -930,6 +962,37 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           );
   }
 
+  // [DEBUG-TEST-BUTTONS] 开始：调试测试按钮封装（测试完成后搜索本标记删除整块）
+  Widget _buildDebugTestButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8.r),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14.r, vertical: 10.r),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(8.r),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          '🧪 测试-$label',
+          style: TextStyle(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+  // [DEBUG-TEST-BUTTONS] 结束
+
   // ==================== 目标达成弹窗 UI ====================
 
   /// 通用目标达成弹窗。
@@ -1073,7 +1136,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                     ),
                     SizedBox(height: 6.r),
                     Text(
-                      '30 秒后自动关闭',
+                      '5 秒后自动关闭',
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: Colors.white.withValues(alpha: 0.45),

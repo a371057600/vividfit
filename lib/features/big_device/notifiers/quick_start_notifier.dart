@@ -18,7 +18,7 @@ const List<double> kDistanceGoalLevelsM = [1000, 3000, 5000, 10000];
 const List<double> kEnergyGoalLevelsKcal = [50, 100, 200, 500];
 
 /// 目标弹窗自动关闭时长（秒）。
-const int kGoalDialogAutoDismissSec = 30;
+const int kGoalDialogAutoDismissSec = 5;
 
 /// 目标弹窗类型枚举，用于队列管理。
 enum GoalDialogType { time, distance, energy }
@@ -298,6 +298,31 @@ class QuickStartNotifier extends _$QuickStartNotifier {
     _mockTickTimer = null;
     _pendingDialogQueue.clear();
   }
+
+  // [DEBUG-TEST-BUTTONS] 开始：调试用强制触发方法（测试完成后搜索本标记删除整块）
+
+  /// 调试用：强制触发时间目标弹窗（绕过阈值检查，不修改 achievedTimeLevels）。
+  void debugForceTriggerTimeDialog() {
+    print('🧪 [DEBUG-TEST-BUTTONS] 强制触发时间目标弹窗');
+    state = state.copyWith(currentTimeGoalSec: 600); // 展示 10:00
+    _enqueueDialog(GoalDialogType.time);
+  }
+
+  /// 调试用：强制触发距离目标弹窗（绕过阈值检查，不修改 achievedDistanceLevels）。
+  void debugForceTriggerDistanceDialog() {
+    print('🧪 [DEBUG-TEST-BUTTONS] 强制触发距离目标弹窗');
+    state = state.copyWith(currentDistanceGoalKm: 1.0); // 展示 1.0 km
+    _enqueueDialog(GoalDialogType.distance);
+  }
+
+  /// 调试用：强制触发卡路里目标弹窗（绕过阈值检查，不修改 achievedEnergyLevels）。
+  void debugForceTriggerEnergyDialog() {
+    print('🧪 [DEBUG-TEST-BUTTONS] 强制触发卡路里目标弹窗');
+    state = state.copyWith(currentEnergyGoalKcal: 50.0); // 展示 50 kcal
+    _enqueueDialog(GoalDialogType.energy);
+  }
+
+  // [DEBUG-TEST-BUTTONS] 结束
 
   // ==================== 业务方法（部分 TODO，待蓝牙完整迁移） ====================
 

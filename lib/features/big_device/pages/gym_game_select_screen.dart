@@ -143,7 +143,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
         children: [
           // 主内容区 — 1:1 还原
           Container(
-            margin: EdgeInsets.only(left: 120, right: 0).r,
+            margin: EdgeInsets.only(left: 120, right: 0, top: 150).r,
             height: screenHeight,
             width: screenWidth,
             child: Row(
@@ -174,7 +174,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
   Widget _rightContainer(double screenWidth, double screenHeight) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.only(top: 50, left: 10, right: 50).r,
+        padding: EdgeInsets.only(top: 0, left: 10, right: 50).r,
         height: screenHeight,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -207,10 +207,13 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                     alignment: Alignment.bottomCenter,
                     child: Container(
                       decoration: BoxDecoration(
+                        // color: Colors.white,
+                        // opacity: 0.8,
                         borderRadius: BorderRadius.circular(40).r,
                       ),
                       height: screenHeight * 2 / 5,
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           // 播放/暂停按钮 — 1:1 还原
@@ -301,17 +304,18 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 10.r),
+            SizedBox(height: 45.r),
             // 数据+按钮区 — 1:1 还原
             Expanded(
               child: Container(
-                alignment: Alignment.center,
+                alignment: Alignment.topCenter,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40).r,
+                  // borderRadius: BorderRadius.circular(40).r,
+                  // color: Colors.white,
                 ),
                 width: double.infinity,
                 child: ListView(
-                  shrinkWrap: true,
+                  shrinkWrap: false,
                   // physics: const NeverScrollableScrollPhysics(),
                   children: [
                     // 第一行数据：时间、距离、卡路里 — 1:1 还原
@@ -320,7 +324,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                         color: FitTheme.secondbackGroundOld,
                         borderRadius: BorderRadius.circular(40).r,
                       ),
-                      height: 140.h,
+                      height: 200.h,
                       width: double.infinity,
                       child: Row(
                         children: [
@@ -330,14 +334,14 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 20.r),
+                    SizedBox(height: 30.r),
                     // 第二行数据：设备相关指标 — 1:1 还原
                     Container(
                       decoration: BoxDecoration(
                         color: FitTheme.secondbackGroundOld,
                         borderRadius: BorderRadius.circular(40).r,
                       ),
-                      height: 140.h,
+                      height: 200.h,
                       width: double.infinity,
                       child: Row(
                         children: [
@@ -359,7 +363,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 10.r),
+                    SizedBox(height: 80.r),
                     // 开始/停止按钮 — 1:1 还原（居中显示）
                     Center(
                       child: _isPlaying
@@ -376,7 +380,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                   color: FitTheme.buttonColor,
                                   borderRadius: BorderRadius.circular(40).r,
                                 ),
-                                height: 100.h,
+                                height: 120.h,
                                 width: screenWidth * 0.25,
                                 child: Text(
                                   'STOP',
@@ -402,7 +406,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                   color: Colors.green,
                                   borderRadius: BorderRadius.circular(40).r,
                                 ),
-                                height: 100.h,
+                                height: 120.h,
                                 width: screenWidth * 0.25,
                                 child: Text(
                                   'STRAT',
@@ -429,7 +433,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
   // ==================== 左侧容器 — 1:1 还原 _leftContainer ====================
   Widget _leftContainer(double screenWidth, double screenHeight) {
     return Container(
-      padding: EdgeInsets.only(top: 50, left: 0, right: 0).r,
+      padding: EdgeInsets.only(left: 50, right: 0).r,
       height: screenHeight,
       width: screenWidth / 2,
       child: Column(
@@ -445,38 +449,43 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                InkWell(
-                  onTap: () {
-                    // TODO: 跳转到游戏1
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(40).r,
-                    child: SizedBox(
-                      width: screenWidth / 4 - 5.w,
-                      child: Image.asset(
-                        _gamePictureList[0],
-                        fit: BoxFit.fill,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(color: Colors.grey);
-                        },
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      // TODO: 跳转到游戏1
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40).r,
+                      child: SizedBox(
+                        width: screenWidth / 4 - 5.w,
+                        child: Image.asset(
+                          _gamePictureList[0],
+                          fit: BoxFit.fill,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(color: Colors.grey);
+                          },
+                        ),
                       ),
                     ),
                   ),
                 ),
-                InkWell(
-                  onTap: () {
-                    // TODO: 跳转到游戏2
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(40).r,
-                    child: SizedBox(
-                      width: screenWidth / 4 - 5.w,
-                      child: Image.asset(
-                        _gamePictureList[1],
-                        fit: BoxFit.fill,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(color: Colors.grey);
-                        },
+                SizedBox(width: 20.w),
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      // TODO: 跳转到游戏2
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40).r,
+                      child: SizedBox(
+                        width: screenWidth / 4 - 5.w,
+                        child: Image.asset(
+                          _gamePictureList[1],
+                          fit: BoxFit.fill,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(color: Colors.grey);
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -669,7 +678,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               child: Text(
                 data,
                 style: TextStyle(
-                  fontSize: 22.sp,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.bold,
                   fontFamily: AppFonts.bebas,
                   color: Colors.white,
