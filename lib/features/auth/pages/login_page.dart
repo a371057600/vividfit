@@ -1,12 +1,13 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_fonts.dart';
+import '../../../core/services/privacy_service_provider.dart';
+import '../../../core/utils/policy_urls.dart';
+import '../../../core/utils/privacy_policy_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
@@ -18,18 +19,10 @@ import 'auth_video_background.dart';
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
-  // 旧项目 privacyPolicyUrl 随语言切换。
-  String _privacyUrl(int languageNum) {
-    if (languageNum == 2) {
-      return 'http://cloud.capstong.com:8081/otaDir/fitmonster_privacy_policy_tw.html';
-    } else if (languageNum == 0) {
-      return 'http://cloud.capstong.com:8081/otaDir/fitmonster/privacy.html';
-    }
-    return 'http://cloud.capstong.com:8081/otaDir/fitmonster_privacy_policy_english.html';
-  }
-
-  Future<void> _launchPrivacy(int languageNum) async {
-    await launchUrl(Uri.parse(_privacyUrl(languageNum)));
+  void _openPrivacy(BuildContext context, int languageNum) {
+    final url = PolicyUrls.privacyPolicyUrl(languageNum);
+    final title = PolicyUrls.privacyPolicyTitle(languageNum);
+    context.push('/policy-webview', extra: {'url': url, 'title': title});
   }
 
   void _ensureAgreed(BuildContext context, WidgetRef ref, VoidCallback go) {
@@ -274,6 +267,41 @@ class LoginPage extends ConsumerWidget {
                                 ),
                               ),
                             ),
+                            TextButton.icon(
+                              onPressed: () {
+                                // 调试入口:弹出隐私协议弹窗
+                                showDialog<void>(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (_) => PrivacyPolicyDialog(
+                                    languageNum: languageNum,
+                                    onAgree: () async {
+                                      final privacy = ref.read(
+                                        privacyServiceProvider,
+                                      );
+                                      await privacy.agreePrivacyPolicy();
+                                      ref
+                                          .read(authProvider.notifier)
+                                          .markPrivacyAgreed();
+                                    },
+                                    onReject: () async {
+                                      final privacy = ref.read(
+                                        privacyServiceProvider,
+                                      );
+                                      await privacy.rejectPrivacyPolicy();
+                                    },
+                                  ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.privacy_tip,
+                                color: Colors.cyanAccent,
+                              ),
+                              label: const Text(
+                                '[调试]查看隐私协议弹窗',
+                                style: TextStyle(color: Colors.cyanAccent),
+                              ),
+                            ),
                             // ElevatedButton(
                             //   onPressed: () => context.go('/api-test'),
                             //   child: const Text('API 测试页'),
@@ -340,7 +368,7 @@ class LoginPage extends ConsumerWidget {
                         InkWell(
                           splashColor: Colors.transparent,
                           highlightColor: Colors.transparent,
-                          onTap: () => _launchPrivacy(languageNum),
+                          onTap: () => _openPrivacy(context, languageNum),
                           child: Container(
                             alignment: Alignment.center,
                             child: Text(

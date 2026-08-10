@@ -40,6 +40,7 @@ import '../../features/record/pages/record_main_page.dart';
 import '../../features/record/pages/record_list_page.dart';
 import '../../features/record/pages/record_detail_page.dart';
 import '../../features/rank/pages/ranking_screen.dart';
+import '../../core/widgets/policy_webview_page.dart';
 
 part 'app_router.g.dart';
 
@@ -417,6 +418,18 @@ GoRouter appRouter(Ref ref) {
         path: '/api-test',
         name: 'api-test',
         builder: (context, state) => const ApiTestPage(),
+      ),
+      // 隐私政策 / 用户协议 在线 WebView 页
+      // 使用: context.push('/policy-webview', extra: {'url': xxx, 'title': xxx})
+      GoRoute(
+        path: '/policy-webview',
+        name: 'policy-webview',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final url = extra?['url'] as String? ?? '';
+          final title = extra?['title'] as String? ?? '';
+          return PolicyWebViewPage(url: url, title: title);
+        },
       ),
       // 记录模块路由
       GoRoute(

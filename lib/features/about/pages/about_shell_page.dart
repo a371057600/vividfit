@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
+import '../../../core/utils/policy_urls.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/notifiers/auth_notifier.dart';
 import '../notifiers/user_settings_notifier.dart';
@@ -18,6 +18,10 @@ class AboutShellPage extends ConsumerStatefulWidget {
 }
 
 class _AboutShellPageState extends ConsumerState<AboutShellPage> {
+  // index: 0=运动设置, 1=账号安全, 2=软件更新
+  //        3=隐私政策, 4=关于, 5=重新登录
+  //        6=数据采集(占位)
+  //        7=用户协议(新增)
   final List<String> iconList = [
     "icon_sport_setting",
     "icon_secure",
@@ -26,6 +30,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
     "icon_about",
     "icon_shop1",
     "icon_shop1",
+    "icon_privacy",
   ];
 
   @override
@@ -276,6 +281,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
   }
 
   Widget _buildOtherCardButton(BuildContext context, AppLocalizations l10n) {
+    final languageNum = ref.watch(authProvider.select((s) => s.languageNum));
     return Card(
       margin: const EdgeInsets.only(left: 25, right: 25, bottom: 25).r,
       color: FitTheme.secondbackGround,
@@ -294,11 +300,34 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
               child: _buildSmallItemButton(2, l10n),
             ),
             const Divider(color: Color.fromARGB(167, 36, 36, 36)),
+            // 用户协议(新增入口)
             InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () {
-                // 占位:隐私政策
+                context.push(
+                  '/policy-webview',
+                  extra: {
+                    'url': PolicyUrls.userAgreementUrl(languageNum),
+                    'title': PolicyUrls.userAgreementTitle(languageNum),
+                  },
+                );
+              },
+              child: _buildSmallItemButton(7, l10n),
+            ),
+            const Divider(color: Color.fromARGB(167, 36, 36, 36)),
+            // 隐私政策
+            InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: () {
+                context.push(
+                  '/policy-webview',
+                  extra: {
+                    'url': PolicyUrls.privacyPolicyUrl(languageNum),
+                    'title': PolicyUrls.privacyPolicyTitle(languageNum),
+                  },
+                );
               },
               child: _buildSmallItemButton(3, l10n),
             ),
@@ -327,6 +356,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
   }
 
   Widget _buildSmallItemButton(int index, AppLocalizations l10n) {
+    final languageNum = ref.read(authProvider).languageNum;
     final label = switch (index) {
       0 => l10n.sportsSettings,
       1 => l10n.accountSecurity,
@@ -335,6 +365,7 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
       4 => l10n.about,
       5 => l10n.reLogin,
       6 => l10n.dataCollection,
+      7 => PolicyUrls.userAgreementTitle(languageNum),
       _ => '',
     };
     return Container(

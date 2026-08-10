@@ -83,6 +83,10 @@ class AuthNotifier extends _$AuthNotifier {
 
   void togglePrivacyAgreement() =>
       state = state.copyWith(agreedToPrivacy: !state.agreedToPrivacy);
+
+  /// 首次启动隐私弹窗同意后调用,显式标记为已同意。
+  void markPrivacyAgreed() => state = state.copyWith(agreedToPrivacy: true);
+
   void toggleShowPassword() =>
       state = state.copyWith(showPassword: !state.showPassword);
 

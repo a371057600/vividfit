@@ -160,4 +160,10 @@ class StorageService {
   // ---- 目标体重 ----
   int get goalWeight => _prefs.getInt(StorageKeys.goalWeight) ?? 70;
   Future<void> setGoalWeight(int v) => _prefs.setInt(StorageKeys.goalWeight, v);
+
+  // ---- 隐私协议同意状态 ----
+  bool get privacyPolicyAgreed =>
+      _prefs.getBool(StorageKeys.privacyPolicyAgreed) ?? false;
+  Future<void> setPrivacyPolicyAgreed(bool value) =>
+      _prefs.setBool(StorageKeys.privacyPolicyAgreed, value);
 }

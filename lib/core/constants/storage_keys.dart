@@ -40,6 +40,9 @@ class StorageKeys {
   /// 蓝牙权限告知弹窗是否已展示过（仅 Android 首次弹窗机制）
   static const String btPermissionDialogShown = 'BtPermissionDialogShown';
 
+  /// 隐私政策 + 用户协议是否已用户同意（首次启动弹窗记录）
+  static const String privacyPolicyAgreed = 'PrivacyPolicyAgreed';
+
   // ---- 头像选择 ----
   static const String selectedAvatarIndex = 'selectedAvatarIndex';
   static const String customAvatarPath = 'customAvatarPath';

@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
+import 'realscene_webview_scaffold.dart';
 
 /// 单车游戏页1（对应旧 big_device_bike_game.dart）
 class GymBikeGameScreen extends ConsumerWidget {
@@ -43,12 +44,7 @@ class GymBikeRealsceneScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _DeviceGameScreen(
-      deviceTypeKey: 'bike',
-      gameIndex: 0,
-      isRealscene: true,
-      deviceType: deviceType,
-    );
+    return RealsceneWebViewScaffold(deviceType: deviceType);
   }
 }
 
@@ -89,12 +85,7 @@ class GymTreadmillRealsceneScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _DeviceGameScreen(
-      deviceTypeKey: 'treadmill',
-      gameIndex: 0,
-      isRealscene: true,
-      deviceType: deviceType,
-    );
+    return RealsceneWebViewScaffold(deviceType: deviceType);
   }
 }
 
@@ -135,12 +126,7 @@ class GymEllipticalRealsceneScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _DeviceGameScreen(
-      deviceTypeKey: 'elliptical',
-      gameIndex: 0,
-      isRealscene: true,
-      deviceType: deviceType,
-    );
+    return RealsceneWebViewScaffold(deviceType: deviceType);
   }
 }
 
@@ -181,12 +167,7 @@ class GymRowerRealsceneScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _DeviceGameScreen(
-      deviceTypeKey: 'rower',
-      gameIndex: 0,
-      isRealscene: true,
-      deviceType: deviceType,
-    );
+    return RealsceneWebViewScaffold(deviceType: deviceType);
   }
 }
 

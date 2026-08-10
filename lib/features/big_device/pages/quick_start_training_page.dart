@@ -110,17 +110,17 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildDebugTestButton(
-                        label: '时间',
-                        onTap: ref
-                            .read(quickStartProvider.notifier)
-                            .debugForceTriggerTimeDialog,
-                      ),
-                      SizedBox(width: 12.w),
-                      _buildDebugTestButton(
                         label: '距离',
                         onTap: ref
                             .read(quickStartProvider.notifier)
                             .debugForceTriggerDistanceDialog,
+                      ),
+                      SizedBox(width: 12.w),
+                      _buildDebugTestButton(
+                        label: '时间',
+                        onTap: ref
+                            .read(quickStartProvider.notifier)
+                            .debugForceTriggerTimeDialog,
                       ),
                       SizedBox(width: 12.w),
                       _buildDebugTestButton(
@@ -133,39 +133,74 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                   ),
                 ),
                 // [DEBUG-TEST-BUTTONS] 结束
-                // ==================== 3 个目标达成弹窗（最顶层） ====================
-                if (state.showTimeGoalDialog)
-                  _buildGoalDialog(
-                    iconPath: SportMetricIcons.byIndex(0),
-                    title: '恭喜达成运动时长目标',
-                    valueText: ref
-                        .read(quickStartProvider.notifier)
-                        .convertSecondsToTime(state.currentTimeGoalSec),
-                    unitText: '',
-                    onDismiss: ref
-                        .read(quickStartProvider.notifier)
-                        .dismissTimeGoalDialog,
-                  ),
-                if (state.showDistanceGoalDialog)
-                  _buildGoalDialog(
-                    iconPath: SportMetricIcons.byIndex(1),
-                    title: '恭喜达成运动距离目标',
-                    valueText: state.currentDistanceGoalKm.toStringAsFixed(1),
-                    unitText: 'km',
-                    onDismiss: ref
-                        .read(quickStartProvider.notifier)
-                        .dismissDistanceGoalDialog,
-                  ),
-                if (state.showEnergyGoalDialog)
-                  _buildGoalDialog(
-                    iconPath: SportMetricIcons.byIndex(2),
-                    title: '恭喜达成消耗目标',
-                    valueText: state.currentEnergyGoalKcal.toStringAsFixed(0),
-                    unitText: 'kcal',
-                    onDismiss: ref
-                        .read(quickStartProvider.notifier)
-                        .dismissEnergyGoalDialog,
-                  ),
+                // ==================== 3 个目标达成弹窗（下方胶囊 Banner 三等分布局） ====================
+                Builder(
+                  builder: (ctx) {
+                    debugPrint(
+                      '🔲 [DialogLayer] rebuild → '
+                      'showDist=${state.showDistanceGoalDialog} '
+                      '(${state.currentDistanceGoalKm.toStringAsFixed(2)} km) · '
+                      'showTime=${state.showTimeGoalDialog} '
+                      '(${state.currentTimeGoalSec ~/ 60} min) · '
+                      'showEnergy=${state.showEnergyGoalDialog} '
+                      '(${state.currentEnergyGoalKcal.toStringAsFixed(0)} kcal)',
+                    );
+                    return Positioned(
+                      left: 120.w,
+                      right: 100.w,
+                      bottom: 70.h,
+                      child: Row(
+                        children: [
+                          // 左 1/3 槽位 → 距离目标
+                          Expanded(
+                            child: Center(
+                              child: state.showDistanceGoalDialog
+                                  ? Builder(
+                                      builder: (ctx2) {
+                                        debugPrint(
+                                          '🔲 [DialogLayer] 距离Banner: true，开始构建',
+                                        );
+                                        return _buildDistanceGoalBanner(state);
+                                      },
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ),
+                          // 中 1/3 槽位 → 时长目标
+                          Expanded(
+                            child: Center(
+                              child: state.showTimeGoalDialog
+                                  ? Builder(
+                                      builder: (ctx2) {
+                                        debugPrint(
+                                          '🔲 [DialogLayer] 时长Banner: true，开始构建',
+                                        );
+                                        return _buildDurationGoalBanner(state);
+                                      },
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ),
+                          // 右 1/3 槽位 → 卡路里目标
+                          Expanded(
+                            child: Center(
+                              child: state.showEnergyGoalDialog
+                                  ? Builder(
+                                      builder: (ctx2) {
+                                        debugPrint(
+                                          '🔲 [DialogLayer] 卡路里Banner: true，开始构建',
+                                        );
+                                        return _buildBurnGoalBanner(state);
+                                      },
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
         ),
       ),
@@ -993,165 +1028,315 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   }
   // [DEBUG-TEST-BUTTONS] 结束
 
-  // ==================== 目标达成弹窗 UI ====================
+  // ==================== 目标达成弹窗 UI（下方胶囊 Banner 并排） ====================
 
-  /// 通用目标达成弹窗。
+  /// 通用胶囊 Banner 封装（3 个目标弹窗共用）。
   ///
-  /// - 蒙层不拦截点击（IgnorePointer 包裹蒙层），弹窗内部按钮可正常响应；
-  /// - 30 秒自动消失逻辑在 Notifier 层的 Timer 中实现；
-  /// - 点击弹窗内「关闭」按钮立刻关闭并取消 30 秒倒计时。
-  Widget _buildGoalDialog({
-    required String iconPath,
+  /// - [backgroundAsset]  : 胶囊背景图资源路径（quick_distance/during/burn.png）
+  /// - [title]            : 小字标题（你的运动距离 / 你的运动时长 / 你已消耗热量）
+  /// - [valueText]        : 大字号数值（数据异常时传"——"，交给外层 fallback）
+  /// - [unitText]         : 单位（KM / MIN / KCAL）
+  /// - [status]           : 当前数据状态，决定 UI 文案/颜色
+  /// - [bannerTag]        : 调试日志分类标签（"DIST"/"TIME"/"ENERGY"）
+  Widget _buildGoalBanner({
+    required String backgroundAsset,
     required String title,
     required String valueText,
     required String unitText,
-    required VoidCallback onDismiss,
+    required _BannerDataStatus status,
+    required String bannerTag,
   }) {
-    return Positioned.fill(
-      // 弹窗外层不吸收点击：用户仍可操作下方控制按钮/返回按钮等
-      child: IgnorePointer(
+    // —— 尺寸严格按你要求写死：宽 300.w × 高 200.h，不再响应式缩放
+    final bannerWidth = 160.w;
+    final bannerHeight = 250.h;
+    // 内部 padding/字号：按 300×200 适配后写死
+    final textLeftPadding = 60.w; // 左侧插画占位后文字起点
+    final rightPadding = 20.w;
+    final vertPadding = 8.h;
+    final titleFontSize = 16.sp;
+    final valueFontSize = 13.sp;
+    final unitFontSize = 14.sp;
+    final tipFontSize = 10.sp;
+    final titleGap = 4.h;
+    final valueGap = 6.w;
+    final tipGap = 6.h;
+
+    // 给每个 tag 分配一个「纯色调试背景」，资源图加载失败或透明时能直接看到胶囊形状
+    const Map<String, Color> kTagDebugColor = {
+      'DIST': Color(0xFF7A3CB8), // 紫 → 距离
+      'TIME': Color(0xFF2E6EFF), // 蓝 → 时长
+      'ENERGY': Color(0xFFE03B3B), // 红 → 卡路里
+    };
+    final tagDebugColor =
+        kTagDebugColor[bannerTag] ?? Colors.teal.withValues(alpha: 0.6);
+
+    debugPrint(
+      '🧱 [Banner-$bannerTag] build → size=${bannerWidth.toInt()}×${bannerHeight.toInt()}, '
+      'status=$status, title="$title", value="$valueText", unit="$unitText"',
+    );
+
+    // 根据状态决定最终呈现的标题 / 数值（用默认值声明，避开 Dart 穷举分析的「非空赋值」告警）
+    var finalTitle = title;
+    var finalValue = valueText;
+    var finalUnit = unitText;
+    var titleColor = Colors.white.withValues(alpha: 0.92);
+    var valueColor = Colors.white;
+    var bgFallbackColor = Colors.white.withValues(alpha: 0.1);
+
+    switch (status) {
+      case _BannerDataStatus.ready:
+        finalTitle = title;
+        finalValue = valueText;
+        finalUnit = unitText;
+        titleColor = Colors.white.withValues(alpha: 0.92);
+        valueColor = Colors.white;
+        // 兜底色 alpha 降低，不会覆盖设计图
+        bgFallbackColor = tagDebugColor.withValues(alpha: 0.18);
+        break;
+      case _BannerDataStatus.loading:
+        // 数据尚未就绪（常见：首次点击后 Riverpod 还在同步 rebuild，或者赋值 ≤ 0）
+        finalTitle = '数据准备中…';
+        finalValue = '—';
+        finalUnit = '';
+        titleColor = Colors.white.withValues(alpha: 0.86);
+        valueColor = Colors.white.withValues(alpha: 0.92);
+        bgFallbackColor = Colors.yellow.withValues(alpha: 0.30);
+        break;
+      case _BannerDataStatus.error:
+        finalTitle = '数据异常，请重试';
+        finalValue = 'ERR';
+        finalUnit = '';
+        titleColor = Colors.white.withValues(alpha: 0.92);
+        valueColor = const Color.fromARGB(255, 255, 128, 128);
+        bgFallbackColor = Colors.red.withValues(alpha: 0.30);
+        break;
+    }
+
+    return AnimatedOpacity(
+      opacity: 1.0,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+      child: ClipRRect(
+        // 胶囊圆角：两端半圆，等于 bannerHeight / 2
+        // borderRadius: BorderRadius.circular(bannerHeight / 2),
         child: Container(
-          color: Colors.black.withValues(alpha: 0.2),
-          // 弹窗内部吸收点击
-          child: IgnorePointer(
-            ignoring: false,
-            child: Center(
-              child: Container(
-                width: 480.w,
-                padding: EdgeInsets.symmetric(horizontal: 28.r, vertical: 30.r),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF161618),
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.35),
-                      blurRadius: 22.r,
-                      spreadRadius: 2.r,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 顶部祝贺图标
-                    Container(
-                      width: 72.r,
-                      height: 72.r,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color.fromARGB(
-                          255,
-                          255,
-                          193,
-                          7,
-                        ).withValues(alpha: 0.15),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text('🎉', style: TextStyle(fontSize: 40.sp)),
-                    ),
-                    SizedBox(height: 20.r),
-                    // 目标类型小图标 + 标题
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: 22.sp,
-                          child: Image.asset(iconPath, fit: BoxFit.fill),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 22.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            fontFamily: AppFonts.bebas,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.r),
-                    // 数值大字展示
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          valueText,
-                          style: TextStyle(
-                            fontSize: 54.sp,
-                            fontWeight: FontWeight.bold,
-                            color: const Color.fromARGB(255, 255, 193, 7),
-                            fontFamily: AppFonts.bebas,
-                            height: 0.9,
-                          ),
-                        ),
-                        if (unitText.isNotEmpty) ...[
-                          SizedBox(width: 8.w),
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 6.r),
-                            child: Text(
-                              unitText,
-                              style: TextStyle(
-                                fontSize: 22.sp,
-                                color: Colors.white.withValues(alpha: 0.7),
-                                fontFamily: AppFonts.bebas,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    SizedBox(height: 24.r),
-                    // 关闭按钮
-                    InkWell(
-                      borderRadius: BorderRadius.circular(12.r),
-                      onTap: onDismiss,
-                      child: Container(
-                        width: 220.w,
-                        padding: EdgeInsets.symmetric(vertical: 14.r),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12.r),
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color.fromARGB(255, 80, 140, 255),
-                              Color.fromARGB(255, 40, 100, 240),
-                            ],
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          '关闭',
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 6.r),
-                    Text(
-                      '5 秒后自动关闭',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.white.withValues(alpha: 0.45),
-                      ),
-                    ),
-                  ],
-                ),
+          width: bannerWidth,
+          height: bannerHeight,
+          // 背景图 + 纯色兜底层 + 细边框：三层叠加
+          decoration: BoxDecoration(
+            color: bgFallbackColor, // 最底层：兜底色
+            border: Border.all(
+              // 边框缩小为 1，alpha 降低避免抢图片视觉
+              color: tagDebugColor.withValues(alpha: 0.22),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.30),
+                blurRadius: 16.r,
+                spreadRadius: 2.r,
+                offset: Offset(0, 6.r),
               ),
+            ],
+            image: DecorationImage(
+              image: AssetImage(backgroundAsset),
+              fit: BoxFit.fill,
+              onError: (e, s) {
+                debugPrint(
+                  '🖼️ [Banner-$bannerTag] 资源加载失败：$backgroundAsset, error=$e',
+                );
+              },
+              // 叠一层极淡的 tag 色，统一观感，不影响原图
+              colorFilter: ColorFilter.mode(
+                tagDebugColor.withValues(alpha: 0.08),
+                BlendMode.srcATop,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: textLeftPadding,
+              right: rightPadding,
+              top: vertPadding,
+              bottom: vertPadding,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 第 1 行：标题小字
+                Text(
+                  finalTitle,
+                  style: TextStyle(
+                    fontSize: titleFontSize,
+                    fontWeight: FontWeight.w500,
+                    color: titleColor,
+                  ),
+                ),
+                SizedBox(height: titleGap),
+                // 第 2 行：大字号数值 + 单位（自适应紧贴数值，不做 Expanded 撑满）
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        finalValue,
+                        maxLines: 1,
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                        style: TextStyle(
+                          fontSize: valueFontSize,
+                          fontWeight: FontWeight.bold,
+                          color: valueColor,
+                          fontFamily: AppFonts.bebas,
+                          height: 1.05,
+                        ),
+                      ),
+                    ),
+                    if (finalUnit.isNotEmpty) ...[
+                      SizedBox(width: valueGap),
+                      Text(
+                        finalUnit,
+                        style: TextStyle(
+                          fontSize: unitFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: valueColor.withValues(alpha: 0.9),
+                          fontFamily: AppFonts.bebas,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                // 第 3 行：非就绪状态提示（只在 loading/error 时展示）
+                if (status != _BannerDataStatus.ready) ...[
+                  SizedBox(height: tipGap),
+                  Text(
+                    status == _BannerDataStatus.loading
+                        ? '请稍候，数据即将就绪…'
+                        : '点击按钮重新触发即可',
+                    style: TextStyle(
+                      fontSize: tipFontSize,
+                      color: Colors.white.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),
       ),
     );
   }
+
+  /// 距离目标 Banner（左位置，紫胶囊 + 跑鞋）
+  Widget _buildDistanceGoalBanner(QuickStartState state) {
+    const tag = 'DIST';
+    _BannerDataStatus status = _BannerDataStatus.ready;
+    String formatted = '';
+
+    try {
+      // ① 合法性判断：距离必须 > 0，否则判定为 Notifier 赋值尚未落到 Widget
+      final num km = state.currentDistanceGoalKm;
+      if (!(km > 0)) {
+        status = _BannerDataStatus.loading;
+        debugPrint(
+          '⚠️ [Banner-$tag] 数据未就绪：currentDistanceGoalKm=$km '
+          '(show=${state.showDistanceGoalDialog})',
+        );
+      } else {
+        // ② 距离去零格式化：0.5→"0.5"，1→"1"，30→"30"，与 XML 表现一致
+        formatted = (km == km.roundToDouble())
+            ? km.toInt().toString()
+            : km.toStringAsFixed(1);
+      }
+    } catch (e, s) {
+      // ③ 格式化发生任何异常（类型转换/toString 异常），统一进入 error 状态，防止崩溃+空白
+      status = _BannerDataStatus.error;
+      debugPrint('❌ [Banner-$tag] 格式化异常：$e\n$s');
+    }
+
+    return _buildGoalBanner(
+      backgroundAsset: 'images/newUIScreen/device_icons/quick_distance.png',
+      title: '运动距离',
+      valueText: formatted,
+      unitText: 'KM',
+      status: status,
+      bannerTag: tag,
+    );
+  }
+
+  /// 时长目标 Banner（中位置，蓝胶囊 + 跑步女生）
+  Widget _buildDurationGoalBanner(QuickStartState state) {
+    const tag = 'TIME';
+    _BannerDataStatus status = _BannerDataStatus.ready;
+    String formatted = '';
+
+    try {
+      final seconds = state.currentTimeGoalSec;
+      final minutes = seconds ~/ 60;
+      // 必须分钟 > 0，否则 loading（避免 Notifier 还没赋值就显示 0 MIN）
+      if (minutes <= 0) {
+        status = _BannerDataStatus.loading;
+        debugPrint(
+          '⚠️ [Banner-$tag] 数据未就绪：seconds=$seconds, minutes=$minutes '
+          '(show=${state.showTimeGoalDialog})',
+        );
+      } else {
+        formatted = '$minutes';
+      }
+    } catch (e, s) {
+      status = _BannerDataStatus.error;
+      debugPrint('❌ [Banner-$tag] 格式化异常：$e\n$s');
+    }
+
+    return _buildGoalBanner(
+      backgroundAsset: 'images/newUIScreen/device_icons/quick_during.png',
+      title: '运动时长',
+      valueText: formatted,
+      unitText: 'MIN',
+      status: status,
+      bannerTag: tag,
+    );
+  }
+
+  /// 卡路里目标 Banner（右位置，红胶囊 + 体重秤）
+  Widget _buildBurnGoalBanner(QuickStartState state) {
+    const tag = 'ENERGY';
+    _BannerDataStatus status = _BannerDataStatus.ready;
+    String formatted = '';
+
+    try {
+      final kcal = state.currentEnergyGoalKcal;
+      if (!(kcal > 0)) {
+        status = _BannerDataStatus.loading;
+        debugPrint(
+          '⚠️ [Banner-$tag] 数据未就绪：currentEnergyGoalKcal=$kcal '
+          '(show=${state.showEnergyGoalDialog})',
+        );
+      } else {
+        formatted = kcal.toStringAsFixed(0);
+      }
+    } catch (e, s) {
+      status = _BannerDataStatus.error;
+      debugPrint('❌ [Banner-$tag] 格式化异常：$e\n$s');
+    }
+
+    return _buildGoalBanner(
+      backgroundAsset: 'images/newUIScreen/device_icons/quick_burn.png',
+      title: '运动消耗',
+      valueText: formatted,
+      unitText: 'KCAL',
+      status: status,
+      bannerTag: tag,
+    );
+  }
 }
+
+/// Banner 数据展示状态（区分「加载中 / 就绪 / 异常」，避免空白背景无任何提示）。
+enum _BannerDataStatus { loading, ready, error }
 
 /// ==================== 控制按钮缩放与间距常量（集中调节入口） ====================
 /// 控制按钮整体宽度缩放系数，用户可直接调此值控制整体大小。
