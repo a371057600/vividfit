@@ -39,6 +39,9 @@ class GymDeviceEntryScreen extends ConsumerStatefulWidget {
 }
 
 class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
+  /// 搜索对话框是否仍然打开(防止 5.5s 定时器误弹入口页)。
+  bool _isSearchDialogOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -113,19 +116,25 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
                 await connectNotifier.startDeviceScan(context);
                 if (!context.mounted) return;
                 // 弹出搜索对话框
+                _isSearchDialogOpen = true;
                 showDialog(
                   context: context,
                   barrierDismissible: false,
                   builder: (_) => const DeviceSearchDialog(),
-                );
-                // 5.5s后自动关闭对话框（保持原行为）
+                ).then((_) {
+                  // 对话框关闭(用户选择设备或手动关闭)后清除标记
+                  _isSearchDialogOpen = false;
+                });
+                // 5.5s后自动关闭对话框（仅当对话框仍然打开时才执行）
                 final selfContext = context;
                 Future.delayed(
                   const Duration(seconds: 5, milliseconds: 500),
                   () {
+                    if (!_isSearchDialogOpen) return;
                     if (selfContext.mounted &&
                         Navigator.of(selfContext).canPop()) {
                       Navigator.pop(selfContext);
+                      _isSearchDialogOpen = false;
                     }
                   },
                 );
@@ -154,12 +163,12 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
         ),
         body: Container(
           width: screenWidth,
-          margin: EdgeInsets.only(left: 100, right: 15).r,
+          margin: EdgeInsets.only(left: 120, right: 15).r,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               _buildHeaderTitle(homeState, tr),
-              SizedBox(height: 30.h),
+              SizedBox(height: 15.h),
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -217,8 +226,8 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
       child: InkWell(
         onTap: () => _handleCardTap(data, connectState),
         child: Container(
-          width: 120.w,
-          margin: EdgeInsets.only(bottom: 30.h),
+          width: 125.w,
+          margin: EdgeInsets.only(bottom: 15.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30.r),
@@ -249,9 +258,8 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
                 ),
               ),
               // 内容 - 反向倾斜,保持竖直对齐
-              Transform(
-                transform: Matrix4.skewX(0.15),
-                origin: Offset(0, 40.w),
+              Container(
+                margin: EdgeInsets.only(left: 12.w),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -315,16 +323,15 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     GymDeviceConnectState connectState,
   ) async {
     final deviceType = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
-    final connectNotifier = ref.read(gymDeviceConnectProvider.notifier);
 
     // === 蓝牙连接守卫(临时隐藏,测试用) ===
     // TODO(恢复时): 取消注释下方代码,启用蓝牙连接守卫
     // if (!connectState.isEquipmentConnected) {
     //   if (connectState.isBluetoothConnected) {
-    //     connectNotifier.disconnectIfAny();
+    //     ref.read(gymDeviceConnectProvider.notifier).disconnectIfAny();
     //   }
     //   if (!connectState.isSearching) {
-    //     connectNotifier.startDeviceScan();
+    //     ref.read(gymDeviceConnectProvider.notifier).startDeviceScan();
     //   }
     //   if (!context.mounted) return;
     //   showDialog(
@@ -353,7 +360,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
           FtmsDeviceType.rower => '/gym-rower-realscene',
           FtmsDeviceType.strengthStation => '/gym-bike-realscene',
         };
-        context.push(realsceneRoute);
+        context.push(realsceneRoute, extra: deviceType);
         break;
       case 3: // cityAdventure
         // 旧项目未实现跳转,暂不处理

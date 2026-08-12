@@ -36,18 +36,29 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   late Animation<double> _animation;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
+  /// 提前缓存 Notifier 引用，避免在 dispose 时再通过 ref.read(...) 访问。
+  ///
+  /// 背景：退出 quick_start_select_screen 时，本 State 会先被标记为 unmounting/deactivated，
+  /// 此时如果再用 ref（ConsumerState.ref）会抛：
+  ///   Bad state: Using "ref" when a widget is about to or has been unmounted is unsafe.
+  /// 在 dispose 里用已经保存的 Notifier 字段引用，就不需要依赖 BuildContext。
+  late final QuickStartNotifier _quickStartNotifier;
+
   @override
   void initState() {
     super.initState();
 
+    // —— 只在 initState 内读一次 ref 并保存为字段，后续（含 dispose/回调）全都用字段。
+    _quickStartNotifier = ref.read(quickStartProvider.notifier);
+
     // 强制横屏(与入口页保持一致,避免竖屏导致布局崩溃)
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
 
-    // 进入快速开始界面后，发送指令让设备阻力设置为初始值（业务留白）
+    // 进入快速开始界面后，设置设备类型 + 发送指令让设备阻力设置为初始值（业务留白）
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          final notifier = ref.read(quickStartProvider.notifier);
+          final notifier = _quickStartNotifier;
           notifier.setDeviceType(widget.deviceType);
           notifier.sendResetToDevice();
         }
@@ -67,8 +78,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     _controller.dispose();
     _audioPlayer.stop();
     _audioPlayer.dispose();
-    // 页面销毁时清理所有目标弹窗 Timer，避免回调时页面已卸载抛异常
-    ref.read(quickStartProvider.notifier).disposeGoalTimers();
+    // ✅ 用字段引用（而非 ref.read）：页面即将/已经 unmounted 也是安全的
+    _quickStartNotifier.disposeGoalTimers();
     super.dispose();
   }
 
@@ -136,6 +147,10 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                 // ==================== 3 个目标达成弹窗（下方胶囊 Banner 三等分布局） ====================
                 Builder(
                   builder: (ctx) {
+                    // deactivated/unmounting 阶段（退出 quick_start_select_screen 时）
+                    // Provider 可能仍然发了最后一次 state 更新，导致 Builder 再进一次。
+                    // 此时 ConsumerState.ref 已经不安全，先检查 mounted 再做任何操作。
+                    if (!mounted) return const SizedBox.shrink();
                     debugPrint(
                       '🔲 [DialogLayer] rebuild → '
                       'showDist=${state.showDistanceGoalDialog} '
@@ -154,7 +169,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                           // 左 1/3 槽位 → 距离目标
                           Expanded(
                             child: Center(
-                              child: state.showDistanceGoalDialog
+                              child: (mounted && state.showDistanceGoalDialog)
                                   ? Builder(
                                       builder: (ctx2) {
                                         debugPrint(
@@ -169,7 +184,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                           // 中 1/3 槽位 → 时长目标
                           Expanded(
                             child: Center(
-                              child: state.showTimeGoalDialog
+                              child: (mounted && state.showTimeGoalDialog)
                                   ? Builder(
                                       builder: (ctx2) {
                                         debugPrint(
@@ -184,7 +199,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                           // 右 1/3 槽位 → 卡路里目标
                           Expanded(
                             child: Center(
-                              child: state.showEnergyGoalDialog
+                              child: (mounted && state.showEnergyGoalDialog)
                                   ? Builder(
                                       builder: (ctx2) {
                                         debugPrint(
@@ -1125,19 +1140,19 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           // 背景图 + 纯色兜底层 + 细边框：三层叠加
           decoration: BoxDecoration(
             color: bgFallbackColor, // 最底层：兜底色
-            border: Border.all(
-              // 边框缩小为 1，alpha 降低避免抢图片视觉
-              color: tagDebugColor.withValues(alpha: 0.22),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.30),
-                blurRadius: 16.r,
-                spreadRadius: 2.r,
-                offset: Offset(0, 6.r),
-              ),
-            ],
+            // border: Border.all(
+            //   // 边框缩小为 1，alpha 降低避免抢图片视觉
+            //   color: tagDebugColor.withValues(alpha: 0.22),
+            //   width: 1,
+            // ),
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: Colors.black.withValues(alpha: 0.30),
+            //     blurRadius: 16.r,
+            //     spreadRadius: 2.r,
+            //     offset: Offset(0, 6.r),
+            //   ),
+            // ],
             image: DecorationImage(
               image: AssetImage(backgroundAsset),
               fit: BoxFit.fill,

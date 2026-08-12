@@ -236,6 +236,18 @@ abstract class AppLocalizations {
   /// **'<User Agreement and Privacy Policy>'**
   String get userAgreementAndPrivacyPolicy;
 
+  /// No description provided for @userAgreement.
+  ///
+  /// In en, this message translates to:
+  /// **'<User Agreement>'**
+  String get userAgreement;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'<Privacy Policy>'**
+  String get privacyPolicy;
+
   /// No description provided for @incorrectAccountOrPassword.
   ///
   /// In en, this message translates to:

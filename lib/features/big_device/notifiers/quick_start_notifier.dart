@@ -76,11 +76,6 @@ class QuickStartNotifier extends _$QuickStartNotifier {
   /// 弹窗队列：当已有弹窗显示时，后续入队等待展示。
   final List<GoalDialogType> _pendingDialogQueue = [];
 
-  bool _isAnyDialogVisible() =>
-      state.showTimeGoalDialog ||
-      state.showDistanceGoalDialog ||
-      state.showEnergyGoalDialog;
-
   void setDeviceType(FtmsDeviceType type) {
     _deviceType = type;
     // 设置mock数据用于UI调试

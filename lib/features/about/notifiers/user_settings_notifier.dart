@@ -18,14 +18,19 @@ class UserSettingsNotifier extends _$UserSettingsNotifier {
   late StorageService _storage;
 
   Future<void> loadData() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
+    final savedAvatarIndex = _storage.selectedCharacterIndex;
+    print('🎯 [UserSettings] loadData, saved avatar index: $savedAvatarIndex');
     state = state.copyWith(
       isLoading: false,
       nickName: 'TestUser',
       birthday: '2000-01-01',
       gander: true,
-      bodyHeight: 175,
+      bodyHeight: 170,
       bodyWeight: 70,
+      heightPosition: 70,
+      weightPosition: 30,
+      selectedImageIndex: savedAvatarIndex,
     );
   }
 

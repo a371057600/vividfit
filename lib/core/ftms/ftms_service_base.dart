@@ -56,6 +56,15 @@ abstract class FtmsServiceBase {
       _dataCharacteristic != null &&
       _controlCharacteristic != null;
 
+  /// 是否已收到首个数据包(Layer 2 就绪标记)。
+  bool _hasReceivedFirstData = false;
+  
+  /// 首个数据到达回调(供 Notifier 处理 Layer 2 就绪)。
+  void Function(FtmsDeviceData data)? onDataReady;
+
+  /// 是否已收到首个数据包(供外部检查 Layer 2 状态)。
+  bool get hasReceivedFirstData => _hasReceivedFirstData;
+
   /// 连接设备并发现 FTMS 服务。
   ///
   /// 步骤:
@@ -106,22 +115,27 @@ abstract class FtmsServiceBase {
 
   /// 断开订阅(不断开蓝牙连接,连接由上层管理)。
   Future<void> disconnect() async {
-    debugPrint('[FTMS] disconnect begin');
+    debugPrint('[FTMS] === disconnect BEGIN ===');
+    _hasReceivedFirstData = false;
+    onDataReady = null;
+    
     await _dataSubscription?.cancel();
     await _statusSubscription?.cancel();
     _dataSubscription = null;
     _statusSubscription = null;
+    debugPrint('[FTMS] ✅ subscriptions cancelled');
 
     try {
       await _dataCharacteristic?.setNotifyValue(false);
       await _statusCharacteristic?.setNotifyValue(false);
+      debugPrint('[FTMS] ✅ notify values disabled');
     } catch (e) {
-      debugPrint('[FTMS] disconnect setNotifyValue error: $e');
+      debugPrint('[FTMS] disconnect setNotifyValue warning: $e');
     }
 
-    _dataController.close();
-    _statusController.close();
-    debugPrint('[FTMS] disconnect done');
+    await _dataController.close();
+    await _statusController.close();
+    debugPrint('[FTMS] === disconnect END ===');
   }
 
   // ---- 写入控制指令 ----
@@ -224,13 +238,23 @@ abstract class FtmsServiceBase {
       debugPrint('[FTMS] _subscribeData: dataCharacteristic is null, skip');
       return;
     }
+    debugPrint('[FTMS] subscribing data characteristic: ${deviceType.dataCharacteristicUuid}');
     _dataSubscription = _dataCharacteristic!.lastValueStream.listen((data) {
       final parsed = _parser.parse(Uint8List.fromList(data));
-      debugPrint('[FTMS] dataStream: speed=${parsed.instSpeed}km/h, cadence=${parsed.instCadence}rpm, hr=${parsed.hr}bpm, distance=${parsed.distTotal}m, energy=${parsed.energyTotal}kcal');
+      debugPrint('[FTMS] 📊 data: speed=${parsed.instSpeed}km/h, cadence=${parsed.instCadence}rpm, hr=${parsed.hr}bpm, distance=${parsed.distTotal}m, energy=${parsed.energyTotal}kcal');
+      
+      // 触发 Layer 2 就绪通知(首次数据到达)
+      if (!_hasReceivedFirstData) {
+        _hasReceivedFirstData = true;
+        debugPrint('[FTMS] ✅ === FIRST DATA RECEIVED (Layer 2 Ready) ===');
+        onDataReady?.call(parsed);
+      }
+      
       if (!_dataController.isClosed) _dataController.add(parsed);
     });
     _device?.cancelWhenDisconnected(_dataSubscription!);
     await _dataCharacteristic!.setNotifyValue(true);
+    debugPrint('[FTMS] ✅ data subscription enabled');
   }
 
   Future<void> _subscribeStatus() async {
@@ -238,13 +262,15 @@ abstract class FtmsServiceBase {
       debugPrint('[FTMS] _subscribeStatus: statusCharacteristic is null, skip');
       return;
     }
+    debugPrint('[FTMS] subscribing status characteristic: ${FtmsUuids.machineStatus}');
     _statusSubscription = _statusCharacteristic!.lastValueStream.listen((data) {
       final event = FtmsStatusParser.parse(Uint8List.fromList(data));
-      debugPrint('[FTMS] statusStream: event=${event.runtimeType}');
+      debugPrint('[FTMS] 🔔 status: ${event.runtimeType}');
       if (!_statusController.isClosed) _statusController.add(event);
     });
     _device?.cancelWhenDisconnected(_statusSubscription!);
     await _statusCharacteristic!.setNotifyValue(true);
+    debugPrint('[FTMS] ✅ status subscription enabled');
   }
 
   Future<void> _writeControl(List<int> data) async {

@@ -35,6 +35,7 @@ import '../../l10n/app_localizations.dart';
 import '../../features/big_device/pages/gym_device_games.dart';
 import '../../features/dev/api_test_page.dart';
 import '../../core/ftms/ftms_device_type.dart';
+import '../../data/models/network/sport_history.dart';
 import '../../features/record/models/record_equipment_type.dart';
 import '../../features/record/pages/record_main_page.dart';
 import '../../features/record/pages/record_list_page.dart';
@@ -450,7 +451,8 @@ GoRouter appRouter(Ref ref) {
           final equipmentType =
               extra?['equipmentType'] as RecordEquipmentType? ??
               RecordEquipmentType.all;
-          return RecordDetailPage(equipmentType: equipmentType);
+          final record = extra?['record'] as SportHistory?;
+          return RecordDetailPage(equipmentType: equipmentType, record: record);
         },
       ),
     ],

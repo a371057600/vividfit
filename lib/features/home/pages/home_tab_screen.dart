@@ -1008,6 +1008,8 @@ class HomeTabScreen extends ConsumerWidget {
         onTap: () {
           if (config.key == 'burnRank' || config.key == 'ranks') {
             context.push('/ranking');
+          } else if (config.key == 'exerciseRecord') {
+            context.push('/record-main');
           } else {
             context.push('/placeholder');
           }

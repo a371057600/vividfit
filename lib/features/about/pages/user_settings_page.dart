@@ -1,21 +1,33 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/user_settings_notifier.dart';
+import '../states/user_settings_state.dart';
 
-class UserSettingsPage extends ConsumerWidget {
+class UserSettingsPage extends ConsumerStatefulWidget {
   const UserSettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UserSettingsPage> createState() => _UserSettingsPageState();
+}
+
+class _UserSettingsPageState extends ConsumerState<UserSettingsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(userSettingsProvider.notifier).loadData();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(userSettingsProvider);
     final notifier = ref.read(userSettingsProvider.notifier);
@@ -89,104 +101,97 @@ class UserSettingsPage extends ConsumerWidget {
       alignment: Alignment.center,
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Column(
-            children: [
-              InkWell(
-                focusColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                onTap: () {
-                  context.push('/avatar-select');
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(
-                    top: 20,
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                  ).r,
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    top: 10,
-                    bottom: 10,
-                  ).r,
-                  height: 60,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                    color: FitTheme.secondbackGround,
-                    borderRadius: BorderRadius.circular(20).r,
-                  ),
-                  child: Row(
-                    children: [
-                      state.isLoading
-                          ? Container()
-                          : _buildAvatarWidget(context, state),
-                      Container(
-                        margin: const EdgeInsets.only(left: 15),
-                        child: Text(
-                          l10n.avatar,
-                          style: TextStyle(
-                            color: FitTheme.textColor,
-                            fontSize: 25.sp,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        l10n.create,
-                        style: TextStyle(
-                          color: FitTheme.textColor,
-                          fontSize: 25.sp,
-                        ),
-                      ),
-                      SizedBox(width: 20.r),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        size: 30.sp,
-                        color: FitTheme.textColor,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              _buildOtherColumn(context, ref, l10n, state, notifier),
-            ],
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildAvatarRow(context, ref, l10n, state, notifier),
+            _buildOtherColumn(context, ref, l10n, state, notifier),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAvatarWidget(BuildContext context, state) {
+  Widget _buildAvatarRow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    state,
+    notifier,
+  ) {
+    return InkWell(
+      focusColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      onTap: () {
+        context.push('/avatar-select');
+      },
+      child: Container(
+        margin: const EdgeInsets.only(
+          top: 20,
+          bottom: 20,
+          left: 20,
+          right: 20,
+        ).r,
+        padding: const EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 15,
+          bottom: 15,
+        ).r,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: FitTheme.secondbackGround,
+          borderRadius: BorderRadius.circular(20).r,
+        ),
+        child: Row(
+          children: [
+            state.isLoading
+                ? Container(
+                    width: 60.r,
+                    height: 60.r,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: FitTheme.buttonColor,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                  )
+                : _buildAvatarWidget(state),
+            Container(
+              margin: const EdgeInsets.only(left: 15),
+              child: Text(
+                l10n.avatar,
+                style: TextStyle(color: FitTheme.textColor, fontSize: 28.sp),
+              ),
+            ),
+            const Spacer(),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 28.sp,
+              color: FitTheme.textColor,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarWidget(UserSettingsState state) {
     return Container(
       decoration: const BoxDecoration(shape: BoxShape.circle),
-      height: 80.r,
-      width: 80.r,
+      height: 60.r,
+      width: 60.r,
       clipBehavior: Clip.hardEdge,
-      child: ExtendedImage.asset(
+      child: Image.asset(
         "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
-        fit: BoxFit.fill,
-        loadStateChanged: (ExtendedImageState state) {
-          switch (state.extendedImageLoadState) {
-            case LoadState.loading:
-              return Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              );
-            case LoadState.failed:
-              return ExtendedImage.asset(
-                "images/newUIScreen/defaultheadimages/deheadImage1.jpg",
-              );
-            case LoadState.completed:
-              return ExtendedRawImage(
-                image: state.extendedImageInfo?.image,
-                width: MediaQuery.of(context).size.width - 10,
-                fit: BoxFit.fill,
-              );
-          }
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            "images/newUIScreen/defaultheadimages/deheadImage1.jpg",
+            fit: BoxFit.cover,
+          );
         },
       ),
     );
@@ -200,48 +205,30 @@ class UserSettingsPage extends ConsumerWidget {
     notifier,
   ) {
     return Container(
-      margin: const EdgeInsets.only(top: 20, bottom: 20, left: 20, right: 20).r,
+      margin: const EdgeInsets.only(left: 20, right: 20).r,
       padding: const EdgeInsets.only(
         left: 20,
         right: 20,
-        top: 20,
+        top: 10,
         bottom: 10,
       ).r,
-      height: 540.h,
-      width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
         color: FitTheme.secondbackGround,
         borderRadius: BorderRadius.circular(20).r,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildNameCreatWidget(context, ref, l10n, state, notifier, 0),
+          _buildNameCreatWidget(context, ref, l10n, state, notifier),
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
-          _buildSexPickerWidget(context, ref, l10n, state, notifier, 1),
+          _buildSexPickerWidget(context, ref, l10n, state, notifier),
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
-          _buildBirthdayPickWidget(context, ref, l10n, state, notifier, 2),
+          _buildBirthdayPickWidget(context, ref, l10n, state, notifier),
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
-          Expanded(
-            child: _buildHeightPickerWidget(
-              context,
-              ref,
-              l10n,
-              state,
-              notifier,
-              3,
-            ),
-          ),
+          _buildHeightPickerWidget(context, ref, l10n, state, notifier),
           const Divider(color: Color.fromARGB(167, 34, 34, 34), indent: 10),
-          Expanded(
-            child: _buildWeightPickerWidget(
-              context,
-              ref,
-              l10n,
-              state,
-              notifier,
-              4,
-            ),
-          ),
+          _buildWeightPickerWidget(context, ref, l10n, state, notifier),
+          SizedBox(height: 10.r),
         ],
       ),
     );
@@ -253,15 +240,15 @@ class UserSettingsPage extends ConsumerWidget {
     AppLocalizations l10n,
     state,
     notifier,
-    int index,
   ) {
-    return Expanded(
-      child: InkWell(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        onTap: () {
-          _showNickNameDialog(context, ref, l10n, state, notifier);
-        },
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () {
+        _showNickNameDialog(context, ref, l10n, state, notifier);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
         child: Row(
           children: [
             Container(
@@ -269,23 +256,23 @@ class UserSettingsPage extends ConsumerWidget {
               child: Image.asset(
                 "images/newUIScreen/icons/icon_about_head_0.png",
                 color: FitTheme.buttonColor,
-                width: 25.r,
-                height: 25.r,
+                width: 28.r,
+                height: 28.r,
               ),
             ),
             Text(
               l10n.nickname,
-              style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
             ),
             const Spacer(),
             Text(
               state.nickName,
-              style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
             ),
             SizedBox(width: 20.r),
             Icon(
               Icons.arrow_forward_ios,
-              size: 30.sp,
+              size: 28.sp,
               color: FitTheme.textColor,
             ),
           ],
@@ -300,15 +287,15 @@ class UserSettingsPage extends ConsumerWidget {
     AppLocalizations l10n,
     state,
     notifier,
-    int index,
   ) {
-    return Expanded(
-      child: InkWell(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        onTap: () {
-          _showSexPickerBottomSheet(context, ref, l10n, state, notifier);
-        },
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () {
+        _showSexPickerBottomSheet(context, ref, l10n, state, notifier);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
         child: Row(
           children: [
             Container(
@@ -316,23 +303,23 @@ class UserSettingsPage extends ConsumerWidget {
               child: Image.asset(
                 "images/newUIScreen/icons/icon_about_head_4.png",
                 color: FitTheme.buttonColor,
-                width: 25.r,
-                height: 25.r,
+                width: 28.r,
+                height: 28.r,
               ),
             ),
             Text(
               l10n.gender,
-              style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
             ),
             const Spacer(),
             Text(
               state.gander ? l10n.male : l10n.female,
-              style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
             ),
             SizedBox(width: 20.r),
             Icon(
               Icons.arrow_forward_ios,
-              size: 30.sp,
+              size: 28.sp,
               color: FitTheme.textColor,
             ),
           ],
@@ -347,15 +334,15 @@ class UserSettingsPage extends ConsumerWidget {
     AppLocalizations l10n,
     state,
     notifier,
-    int index,
   ) {
-    return Expanded(
-      child: InkWell(
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        onTap: () {
-          _showDatePickerBottomSheet(context, ref, l10n, state, notifier);
-        },
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () {
+        _showDatePickerBottomSheet(context, ref, l10n, state, notifier);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
         child: Row(
           children: [
             Container(
@@ -363,23 +350,23 @@ class UserSettingsPage extends ConsumerWidget {
               child: Image.asset(
                 "images/newUIScreen/icons/icon_about_head_2.png",
                 color: FitTheme.buttonColor,
-                width: 25.r,
-                height: 25.r,
+                width: 28.r,
+                height: 28.r,
               ),
             ),
             Text(
               l10n.birthday,
-              style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
             ),
             const Spacer(),
             Text(
               state.birthday,
-              style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
             ),
             SizedBox(width: 20.r),
             Icon(
               Icons.arrow_forward_ios,
-              size: 30.sp,
+              size: 28.sp,
               color: FitTheme.textColor,
             ),
           ],
@@ -394,7 +381,6 @@ class UserSettingsPage extends ConsumerWidget {
     AppLocalizations l10n,
     state,
     notifier,
-    int index,
   ) {
     return InkWell(
       splashColor: Colors.transparent,
@@ -402,29 +388,36 @@ class UserSettingsPage extends ConsumerWidget {
       onTap: () {
         _showHeightPickerBottomSheet(context, ref, l10n, state, notifier);
       },
-      child: Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(right: 10).r,
-            child: Image.asset(
-              "images/newUIScreen/icons/icon_about_head_1.png",
-              color: FitTheme.buttonColor,
-              width: 25.r,
-              height: 25.r,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Row(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(right: 10).r,
+              child: Image.asset(
+                "images/newUIScreen/icons/icon_about_head_1.png",
+                color: FitTheme.buttonColor,
+                width: 28.r,
+                height: 28.r,
+              ),
             ),
-          ),
-          Text(
-            l10n.height,
-            style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
-          ),
-          const Spacer(),
-          Text(
-            state.bodyHeight.toString(),
-            style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
-          ),
-          SizedBox(width: 20.r),
-          Icon(Icons.arrow_forward_ios, size: 30.sp, color: FitTheme.textColor),
-        ],
+            Text(
+              l10n.height,
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
+            ),
+            const Spacer(),
+            Text(
+              state.bodyHeight.toString(),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
+            ),
+            SizedBox(width: 20.r),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 28.sp,
+              color: FitTheme.textColor,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -435,7 +428,6 @@ class UserSettingsPage extends ConsumerWidget {
     AppLocalizations l10n,
     state,
     notifier,
-    int index,
   ) {
     return InkWell(
       splashColor: Colors.transparent,
@@ -443,32 +435,45 @@ class UserSettingsPage extends ConsumerWidget {
       onTap: () {
         _showWeightPickerBottomSheet(context, ref, l10n, state, notifier);
       },
-      child: Row(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(right: 10).r,
-            child: Image.asset(
-              "images/newUIScreen/icons/icon_about_head_3.png",
-              color: FitTheme.buttonColor,
-              width: 25.r,
-              height: 25.r,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Row(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(right: 10).r,
+              child: Image.asset(
+                "images/newUIScreen/icons/icon_about_head_3.png",
+                color: FitTheme.buttonColor,
+                width: 28.r,
+                height: 28.r,
+              ),
             ),
-          ),
-          Text(
-            l10n.weight,
-            style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
-          ),
-          const Spacer(),
-          Text(
-            state.bodyWeight.toString(),
-            style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
-          ),
-          SizedBox(width: 20.r),
-          Icon(Icons.arrow_forward_ios, size: 30.sp, color: FitTheme.textColor),
-        ],
+            Text(
+              l10n.weight,
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
+            ),
+            const Spacer(),
+            Text(
+              state.bodyWeight.toString(),
+              style: TextStyle(fontSize: 28.sp, color: FitTheme.textColor),
+            ),
+            SizedBox(width: 20.r),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 28.sp,
+              color: FitTheme.textColor,
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  // ---- 统一弹窗规范：参照 body_data_page.dart ----
+  // backgroundColor: Colors.transparent
+  // height: 280, margin: all(10), padding: symmetric(h:10, v:5)
+  // 白色背景 borderRadius 10, 标题居中 fontSize 20 bold
+  // CupertinoPicker: offAxisFraction: 0, diameterRatio: 1.0
 
   void _showNickNameDialog(
     BuildContext context,
@@ -479,93 +484,74 @@ class UserSettingsPage extends ConsumerWidget {
   ) {
     final textController = TextEditingController(text: state.nickName);
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: FitTheme.backgroundColor,
-          insetPadding: EdgeInsets.only(left: 45, right: 45).r,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
           child: Container(
-            padding: EdgeInsets.all(25).r,
-            height: 400.r,
-            width: 600.r,
+            height: 280,
+            margin: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: FitTheme.secondbackGround,
-              borderRadius: BorderRadius.circular(40).r,
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                SizedBox(height: 15.h),
                 Text(
                   l10n.setNickName,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 40.sp,
-                    fontFamily: AppFonts.hofontblod,
                     color: FitTheme.textColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  l10n.theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
-                ),
-                Container(
-                  height: 80.r,
-                  margin: EdgeInsets.only(left: 25, right: 25, top: 0).r,
+                SizedBox(height: 20.h),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: TextField(
                     controller: textController,
-                    style: TextStyle(
-                      color: FitTheme.textColor,
-                      fontSize: 24.sp,
+                    autofocus: true,
+                    style: TextStyle(color: FitTheme.textColor, fontSize: 18),
+                    decoration: InputDecoration(
+                      hintText: l10n
+                          .theNicknameIsUsedToHideYourRealNameOtherUsersInTheSystemCanSeeYourNickname,
+                      hintStyle: TextStyle(
+                        color: FitTheme.textColor.withValues(alpha: 0.5),
+                        fontSize: 14,
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: FitTheme.buttonColor),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                          color: FitTheme.buttonColor,
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                Container(
-                  height: 30,
-                  width: MediaQuery.of(context).size.width,
-                  alignment: Alignment.center,
-                  margin: const EdgeInsets.only(top: 0, bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 200.w,
-                          height: 80.r,
-                          child: Text(
-                            l10n.cancel,
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                        ),
-                      ),
-                      InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () {
-                          if (textController.text.length > 3) {
-                            notifier.updateNickName(textController.text);
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          width: 100,
-                          height: 40,
-                          child: Text(
-                            l10n.confirm,
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                const Spacer(),
+                _buildButtonGroup(
+                  l10n,
+                  onCancel: () => Navigator.pop(ctx),
+                  onConfirm: () {
+                    final name = textController.text.trim();
+                    if (name.isNotEmpty && name.length > 1) {
+                      print('🎯 [UserSettings] update nickname: $name');
+                      notifier.updateNickName(name);
+                    }
+                    Navigator.pop(ctx);
+                  },
                 ),
               ],
             ),
@@ -579,158 +565,107 @@ class UserSettingsPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    state,
+    UserSettingsState state,
     notifier,
   ) {
+    final currentSex = state.gander;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: FitTheme.backgroundColor,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      builder: (context) {
+      builder: (ctx) {
         return Container(
-          height: 230,
+          height: 280,
           margin: const EdgeInsets.all(10),
-          padding: const EdgeInsets.only(
-            top: 20,
-            left: 20,
-            right: 20,
-            bottom: 20,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: FitTheme.secondbackGround,
             borderRadius: BorderRadius.circular(10),
           ),
-          alignment: Alignment.topLeft,
-          width: MediaQuery.of(context).size.width,
-          child: RadioGroup<double>(
-            groupValue: state.gander ? 0 : 1,
-            onChanged: (double? value) {
-              if (value == 0) {
-                notifier.updateGender(true);
-              } else {
-                notifier.updateGender(false);
-              }
-              Navigator.of(context).pop();
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.genderSelection,
-                  style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
+          child: Column(
+            children: [
+              SizedBox(height: 15.h),
+              Text(
+                l10n.genderSelection,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: FitTheme.textColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                Container(
-                  margin: EdgeInsets.only(top: 20).r,
-                  height: 40,
-                  alignment: Alignment.centerLeft,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            l10n.male,
-                            style: TextStyle(
-                              color: FitTheme.textColor,
-                              fontSize: 25.sp,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: Radio<double>(
-                              value: 0,
-                              fillColor:
-                                  WidgetStateProperty.resolveWith<Color?>((
-                                    states,
-                                  ) {
-                                    if (states.contains(WidgetState.selected)) {
-                                      return FitTheme.buttonColor;
-                                    }
-                                    return null;
-                                  }),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        height: 9,
-                        indent: 0,
-                        endIndent: 0,
-                        color: Color.fromARGB(47, 132, 129, 129),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  height: 40,
-                  margin: EdgeInsets.only(top: 20),
-                  alignment: Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            l10n.female,
-                            style: TextStyle(
-                              color: FitTheme.textColor,
-                              fontSize: 25.sp,
-                            ),
-                          ),
-                          SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: Radio<double>(
-                              value: 1,
-                              fillColor:
-                                  WidgetStateProperty.resolveWith<Color?>((
-                                    states,
-                                  ) {
-                                    if (states.contains(WidgetState.selected)) {
-                                      return FitTheme.buttonColor;
-                                    }
-                                    return null;
-                                  }),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        height: 9,
-                        indent: 0,
-                        endIndent: 0,
-                        color: Color.fromARGB(47, 132, 129, 129),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(
-                        l10n.cancel,
-                        style: TextStyle(color: Colors.white, fontSize: 25.sp),
-                      ),
+              ),
+              SizedBox(height: 20.h),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: RadioGroup<int>(
+                    groupValue: currentSex ? 0 : 1,
+                    onChanged: (int? value) {
+                      if (value == 0) {
+                        print('🎯 [UserSettings] select gender: male');
+                        notifier.updateGender(true);
+                      } else {
+                        print('🎯 [UserSettings] select gender: female');
+                        notifier.updateGender(false);
+                      }
+                      Navigator.pop(ctx);
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSexRadioRow(l10n.male, 0),
+                        const Divider(
+                          height: 9,
+                          color: Color.fromARGB(47, 132, 129, 129),
+                        ),
+                        _buildSexRadioRow(l10n.female, 1),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              _buildButtonGroup(
+                l10n,
+                onCancel: () => Navigator.pop(ctx),
+                onConfirm: () => Navigator.pop(ctx),
+              ),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSexRadioRow(String label, int value) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      child: SizedBox(
+        height: 50,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(color: FitTheme.textColor, fontSize: 18),
+            ),
+            SizedBox(
+              height: 24,
+              width: 24,
+              child: Radio<int>(
+                value: value,
+                fillColor: WidgetStateProperty.resolveWith<Color?>((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return FitTheme.buttonColor;
+                  }
+                  return null;
+                }),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -741,53 +676,79 @@ class UserSettingsPage extends ConsumerWidget {
     state,
     notifier,
   ) {
+    // 解析当前生日
+    DateTime initialDate = DateTime(2000, 1, 1);
+    try {
+      final parts = state.birthday.split('-');
+      if (parts.length == 3) {
+        initialDate = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
+      }
+    } catch (_) {}
+
+    DateTime selectedDate = initialDate;
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      builder: (context) {
+      builder: (ctx) {
         return Container(
-          margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(10),
+          height: 280,
+          margin: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: FitTheme.secondbackGround,
             borderRadius: BorderRadius.circular(10),
           ),
-          width: MediaQuery.of(context).size.width,
-          height: 300,
           child: Column(
             children: [
+              SizedBox(height: 15.h),
               Text(
                 l10n.dateSelection,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: FitTheme.textColor,
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10.h),
               Expanded(
                 child: CupertinoTheme(
                   data: CupertinoThemeData(
                     textTheme: CupertinoTextThemeData(
                       dateTimePickerTextStyle: TextStyle(
                         color: FitTheme.textColor,
-                        fontSize: 15,
+                        fontSize: 18,
                       ),
                     ),
                   ),
                   child: CupertinoDatePicker(
                     backgroundColor: FitTheme.secondbackGround,
-                    initialDateTime: DateTime(2022, 1, 1),
+                    initialDateTime: initialDate,
+                    maximumDate: DateTime.now(),
                     mode: CupertinoDatePickerMode.date,
                     onDateTimeChanged: (DateTime date) {
-                      final birthday =
-                          "${date.year}-${date.month.toString().padLeft(2, "0")}-${date.day.toString().padLeft(2, "0")}";
-                      notifier.updateBirthday(birthday);
+                      selectedDate = date;
                     },
                   ),
                 ),
               ),
-              _buildConfirmButtonGroup(context, l10n),
+              _buildButtonGroup(
+                l10n,
+                onCancel: () => Navigator.pop(ctx),
+                onConfirm: () {
+                  final birthday =
+                      "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, "0")}-${selectedDate.day.toString().padLeft(2, "0")}";
+                  print('🎯 [UserSettings] update birthday: $birthday');
+                  notifier.updateBirthday(birthday);
+                  Navigator.pop(ctx);
+                },
+              ),
             ],
           ),
         );
@@ -802,61 +763,78 @@ class UserSettingsPage extends ConsumerWidget {
     state,
     notifier,
   ) {
+    final initialPosition = state.heightPosition;
+    int tempPosition = initialPosition;
+
     showModalBottomSheet(
       context: context,
-      builder: (context) {
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      builder: (ctx) {
         return Container(
-          height: 300,
-          margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(10),
+          height: 280,
+          margin: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: FitTheme.secondbackGround,
             borderRadius: BorderRadius.circular(10),
           ),
-          alignment: Alignment.topLeft,
-          width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
+              SizedBox(height: 15.h),
               Text(
                 l10n.height,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: FitTheme.textColor,
-                  fontSize: 40.sp,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
               Expanded(
                 child: CupertinoPicker(
-                  squeeze: 1.3,
+                  backgroundColor: FitTheme.secondbackGround,
+                  squeeze: 1.2,
                   itemExtent: 40,
                   looping: false,
                   magnification: 1,
-                  diameterRatio: 0.9,
-                  offAxisFraction: 0.3,
-                  onSelectedItemChanged: (position) {
-                    notifier.updateHeight(position + 100);
-                  },
+                  diameterRatio: 1.0,
+                  offAxisFraction: 0,
                   scrollController: FixedExtentScrollController(
-                    initialItem: state.heightPosition,
+                    initialItem: initialPosition,
                   ),
-                  children: <Widget>[
+                  onSelectedItemChanged: (p) => tempPosition = p,
+                  children: [
                     for (int i = 100; i <= 240; i++)
                       Center(
                         child: Text(
-                          "${i}cm",
-                          style: TextStyle(color: FitTheme.textColor),
+                          '${i}cm',
+                          style: TextStyle(
+                            color: FitTheme.textColor,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                   ],
                 ),
               ),
-              _buildConfirmButtonGroup(context, l10n),
+              _buildButtonGroup(
+                l10n,
+                onCancel: () {
+                  print('🎯 [UserSettings] height cancel, rollback');
+                  Navigator.pop(ctx);
+                },
+                onConfirm: () {
+                  final height = tempPosition + 100;
+                  print('🎯 [UserSettings] confirm height: $height');
+                  notifier.updateHeight(height);
+                  Navigator.pop(ctx);
+                },
+              ),
             ],
           ),
         );
       },
-      elevation: 0,
     );
   }
 
@@ -867,68 +845,88 @@ class UserSettingsPage extends ConsumerWidget {
     state,
     notifier,
   ) {
+    final initialPosition = state.weightPosition;
+    int tempPosition = initialPosition;
+
     showModalBottomSheet(
       context: context,
-      builder: (context) {
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      builder: (ctx) {
         return Container(
-          height: 300,
-          margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(10),
+          height: 280,
+          margin: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: FitTheme.secondbackGround,
             borderRadius: BorderRadius.circular(10),
           ),
-          alignment: Alignment.topLeft,
-          width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
+              SizedBox(height: 15.h),
               Text(
                 l10n.weight,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: FitTheme.textColor,
-                  fontSize: 40.sp,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 20),
               Expanded(
                 child: CupertinoPicker(
-                  squeeze: 1.3,
+                  backgroundColor: FitTheme.secondbackGround,
+                  squeeze: 1.2,
                   itemExtent: 40,
                   looping: false,
                   magnification: 1,
-                  diameterRatio: 0.9,
-                  offAxisFraction: 0.3,
-                  onSelectedItemChanged: (position) {
-                    notifier.updateWeight(position + 40);
-                  },
+                  diameterRatio: 1.0,
+                  offAxisFraction: 0,
                   scrollController: FixedExtentScrollController(
-                    initialItem: state.weightPosition,
+                    initialItem: initialPosition,
                   ),
-                  children: <Widget>[
-                    for (int i = 40; i <= 120; i++)
+                  onSelectedItemChanged: (p) => tempPosition = p,
+                  children: [
+                    for (int i = 40; i <= 200; i++)
                       Center(
                         child: Text(
-                          "${i}kg",
-                          style: TextStyle(color: FitTheme.textColor),
+                          '${i}kg',
+                          style: TextStyle(
+                            color: FitTheme.textColor,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
                   ],
                 ),
               ),
-              _buildConfirmButtonGroup(context, l10n),
+              _buildButtonGroup(
+                l10n,
+                onCancel: () {
+                  print('🎯 [UserSettings] weight cancel, rollback');
+                  Navigator.pop(ctx);
+                },
+                onConfirm: () {
+                  final weight = tempPosition + 40;
+                  print('🎯 [UserSettings] confirm weight: $weight');
+                  notifier.updateWeight(weight);
+                  Navigator.pop(ctx);
+                },
+              ),
             ],
           ),
         );
       },
-      elevation: 0,
     );
   }
 
-  Widget _buildConfirmButtonGroup(BuildContext context, AppLocalizations l10n) {
+  Widget _buildButtonGroup(
+    AppLocalizations l10n, {
+    required VoidCallback onCancel,
+    required VoidCallback onConfirm,
+  }) {
     return SizedBox(
       height: 60,
-      width: MediaQuery.of(context).size.width,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -936,26 +934,22 @@ class UserSettingsPage extends ConsumerWidget {
           InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onTap: () {
-              Navigator.of(context).pop();
-            },
+            onTap: onCancel,
             child: Text(
               l10n.cancel,
-              style: TextStyle(fontSize: 30.sp, color: FitTheme.buttonColor),
+              style: TextStyle(fontSize: 18, color: FitTheme.buttonColor),
             ),
           ),
-          SizedBox(width: 50),
+          const SizedBox(width: 50),
           Container(color: Colors.grey, width: 0.3, height: 30),
-          SizedBox(width: 50),
+          const SizedBox(width: 50),
           InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onTap: () {
-              Navigator.of(context).pop();
-            },
+            onTap: onConfirm,
             child: Text(
               l10n.confirm,
-              style: TextStyle(fontSize: 30.sp, color: FitTheme.buttonColor),
+              style: TextStyle(fontSize: 18, color: FitTheme.buttonColor),
             ),
           ),
         ],

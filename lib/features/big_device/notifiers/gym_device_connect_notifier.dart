@@ -37,13 +37,13 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   void _setupServiceCallbacks() {
     // 设备发现回调
     _service.onDevicesUpdated = (names) {
-      debugPrint('[ConnectNotifier] onDevicesUpdated: ${names.length} devices found: $names');
+      debugPrint('[Notifier] onDevicesUpdated: ${names.length} devices found');
       state = state.copyWith(foundDeviceNames: names);
     };
 
     // 搜索状态回调
     _service.onScanningChanged = (scanning) {
-      debugPrint('[ConnectNotifier] onScanningChanged: isSearching=$scanning');
+      debugPrint('[Notifier] onScanningChanged: isSearching=$scanning');
       state = state.copyWith(isSearching: scanning);
     };
 
@@ -60,18 +60,15 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   void _handleConnectionEvent(BluetoothConnectionEvent event) {
     switch (event) {
       case BluetoothConnectionEvent.bluetoothConnected:
-        debugPrint('[ConnectNotifier] === Layer 1: BLUETOOTH CONNECTED ===');
-        state = state.copyWith(
-          isBluetoothConnected: true,
-          isConnecting: false,
-        );
+        debugPrint('[Notifier] === Layer 1: BLUETOOTH CONNECTED ===');
+        state = state.copyWith(isBluetoothConnected: true, isConnecting: false);
         // 记录已连接(用于断连 Toast 防护)
         state = state.copyWith(hasConnectedOnce: true);
         // 触发 FTMS 服务初始化,等待 Layer 2 数据就绪
         _initializeFtmsService();
 
       case BluetoothConnectionEvent.bluetoothDisconnected:
-        debugPrint('[ConnectNotifier] === BLUETOOTH DISCONNECTED ===');
+        debugPrint('[Notifier] === BLUETOOTH DISCONNECTED ===');
         // 重置所有状态
         state = state.copyWith(
           isBluetoothConnected: false,
@@ -80,7 +77,7 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
         );
         // 只有曾经连接过才显示断连提示(对应旧 _hasConnected 逻辑)
         if (state.hasConnectedOnce) {
-          debugPrint('[ConnectNotifier] Showing disconnect toast');
+          debugPrint('[Notifier] showing disconnect toast');
           Fluttertoast.showToast(msg: 'deviceDisconnected');
         }
         // 清空设备列表
@@ -101,15 +98,19 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   /// }
   /// ```
   void markEquipmentReady() {
-    if (state.isEquipmentConnected) return;
-    debugPrint('[ConnectNotifier] === Layer 2: EQUIPMENT READY ===');
+    if (state.isEquipmentConnected) {
+      debugPrint('[Notifier] markEquipmentReady: already marked, skip');
+      return;
+    }
+    debugPrint('[Notifier] === Layer 2: EQUIPMENT READY ===');
     state = state.copyWith(isEquipmentConnected: true);
     Fluttertoast.showToast(msg: 'connected');
+    debugPrint('[Notifier] ✅ device fully connected & ready');
   }
 
   void setDeviceCategory(FtmsDeviceType category) {
     _deviceCategory = category;
-    debugPrint('[ConnectNotifier] setDeviceCategory: $category');
+    debugPrint('[Notifier] setDeviceCategory: $category');
   }
 
   /// 蓝牙连接建立后,初始化 FTMS 服务。
@@ -117,21 +118,36 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   /// 对应旧代码中 `connectSmartBike()` 里的 `bikeBluetoothTools().discoverS(...)` 调用。
   /// FTMS 服务内部会发现特征并开始订阅数据,收到第一个数据包后调用 [markEquipmentReady]。
   void _initializeFtmsService() {
-    debugPrint('[ConnectNotifier] _initializeFtmsService for $_deviceCategory');
+    debugPrint('[Notifier] === _initializeFtmsService BEGIN ===');
+    debugPrint('[Notifier] deviceCategory=$_deviceCategory');
+
     try {
       final ftmsService = ref.read(ftmsServiceProvider(_deviceCategory));
       if (ftmsService != null) {
-        debugPrint('[ConnectNotifier] FTMS service created, isReady=${ftmsService.isReady}');
-        // 如果 FTMS 服务已经就绪(罕见情况),直接标记
-        if (ftmsService.isReady) {
+        debugPrint(
+          '[Notifier] FTMS service created, isReady=${ftmsService.isReady}, hasFirstData=${ftmsService.hasReceivedFirstData}',
+        );
+
+        // 设置 Layer 2 就绪回调
+        ftmsService.onDataReady = (_) {
+          debugPrint('[Notifier] 📡 onDataReady callback triggered');
+          markEquipmentReady();
+        };
+
+        // 双保险: 如果已经收到首个数据(罕见竞态),直接标记就绪
+        if (ftmsService.hasReceivedFirstData) {
+          debugPrint(
+            '[Notifier] ⚠️ first data already received, marking immediately',
+          );
           markEquipmentReady();
         }
       } else {
-        debugPrint('[ConnectNotifier] FTMS service is null (device not ready yet)');
+        debugPrint('[Notifier] ⚠️ FTMS service is null, will retry on rebuild');
       }
     } catch (e) {
-      debugPrint('[ConnectNotifier] _initializeFtmsService error: $e');
+      debugPrint('[Notifier] ❌ _initializeFtmsService error: $e');
     }
+    debugPrint('[Notifier] === _initializeFtmsService END ===');
   }
 
   /// 获取当前设备类型的 FTMS 服务实例(供其他 Notifier 调用)。
@@ -139,7 +155,7 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
     try {
       return ref.read(ftmsServiceProvider(_deviceCategory));
     } catch (e) {
-      debugPrint('[ConnectNotifier] ftmsService getter error: $e');
+      debugPrint('[Notifier] ftmsService getter error: $e');
       return null;
     }
   }
@@ -151,7 +167,9 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   /// - 权限被拒或蓝牙未开 → 显示 Toast，return 不继续扫描
   Future<void> startDeviceScan([BuildContext? context]) async {
     final whitelist = DeviceWhitelist.forType(_deviceCategory);
-    debugPrint('🔐 [BTPerm] startDeviceScan called, type=$_deviceCategory, whitelist=$whitelist');
+    debugPrint(
+      '🔐 [BTPerm] startDeviceScan called, type=$_deviceCategory, whitelist=$whitelist',
+    );
 
     // 防重复：已搜索中直接 return
     if (state.isSearching) {
@@ -162,7 +180,9 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
     // === 1. 权限检查 + 主动请求（有 context 才请求） ===
     bool permissionOk;
     if (context != null && context.mounted) {
-      permissionOk = await BluetoothPermission.ensureInformedAndRequest(context);
+      permissionOk = await BluetoothPermission.ensureInformedAndRequest(
+        context,
+      );
       debugPrint('🔐 [BTPerm] ensureInformedAndRequest result = $permissionOk');
     } else {
       permissionOk = await BluetoothPermission.isGranted();
@@ -172,7 +192,9 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
     if (!permissionOk) {
       // 权限未授予 → 取提示文案 Toast 提示
       final deniedMsg = await BluetoothPermission.checkPermissions();
-      debugPrint('🔐 [BTPerm] permission denied, deniedMsg=${deniedMsg?.substring(0, deniedMsg.length > 60 ? 60 : deniedMsg.length)}...');
+      debugPrint(
+        '🔐 [BTPerm] permission denied, deniedMsg=${deniedMsg?.substring(0, deniedMsg.length > 60 ? 60 : deniedMsg.length)}...',
+      );
       if (deniedMsg != null) {
         Fluttertoast.showToast(msg: deniedMsg);
       }
@@ -200,7 +222,7 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   }
 
   Future<void> stopScan() async {
-    debugPrint('[ConnectNotifier] stopScan');
+    debugPrint('[Notifier] stopScan');
     await _service.stopScan();
     state = state.copyWith(isSearching: false);
   }
@@ -218,13 +240,15 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   /// }
   /// ```
   Future<void> connectSelectedDevice(String deviceName) async {
-    debugPrint('[ConnectNotifier] connectSelectedDevice: "$deviceName"');
+    debugPrint('[Notifier] === connectSelectedDevice BEGIN ===');
+    debugPrint('[Notifier] deviceName="$deviceName"');
     // 标记连接中状态
     state = state.copyWith(isConnecting: true);
     // 持久化设备名
     await _persistDeviceName(deviceName);
     // 执行连接(Layer 1)
     await _service.connect(deviceName);
+    debugPrint('[Notifier] === connectSelectedDevice END ===');
   }
 
   Future<void> _persistDeviceName(String name) async {
@@ -256,13 +280,14 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
 
   /// 停止运动并断开设备。
   Future<void> haltSport() async {
-    debugPrint('[ConnectNotifier] haltSport');
+    debugPrint('[Notifier] === haltSport BEGIN ===');
     await _service.disconnect();
     state = state.copyWith(
       isBluetoothConnected: false,
       isEquipmentConnected: false,
       isConnecting: false,
     );
+    debugPrint('[Notifier] === haltSport END ===');
   }
 
   /// 断开已有连接(用于切换设备时调用)。
@@ -274,7 +299,7 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   /// }
   /// ```
   void disconnectIfAny() {
-    debugPrint('[ConnectNotifier] disconnectIfAny');
+    debugPrint('[Notifier] disconnectIfAny');
     _service.disconnectIfAny();
     // 立即重置状态(不等回调)
     state = state.copyWith(
@@ -282,6 +307,7 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
       isEquipmentConnected: false,
       isConnecting: false,
     );
+    debugPrint('[Notifier] ✅ state reset after disconnectIfAny');
   }
 
   /// 测试用: 直接标记设备已就绪(跳过双保险判定)。

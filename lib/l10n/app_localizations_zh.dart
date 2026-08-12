@@ -78,6 +78,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get userAgreementAndPrivacyPolicy => '<用户协议和隐私政策>';
 
   @override
+  String get userAgreement => '<用户协议>';
+
+  @override
+  String get privacyPolicy => '<隐私政策>';
+
+  @override
   String get incorrectAccountOrPassword => '账号或密码错误';
 
   @override

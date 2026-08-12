@@ -1,30 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
+import '../../../data/models/network/sport_history.dart';
 import '../models/record_equipment_type.dart';
+import '../notifiers/record_detail_notifier.dart';
 
-/// 记录详情页（空界面骨架）。
+/// 记录详情页（单次运动数据详情 + 上一次记录对比）。
 ///
 /// 对应旧项目 new_record_interface_second_level_screen.dart。
-/// 当前阶段：仅 UI 骨架 + 占位数据，无网络请求。
-/// 数据卡显示 0 占位，"上一次记录"区域显示占位。
-class RecordDetailPage extends StatefulWidget {
+/// 当前阶段：Mock 数据驱动，数据来自路由参数 + RecordDetailNotifier。
+class RecordDetailPage extends ConsumerStatefulWidget {
   final RecordEquipmentType equipmentType;
+  final SportHistory? record;
 
   const RecordDetailPage({
     super.key,
     this.equipmentType = RecordEquipmentType.all,
+    this.record,
   });
 
   @override
-  State<RecordDetailPage> createState() => _RecordDetailPageState();
+  ConsumerState<RecordDetailPage> createState() => _RecordDetailPageState();
 }
 
-class _RecordDetailPageState extends State<RecordDetailPage> {
+class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.record != null) {
+        ref.read(recordDetailProvider.notifier).loadDetail(widget.record!);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(recordDetailProvider);
+    final current = state.currentRecord;
+    final previous = state.previousRecord;
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: FitTheme.backgroundColor,
@@ -76,20 +94,22 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
           centerTitle: false,
           scrolledUnderElevation: 0,
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildNewContainerPlaceholder(),
-              _buildLastRecordPlaceholder(),
-            ],
-          ),
-        ),
+        body: state.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildNewContainer(current),
+                    _buildLastRecord(previous),
+                  ],
+                ),
+              ),
       ),
     );
   }
 
-  /// 当前记录数据卡区域（Wrap 占位）。
-  Widget _buildNewContainerPlaceholder() {
+  Widget _buildNewContainer(SportHistory? record) {
+    final r = record;
     return Container(
       margin: const EdgeInsets.all(25).r,
       alignment: Alignment.topCenter,
@@ -97,20 +117,53 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         spacing: 20.r,
         runSpacing: 20.r,
         children: [
-          _buildDataCardPlaceholder('运动次数', '0', '次', Icons.repeat),
-          _buildDataCardPlaceholder('时长', '00:00:00', '分钟', Icons.timer),
-          _buildDataCardPlaceholder(
-              '卡路里', '0', 'kcal', Icons.local_fire_department),
-          _buildDataCardPlaceholder('平均心率', '--', 'bpm', Icons.favorite),
-          _buildDataCardPlaceholder('速度', '0', '次/分钟', Icons.speed),
-          _buildDataCardPlaceholder('运动模式', '自由', '', Icons.swap_horiz),
+          _buildDataCard(
+            '运动次数',
+            '${r?.count ?? 0}',
+            '次',
+            'images/newUIScreen/icons/record_action.png',
+          ),
+          _buildDataCard(
+            '时长',
+            _formatDuration(r?.duringTime ?? 0),
+            '分钟',
+            'images/newUIScreen/icons/record_during.png',
+          ),
+          _buildDataCard(
+            '卡路里',
+            (r?.calories ?? 0).toStringAsFixed(0),
+            'kcal',
+            'images/newUIScreen/icons/record_heat.png',
+          ),
+          _buildDataCard(
+            '平均心率',
+            '--',
+            'bpm',
+            'images/newUIScreen/icons/record_heartBpm.png',
+          ),
+          _buildDataCard(
+            '速度',
+            _calcSpeed(r),
+            '次/分钟',
+            'images/newUIScreen/icons/record_speed.png',
+          ),
+          _buildDataCard(
+            '运动模式',
+            _getModeName(r?.mode ?? 0),
+            '',
+            'images/newUIScreen/icons/record_moden.png',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildDataCardPlaceholder(
-      String title, String value, String unit, IconData icon) {
+  Widget _buildDataCard(
+    String title,
+    String value,
+    String unit,
+    String iconAsset,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: FitTheme.secondbackGround,
@@ -148,10 +201,11 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               Container(
                 alignment: Alignment.centerRight,
                 height: 80.h,
-                child: Icon(
-                  icon,
-                  color: FitTheme.textColor,
-                  size: 40,
+                child: Image.asset(
+                  iconAsset,
+                  // color: FitTheme.textColor,
+                  width: 100.r,
+                  height: 100.r,
                 ),
               ),
             ],
@@ -174,8 +228,8 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
   }
 
-  /// "上一次记录"对比卡占位。
-  Widget _buildLastRecordPlaceholder() {
+  Widget _buildLastRecord(SportHistory? previous) {
+    final p = previous;
     return Card(
       color: FitTheme.secondbackGround,
       margin: const EdgeInsets.only(left: 25, right: 25, top: 0).r,
@@ -200,7 +254,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                   SizedBox(
                     width: 140,
                     child: Text(
-                      '2026/01/01',
+                      _formatDate(p?.startTime ?? ''),
                       style: TextStyle(
                         fontSize: 25.sp,
                         color: FitTheme.textColor,
@@ -215,9 +269,15 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildLastRecordItem('次数', '0'),
-                  _buildLastRecordItem('时长', '00:00:00'),
-                  _buildLastRecordItem('卡路里', '0'),
+                  _buildLastRecordItem('次数', '${p?.count ?? 0}'),
+                  _buildLastRecordItem(
+                    '时长',
+                    _formatDuration(p?.duringTime ?? 0),
+                  ),
+                  _buildLastRecordItem(
+                    '卡路里',
+                    (p?.calories ?? 0).toStringAsFixed(0),
+                  ),
                 ],
               ),
             ),
@@ -235,10 +295,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: FitTheme.textColor,
-              fontSize: 25.sp,
-            ),
+            style: TextStyle(color: FitTheme.textColor, fontSize: 25.sp),
           ),
           Text(
             value,
@@ -251,5 +308,40 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         ],
       ),
     );
+  }
+
+  String _formatDuration(int seconds) {
+    final mins = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  String _calcSpeed(SportHistory? r) {
+    if (r == null || r.duringTime == 0) return '0';
+    final speed = (r.count ?? 0) / (r.duringTime! / 60);
+    return speed.toStringAsFixed(1);
+  }
+
+  String _getModeName(int mode) {
+    switch (mode) {
+      case 0:
+        return '自由';
+      case 1:
+        return '模式一';
+      case 2:
+        return '模式二';
+      default:
+        return '自由';
+    }
+  }
+
+  String _formatDate(String dateStr) {
+    if (dateStr.isEmpty) return '';
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
   }
 }

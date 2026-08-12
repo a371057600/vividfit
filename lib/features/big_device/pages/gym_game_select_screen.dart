@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../core/ftms/ftms_device_type.dart';
+import '../notifiers/gym_game_select_notifier.dart';
+import '../notifiers/quick_start_notifier.dart';
 
-/// 游戏选择页（对应旧 big_device_game_select.dart 的 GameSelect）
-/// 1:1 还原UI，使用mock数据，业务逻辑全部置空
+/// 游戏选择页（对应旧 big_device_game_select.dart 的 GameSelect）。
+///
+/// UI 1:1 保持原样不改动；业务逻辑通过 ref.watch/ref.read 连接 Riverpod Notifier：
+/// - 音乐 / 轮播 / 游戏路由 → GymGameSelectNotifier
+/// - 运动数据 / START-STOP → QuickStartNotifier（复用）
 class GymGameSelectScreen extends ConsumerStatefulWidget {
   final FtmsDeviceType deviceType;
 
@@ -20,149 +26,73 @@ class GymGameSelectScreen extends ConsumerStatefulWidget {
 }
 
 class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
-  // Mock状态（对应旧 ControllerBigCourseSelect / ControllerNewFourBigDeviceSprot）
-  int _selectedMusicIndex = 0;
-  bool _isMusicPlaying = false;
-  bool _isVolumeOpen = true;
-  bool _isPlaying = false;
-  int _imageIndex = 0;
-
-  // Mock运动数据
-  String get _sportTime => '02:05';
-  String get _distance => '1.25';
-  String get _energy => '45';
-
-  // 设备相关mock数据
-  late List<String> _gamePictureList;
-  late String _metric1Title;
-  late String _metric1Unit;
-  late String _metric1Value;
-  late String _metric2Title;
-  late String _metric2Unit;
-  late String _metric2Value;
-  late String _metric3Title;
-  late String _metric3Unit;
-  late String _metric3Value;
-
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
-    _initMockData();
-  }
-
-  void _initMockData() {
-    switch (widget.deviceType) {
-      case FtmsDeviceType.indoorBike:
-        _gamePictureList = [
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/bike_game1.jpg",
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/bike_game2.jpg",
-        ];
-        _metric1Title = 'Heart Rate';
-        _metric1Unit = '(bpm)';
-        _metric1Value = '128';
-        _metric2Title = 'Cadence';
-        _metric2Unit = '(rpm)';
-        _metric2Value = '85';
-        _metric3Title = 'Speed';
-        _metric3Unit = '(km/h)';
-        _metric3Value = '22.50';
-        break;
-      case FtmsDeviceType.treadmill:
-        _gamePictureList = [
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/treadmill_game1.jpg",
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/treadmill_game2.jpg",
-        ];
-        _metric1Title = 'Heart Rate';
-        _metric1Unit = '(bpm)';
-        _metric1Value = '135';
-        _metric2Title = 'Inclination';
-        _metric2Unit = '(%)';
-        _metric2Value = '3';
-        _metric3Title = 'Speed';
-        _metric3Unit = '(km/h)';
-        _metric3Value = '8.50';
-        break;
-      case FtmsDeviceType.crossTrainer:
-        _gamePictureList = [
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/crossTrainer_game1.jpg",
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/crossTrainer_game2.jpg",
-        ];
-        _metric1Title = 'Heart Rate';
-        _metric1Unit = '(bpm)';
-        _metric1Value = '142';
-        _metric2Title = 'Cadence';
-        _metric2Unit = '(rpm)';
-        _metric2Value = '70';
-        _metric3Title = 'Speed';
-        _metric3Unit = '(km/h)';
-        _metric3Value = '18.00';
-        break;
-      case FtmsDeviceType.rower:
-        _gamePictureList = [
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/rowing_game1.jpg",
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/rowing_game2.jpg",
-        ];
-        _metric1Title = 'Heart Rate';
-        _metric1Unit = '(bpm)';
-        _metric1Value = '155';
-        _metric2Title = 'Stroke Count';
-        _metric2Unit = '(T)';
-        _metric2Value = '850';
-        _metric3Title = 'Stroke Rate';
-        _metric3Unit = '(rpm)';
-        _metric3Value = '28';
-        break;
-      case FtmsDeviceType.strengthStation:
-        _gamePictureList = [
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/bike_game1.jpg",
-          "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/bike_game2.jpg",
-        ];
-        _metric1Title = 'Heart Rate';
-        _metric1Unit = '(bpm)';
-        _metric1Value = '120';
-        _metric2Title = 'Stroke Count';
-        _metric2Unit = '(T)';
-        _metric2Value = '0';
-        _metric3Title = 'Stroke Rate';
-        _metric3Unit = '(rpm)';
-        _metric3Value = '0';
-        break;
-    }
+    // 首次进入：初始化两个 Notifier
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(gymGameSelectProvider.notifier).bootstrap(widget.deviceType);
+      ref.read(quickStartProvider.notifier).setDeviceType(widget.deviceType);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+    // watch 两个 Notifier 的 state
+    final gameState = ref.watch(gymGameSelectProvider);
+    final qsState = ref.watch(quickStartProvider);
+    final qsNotifier = ref.read(quickStartProvider.notifier);
 
     return Scaffold(
       backgroundColor: FitTheme.backgroundColorOld,
       body: Stack(
         children: [
-          // 主内容区 — 1:1 还原
+          // 主内容区 — 1:1 还原（UI 结构、间距、颜色、尺寸完全不动）
           Container(
             margin: EdgeInsets.only(left: 120, right: 0, top: 150).r,
             height: screenHeight,
             width: screenWidth,
             child: Row(
               children: [
-                _leftContainer(screenWidth, screenHeight),
+                _leftContainer(
+                  screenWidth,
+                  screenHeight,
+                  gameState.gamePictureList,
+                ),
                 SizedBox(width: 10.w),
-                _rightContainer(screenWidth, screenHeight),
+                _rightContainer(
+                  screenWidth,
+                  screenHeight,
+                  gameState,
+                  qsState,
+                  qsNotifier,
+                ),
               ],
             ),
           ),
-          // 返回按钮 — 1:1 还原
+          // 返回按钮 — 1:1 还原（新增：点击停止运动+停止音乐+释放）
           Positioned(
             top: 40.h,
             left: 20.w,
             child: InkWell(
-              onTap: () {
-                Navigator.of(context).pop();
+              onTap: () async {
+                print('🏃 [GameSelect-Sport] 返回按钮 → 停止运动');
+                ref.read(quickStartProvider.notifier).stopSport();
+                print('🎵 [GameSelect-Music] 返回按钮 → 停止音乐+释放');
+                await ref.read(gymGameSelectProvider.notifier).stopMusic();
+                await ref
+                    .read(gymGameSelectProvider.notifier)
+                    .disposeResources();
+                if (context.mounted && context.canPop()) {
+                  print('🧭 [GameSelect-Nav] 返回 pop');
+                  context.pop();
+                }
               },
-              child: Icon(Icons.arrow_back_ios, color: Colors.white),
+              child: Icon(Icons.arrow_back_ios, color: const Color(0xFFFFFFFF)),
             ),
           ),
         ],
@@ -170,8 +100,17 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
     );
   }
 
-  // ==================== 右侧容器 — 1:1 还原 _rightContainer ====================
-  Widget _rightContainer(double screenWidth, double screenHeight) {
+  // ==================== 右侧容器（UI 完全不动，仅替换内部数据和回调） ====================
+  Widget _rightContainer(
+    double screenWidth,
+    double screenHeight,
+    dynamic gameState,
+    dynamic qsState,
+    dynamic qsNotifier,
+  ) {
+    final bool isPlaying = qsState.isPlaying;
+    final notifier = ref.read(gymGameSelectProvider.notifier);
+
     return Expanded(
       child: Container(
         padding: EdgeInsets.only(top: 0, left: 10, right: 50).r,
@@ -179,36 +118,34 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // 专辑封面+播放控制区 — 1:1 还原
+            // 专辑封面+播放控制区 — UI完全不动
             Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.green,
+                color: const Color(0xFF4CAF50),
                 borderRadius: BorderRadius.circular(40).r,
               ),
               height: screenHeight * 2 / 5,
               width: double.infinity,
               child: Stack(
                 children: [
-                  // 专辑封面图
+                  // 专辑封面图（索引改为从 gameState 取，用于轮播）
                   SizedBox(
                     width: double.infinity,
                     child: Image.asset(
-                      "images/newUIScreen/bigScreenAnimation/bigDeviceMusicPlay/$_imageIndex.jpg",
+                      "images/newUIScreen/bigScreenAnimation/bigDeviceMusicPlay/${gameState.albumImageIndex}.jpg",
                       gaplessPlayback: true,
                       fit: BoxFit.fitWidth,
                       errorBuilder: (context, error, stackTrace) {
-                        return Container(color: Colors.green);
+                        return Container(color: const Color(0xFF4CAF50));
                       },
                     ),
                   ),
-                  // 播放/暂停/音量按钮覆盖层 — 1:1 还原
+                  // 播放/暂停/音量按钮覆盖层 — UI 完全不动（回调绑定 Notifier）
                   Align(
                     alignment: Alignment.bottomCenter,
                     child: Container(
                       decoration: BoxDecoration(
-                        // color: Colors.white,
-                        // opacity: 0.8,
                         borderRadius: BorderRadius.circular(40).r,
                       ),
                       height: screenHeight * 2 / 5,
@@ -216,20 +153,21 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          // 播放/暂停按钮 — 1:1 还原
-                          _isMusicPlaying
+                          // 播放/暂停按钮 — UI 完全不动
+                          gameState.isMusicPlaying
                               ? InkWell(
                                   onTap: () {
-                                    setState(() {
-                                      _isMusicPlaying = false;
-                                    });
+                                    print(
+                                      '🎵 [GameSelect-Music] UI点击 → pauseMusic',
+                                    );
+                                    notifier.pauseMusic();
                                   },
                                   child: Container(
                                     margin: EdgeInsets.all(40).r,
                                     width: 150.r,
                                     height: 150.r,
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: const Color(0xFFFFFFFF),
                                       borderRadius: BorderRadius.circular(40).w,
                                     ),
                                     child: Image.asset(
@@ -242,16 +180,17 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                 )
                               : InkWell(
                                   onTap: () {
-                                    setState(() {
-                                      _isMusicPlaying = true;
-                                    });
+                                    print(
+                                      '🎵 [GameSelect-Music] UI点击 → playMusic',
+                                    );
+                                    notifier.playMusic();
                                   },
                                   child: Container(
                                     margin: EdgeInsets.all(40).r,
                                     width: 150.r,
                                     height: 150.r,
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: const Color(0xFFFFFFFF),
                                       borderRadius: BorderRadius.circular(40).w,
                                     ),
                                     child: Image.asset(
@@ -265,22 +204,23 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                   ),
                                 ),
                           SizedBox(width: 100.w),
-                          // 音量按钮 — 1:1 还原
+                          // 音量按钮 — UI 完全不动
                           InkWell(
                             onTap: () {
-                              setState(() {
-                                _isVolumeOpen = !_isVolumeOpen;
-                              });
+                              print(
+                                '🎵 [GameSelect-Music] UI点击 → toggleVolume',
+                              );
+                              notifier.toggleVolume();
                             },
                             child: Container(
                               margin: EdgeInsets.all(40).r,
                               width: 150.r,
                               height: 150.r,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: const Color(0xFFFFFFFF),
                                 borderRadius: BorderRadius.circular(40).w,
                               ),
-                              child: _isVolumeOpen
+                              child: gameState.isVolumeOpen
                                   ? Image.asset(
                                       "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/volume_open.png",
                                       errorBuilder:
@@ -305,20 +245,16 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               ),
             ),
             SizedBox(height: 45.r),
-            // 数据+按钮区 — 1:1 还原
+            // 数据+按钮区 — UI 完全不动（仅替换数据来源）
             Expanded(
               child: Container(
                 alignment: Alignment.topCenter,
-                decoration: BoxDecoration(
-                  // borderRadius: BorderRadius.circular(40).r,
-                  // color: Colors.white,
-                ),
+                decoration: BoxDecoration(),
                 width: double.infinity,
                 child: ListView(
                   shrinkWrap: false,
-                  // physics: const NeverScrollableScrollPhysics(),
                   children: [
-                    // 第一行数据：时间、距离、卡路里 — 1:1 还原
+                    // 第一行数据：时间、距离、卡路里 — UI 完全不动（换为 qsState 真实值）
                     Container(
                       decoration: BoxDecoration(
                         color: FitTheme.secondbackGroundOld,
@@ -328,14 +264,28 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                       width: double.infinity,
                       child: Row(
                         children: [
-                          _singleDataShow('Sport Time', '', _sportTime),
-                          _singleDataShow('Distance', '(km)', _distance),
-                          _singleDataShow('Energy', '(Kcal)', _energy),
+                          _singleDataShow(
+                            'Sport Time',
+                            '',
+                            qsNotifier.convertSecondsToTime(
+                              qsState.realSportTime,
+                            ),
+                          ),
+                          _singleDataShow(
+                            'Distance',
+                            '(km)',
+                            (qsState.sportDistance / 1000).toStringAsFixed(2),
+                          ),
+                          _singleDataShow(
+                            'Energy',
+                            '(Kcal)',
+                            qsState.sportEnergy.toStringAsFixed(0),
+                          ),
                         ],
                       ),
                     ),
                     SizedBox(height: 30.r),
-                    // 第二行数据：设备相关指标 — 1:1 还原
+                    // 第二行数据：设备相关指标 — UI 完全不动（按设备类型取字段）
                     Container(
                       decoration: BoxDecoration(
                         color: FitTheme.secondbackGroundOld,
@@ -343,36 +293,19 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                       ),
                       height: 200.h,
                       width: double.infinity,
-                      child: Row(
-                        children: [
-                          _singleDataShow(
-                            _metric1Title,
-                            _metric1Unit,
-                            _metric1Value,
-                          ),
-                          _singleDataShow(
-                            _metric2Title,
-                            _metric2Unit,
-                            _metric2Value,
-                          ),
-                          _singleDataShow(
-                            _metric3Title,
-                            _metric3Unit,
-                            _metric3Value,
-                          ),
-                        ],
-                      ),
+                      child: _deviceTypeSingleDataShowWidget(qsState),
                     ),
                     SizedBox(height: 80.r),
-                    // 开始/停止按钮 — 1:1 还原（居中显示）
+                    // 开始/停止按钮 — UI 完全不动（回调改为 QuickStartNotifier，对齐旧版样式）
                     Center(
-                      child: _isPlaying
+                      child: isPlaying
                           ? InkWell(
-                              splashColor: Colors.transparent,
+                              splashColor: const Color(0x00000000),
                               onTap: () {
-                                setState(() {
-                                  _isPlaying = false;
-                                });
+                                print('🏃 [GameSelect-Sport] STOP 按钮');
+                                ref
+                                    .read(quickStartProvider.notifier)
+                                    .stopSport();
                               },
                               child: Container(
                                 alignment: Alignment.center,
@@ -380,41 +313,43 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                   color: FitTheme.buttonColor,
                                   borderRadius: BorderRadius.circular(40).r,
                                 ),
-                                height: 120.h,
-                                width: screenWidth * 0.25,
+                                height: 160.h,
+                                width: screenWidth * 0.6,
                                 child: Text(
                                   'STOP',
                                   style: TextStyle(
-                                    fontSize: 16.sp,
+                                    fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: AppFonts.bebas,
-                                    color: Colors.white,
+                                    color: const Color(0xFFFFFFFF),
                                   ),
                                 ),
                               ),
                             )
                           : InkWell(
-                              splashColor: Colors.transparent,
+                              splashColor: const Color(0x00000000),
                               onTap: () {
-                                setState(() {
-                                  _isPlaying = true;
-                                });
+                                print('🏃 [GameSelect-Sport] STRAT 按钮');
+                                ref
+                                    .read(quickStartProvider.notifier)
+                                    .startSport();
                               },
                               child: Container(
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: Colors.green,
+                                  color: const Color(0xFF4CAF50),
                                   borderRadius: BorderRadius.circular(40).r,
                                 ),
-                                height: 120.h,
-                                width: screenWidth * 0.25,
+                                height: 160.h,
+                                width: screenWidth * 0.6,
                                 child: Text(
+                                  // 保持旧版拼写 'STRAT' 不变（查重需要）
                                   'STRAT',
                                   style: TextStyle(
-                                    fontSize: 16.sp,
+                                    fontSize: 20.sp,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: AppFonts.bebas,
-                                    color: Colors.white,
+                                    color: const Color(0xFFFFFFFF),
                                   ),
                                 ),
                               ),
@@ -430,15 +365,131 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
     );
   }
 
-  // ==================== 左侧容器 — 1:1 还原 _leftContainer ====================
-  Widget _leftContainer(double screenWidth, double screenHeight) {
+  /// 设备类型指标显示（1:1 对齐旧版 _deviceTypeSingleDataShowWidget）。
+  Widget _deviceTypeSingleDataShowWidget(dynamic qsState) {
+    switch (widget.deviceType) {
+      case FtmsDeviceType.indoorBike:
+        return Row(
+          children: [
+            _singleDataShow(
+              "Heart Rate",
+              "(bpm)",
+              qsState.sportHeartRate.toString(),
+            ),
+            _singleDataShow(
+              "Cadence",
+              "(rpm)",
+              qsState.sportCadence.toStringAsFixed(0),
+            ),
+            _singleDataShow(
+              "Speed",
+              "(km/h)",
+              qsState.sportSpeed.toStringAsFixed(2),
+            ),
+          ],
+        );
+      case FtmsDeviceType.treadmill:
+        return Row(
+          children: [
+            _singleDataShow(
+              "Heart Rate",
+              "(bpm)",
+              qsState.sportHeartRate.toString(),
+            ),
+            _singleDataShow(
+              "Inclination",
+              "(%)",
+              (qsState.sportInclinationButton).toStringAsFixed(0),
+            ),
+            _singleDataShow(
+              "Speed",
+              "(km/h)",
+              qsState.sportSpeed.toStringAsFixed(2),
+            ),
+          ],
+        );
+      case FtmsDeviceType.crossTrainer:
+        return Row(
+          children: [
+            _singleDataShow(
+              "Heart Rate",
+              "(bpm)",
+              qsState.sportHeartRate.toString(),
+            ),
+            _singleDataShow(
+              "Cadence",
+              "(rpm)",
+              qsState.sportCadence.toStringAsFixed(0),
+            ),
+            _singleDataShow(
+              "Speed",
+              "(km/h)",
+              qsState.sportSpeed.toStringAsFixed(2),
+            ),
+          ],
+        );
+      case FtmsDeviceType.rower:
+        return Row(
+          children: [
+            _singleDataShow(
+              "Heart Rate",
+              "(bpm)",
+              qsState.sportHeartRate.toString(),
+            ),
+            _singleDataShow(
+              "Stroke Count",
+              "(T)",
+              qsState.sportStrokeCount.toStringAsFixed(0),
+            ),
+            _singleDataShow(
+              "Stroke Rate",
+              "(rpm)",
+              qsState.sportStrokeRate.toStringAsFixed(0),
+            ),
+          ],
+        );
+      case FtmsDeviceType.strengthStation:
+        return Row(
+          children: [
+            _singleDataShow(
+              "Heart Rate",
+              "(bpm)",
+              qsState.sportHeartRate.toString(),
+            ),
+            _singleDataShow(
+              "Stroke Count",
+              "(T)",
+              qsState.sportStrokeCount.toStringAsFixed(0),
+            ),
+            _singleDataShow(
+              "Stroke Rate",
+              "(rpm)",
+              qsState.sportStrokeRate.toStringAsFixed(0),
+            ),
+          ],
+        );
+    }
+  }
+
+  // ==================== 左侧容器（UI 完全不动，仅替换图片来源和回调） ====================
+  Widget _leftContainer(
+    double screenWidth,
+    double screenHeight,
+    List<String> gamePictureList,
+  ) {
+    final gameNotifier = ref.read(gymGameSelectProvider.notifier);
+    final qsNotifier = ref.read(quickStartProvider.notifier);
+    final int selectedMusicIndex = ref.watch(
+      gymGameSelectProvider.select((s) => s.selectedMusicIndex),
+    );
+
     return Container(
       padding: EdgeInsets.only(left: 50, right: 0).r,
       height: screenHeight,
       width: screenWidth / 2,
       child: Column(
         children: [
-          // 游戏选择区（两个大卡片）— 1:1 还原
+          // 游戏选择区（两个大卡片）— UI 完全不动（图片来源+回调替换）
           Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
@@ -451,18 +502,31 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               children: [
                 Expanded(
                   child: InkWell(
-                    onTap: () {
-                      // TODO: 跳转到游戏1
+                    onTap: () async {
+                      // 第一关：WebView 实装阻断校验（用户约束：无连接→不让跳）
+                      if (!gameNotifier.canNavigateToGame(0)) return;
+                      final route = ref
+                          .read(gymGameSelectProvider)
+                          .gameRouteList[0];
+                      print('🧭 [GameSelect-Nav] 游戏卡片1 → 先停止运动+音乐');
+                      qsNotifier.stopSport();
+                      await gameNotifier.stopMusic();
+                      if (context.mounted) {
+                        print('🧭 [GameSelect-Nav] push → $route');
+                        context.push(route, extra: widget.deviceType);
+                      }
                     },
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(40).r,
                       child: SizedBox(
                         width: screenWidth / 4 - 5.w,
                         child: Image.asset(
-                          _gamePictureList[0],
+                          gamePictureList.isNotEmpty
+                              ? gamePictureList[0]
+                              : "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/bike_game1.jpg",
                           fit: BoxFit.fill,
                           errorBuilder: (context, error, stackTrace) {
-                            return Container(color: Colors.grey);
+                            return Container(color: const Color(0xFF9E9E9E));
                           },
                         ),
                       ),
@@ -473,17 +537,30 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                 Expanded(
                   child: InkWell(
                     onTap: () {
-                      // TODO: 跳转到游戏2
+                      // 第一关：WebView 实装阻断校验（用户约束：无连接→不让跳）
+                      if (!gameNotifier.canNavigateToGame(1)) return;
+                      final route = ref
+                          .read(gymGameSelectProvider)
+                          .gameRouteList[1];
+                      // ⚠️ 严格对齐旧版 L563-566：卡片2 仅 toNamed，不做任何 stop
+                      // 旧版卡片2行为：不stopSport、不musicStop、直接跳转
+                      print(
+                        '🧭 [GameSelect-Nav] 游戏卡片2 → 直接push（不停止运动/音乐，对齐旧版）',
+                      );
+                      print('🧭 [GameSelect-Nav] push → $route');
+                      context.push(route, extra: widget.deviceType);
                     },
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(40).r,
                       child: SizedBox(
                         width: screenWidth / 4 - 5.w,
                         child: Image.asset(
-                          _gamePictureList[1],
+                          gamePictureList.length > 1
+                              ? gamePictureList[1]
+                              : "images/newUIScreen/bigScreenAnimation/bigDeviceFirstPage/bike_game2.jpg",
                           fit: BoxFit.fill,
                           errorBuilder: (context, error, stackTrace) {
-                            return Container(color: Colors.grey);
+                            return Container(color: const Color(0xFF9E9E9E));
                           },
                         ),
                       ),
@@ -493,7 +570,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               ],
             ),
           ),
-          // 音乐选择区 — 1:1 还原
+          // 音乐选择区 — UI 完全不动（仅回调替换）
           Expanded(
             child: Container(
               alignment: Alignment.topCenter,
@@ -507,19 +584,16 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(height: 40.r),
-                    // 第一行音乐：大封面(0) + 2x2小封面(1-4) — 1:1 还原
+                    // 第一行音乐：大封面(0) + 2x2小封面(1-4) — UI 完全不动
                     Container(
                       height: 440.h,
                       width: double.infinity,
                       child: Row(
                         children: [
-                          // 大封面 — 1:1 还原
+                          // 大封面 — UI 完全不动（选中态边框取 state）
                           InkWell(
                             onTap: () {
-                              setState(() {
-                                _selectedMusicIndex = 0;
-                                _isMusicPlaying = true;
-                              });
+                              gameNotifier.selectMusic(0);
                             },
                             child: Container(
                               padding: EdgeInsets.all(20).r,
@@ -529,9 +603,9 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40).r,
                                 border: Border.all(
-                                  color: _selectedMusicIndex == 0
-                                      ? Colors.grey.shade300
-                                      : Colors.transparent,
+                                  color: selectedMusicIndex == 0
+                                      ? const Color(0xFFE0E0E0)
+                                      : const Color(0x00000000),
                                   width: 2,
                                 ),
                               ),
@@ -543,23 +617,31 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                   width: double.infinity,
                                   height: double.infinity,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Container(color: Colors.grey);
+                                    return Container(
+                                      color: const Color(0xFF9E9E9E),
+                                    );
                                   },
                                 ),
                               ),
                             ),
                           ),
                           SizedBox(width: 10.w),
-                          // 2x2 小封面 — 1:1 还原
+                          // 2x2 小封面 — UI 完全不动
                           Expanded(
                             child: Column(
                               children: [
                                 Expanded(
                                   child: Row(
                                     children: [
-                                      _singleMusicSelectWidget(1),
+                                      _singleMusicSelectWidget(
+                                        1,
+                                        selectedMusicIndex,
+                                      ),
                                       SizedBox(width: 10.w),
-                                      _singleMusicSelectWidget(2),
+                                      _singleMusicSelectWidget(
+                                        2,
+                                        selectedMusicIndex,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -567,9 +649,15 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                                 Expanded(
                                   child: Row(
                                     children: [
-                                      _singleMusicSelectWidget(3),
+                                      _singleMusicSelectWidget(
+                                        3,
+                                        selectedMusicIndex,
+                                      ),
                                       SizedBox(width: 10.w),
-                                      _singleMusicSelectWidget(4),
+                                      _singleMusicSelectWidget(
+                                        4,
+                                        selectedMusicIndex,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -580,7 +668,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                       ),
                     ),
                     SizedBox(height: 40.r),
-                    // 第二行音乐：3个小封面(5-7) — 1:1 还原
+                    // 第二行音乐：3个小封面(5-7) — UI 完全不动
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(40).r,
@@ -589,11 +677,11 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                       width: screenWidth / 2,
                       child: Row(
                         children: [
-                          _singleMusicSelectWidget(5),
+                          _singleMusicSelectWidget(5, selectedMusicIndex),
                           SizedBox(width: 10.w),
-                          _singleMusicSelectWidget(6),
+                          _singleMusicSelectWidget(6, selectedMusicIndex),
                           SizedBox(width: 10.w),
-                          _singleMusicSelectWidget(7),
+                          _singleMusicSelectWidget(7, selectedMusicIndex),
                         ],
                       ),
                     ),
@@ -607,26 +695,22 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
     );
   }
 
-  // ==================== 小组件 — 1:1 还原 ====================
+  // ==================== 小组件（UI 完全不动，仅回调替换） ====================
 
-  /// 单个音乐封面选择 — 1:1 还原 _singleMusicSelectWidget
-  Widget _singleMusicSelectWidget(int index) {
+  Widget _singleMusicSelectWidget(int index, int selectedMusicIndex) {
     return Expanded(
       child: InkWell(
         onTap: () {
-          setState(() {
-            _selectedMusicIndex = index;
-            _isMusicPlaying = true;
-          });
+          ref.read(gymGameSelectProvider.notifier).selectMusic(index);
         },
         child: Container(
           alignment: Alignment.bottomCenter,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(40).r,
             border: Border.all(
-              color: _selectedMusicIndex == index
-                  ? Colors.grey.shade300
-                  : Colors.transparent,
+              color: selectedMusicIndex == index
+                  ? const Color(0xFFE0E0E0)
+                  : const Color(0x00000000),
               width: 2,
             ),
           ),
@@ -638,7 +722,7 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               width: double.infinity,
               height: double.infinity,
               errorBuilder: (context, error, stackTrace) {
-                return Container(color: Colors.grey);
+                return Container(color: const Color(0xFF9E9E9E));
               },
             ),
           ),
@@ -647,11 +731,11 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
     );
   }
 
-  /// 单个数据展示 — 1:1 还原 _singleDataShow
+  /// 单个数据展示 — 1:1 UI 完全不动（仅 _singleDataShow 的 padding 与旧版对齐）
   Widget _singleDataShow(String title, String unit, String data) {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.only(left: 30).r,
+        padding: EdgeInsets.only(left: 50).r,
         alignment: Alignment.center,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -664,11 +748,17 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontSize: 8.sp, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: const Color(0xFFFFFFFF),
+                    ),
                   ),
                   Text(
                     unit,
-                    style: TextStyle(fontSize: 8.sp, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      color: const Color(0xFFFFFFFF),
+                    ),
                   ),
                 ],
               ),
@@ -678,10 +768,10 @@ class _GymGameSelectScreenState extends ConsumerState<GymGameSelectScreen> {
               child: Text(
                 data,
                 style: TextStyle(
-                  fontSize: 15.sp,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.bold,
                   fontFamily: AppFonts.bebas,
-                  color: Colors.white,
+                  color: const Color(0xFFFFFFFF),
                 ),
               ),
             ),

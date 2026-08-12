@@ -25,6 +25,12 @@ class LoginPage extends ConsumerWidget {
     context.push('/policy-webview', extra: {'url': url, 'title': title});
   }
 
+  void _openUserAgreement(BuildContext context, int languageNum) {
+    final url = PolicyUrls.userAgreementUrl(languageNum);
+    final title = PolicyUrls.userAgreementTitle(languageNum);
+    context.push('/policy-webview', extra: {'url': url, 'title': title});
+  }
+
   void _ensureAgreed(BuildContext context, WidgetRef ref, VoidCallback go) {
     final agreed = ref.read(authProvider).agreedToPrivacy;
     if (agreed) {
@@ -368,11 +374,35 @@ class LoginPage extends ConsumerWidget {
                         InkWell(
                           splashColor: Colors.transparent,
                           highlightColor: Colors.transparent,
+                          onTap: () => _openUserAgreement(context, languageNum),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: Text(
+                              l10n.userAgreement,
+                              maxLines: 3,
+                              style: TextStyle(
+                                fontSize: 24.sp,
+                                color: Colors.blue,
+                                overflow: TextOverflow.fade,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Text(
+                          ' 和 ',
+                          style: TextStyle(
+                            fontSize: 24.sp,
+                            color: Colors.white,
+                          ),
+                        ),
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
                           onTap: () => _openPrivacy(context, languageNum),
                           child: Container(
                             alignment: Alignment.center,
                             child: Text(
-                              l10n.userAgreementAndPrivacyPolicy,
+                              l10n.privacyPolicy,
                               maxLines: 3,
                               style: TextStyle(
                                 fontSize: 24.sp,

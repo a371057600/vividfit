@@ -82,6 +82,12 @@ class AppLocalizationsEn extends AppLocalizations {
       '<User Agreement and Privacy Policy>';
 
   @override
+  String get userAgreement => '<User Agreement>';
+
+  @override
+  String get privacyPolicy => '<Privacy Policy>';
+
+  @override
   String get incorrectAccountOrPassword => 'Incorrect account or password';
 
   @override

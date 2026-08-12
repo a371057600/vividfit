@@ -1,248 +1,256 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
+import '../models/record_stats_item.dart';
+import '../notifiers/record_main_notifier.dart';
+import '../states/record_main_state.dart';
+import '../widgets/mini_day_rings.dart';
+import '../widgets/record_chart_card.dart';
+import '../widgets/record_three_rings.dart';
 
-/// 记录主页（空界面骨架）。
+/// 记录主页（三环进度 + 图表数据展示）。
 ///
 /// 对应旧项目 new_top_record_screen.dart。
-/// 当前阶段：仅 UI 骨架 + 占位数据，无网络请求。
-/// 三环、图表均显示占位（0 值 / 灰色圆环）。
-class RecordMainPage extends StatefulWidget {
+/// 当前阶段：Mock 数据驱动，所有展示数据来自 RecordMainNotifier。
+class RecordMainPage extends ConsumerStatefulWidget {
   const RecordMainPage({super.key});
 
   @override
-  State<RecordMainPage> createState() => _RecordMainPageState();
+  ConsumerState<RecordMainPage> createState() => _RecordMainPageState();
 }
 
-class _RecordMainPageState extends State<RecordMainPage> {
+class _RecordMainPageState extends ConsumerState<RecordMainPage> {
   DateTime _focusedDay = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(recordMainProvider);
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: FitTheme.backgroundColor,
         appBar: AppBar(
           toolbarHeight: 100.r,
           backgroundColor: FitTheme.backgroundColor,
-          leadingWidth: MediaQuery.of(context).size.width,
-          leading: Container(
-            padding: const EdgeInsets.only(left: 45).r,
-            alignment: Alignment.bottomCenter,
-            height: 100.r,
-            child: Row(
-              children: [
-                InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () => context.pop(),
-                  child: Icon(
-                    Icons.arrow_back_ios,
-                    color: FitTheme.textColor,
-                    size: 20,
-                  ),
-                ),
-                SizedBox(width: 15.w),
-                Text(
-                  '记录',
-                  style: TextStyle(
-                    color: FitTheme.textColor,
-                    fontFamily: 'hofontmedium',
-                    fontSize: 40.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
           elevation: 0,
           scrolledUnderElevation: 0,
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildTopHeaderWidget(),
-              _buildThreeRingPlaceholder(),
-              _buildRecordListButton(),
-              _buildChartPlaceholder('时长', const Color(0xFFFFA200)),
-              _buildChartPlaceholder('强度', const Color(0xFF2C80FD)),
-              _buildChartPlaceholder('消耗', const Color(0xFFFF4D4F)),
-              SizedBox(height: 40.h),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 顶部周日历区域（占位，仅展示当前周）。
-  Widget _buildTopHeaderWidget() {
-    return Container(
-      height: 300.h,
-      margin: const EdgeInsets.symmetric(horizontal: 25).r,
-      child: TableCalendar(
-        weekendDays: const [DateTime.saturday, DateTime.sunday],
-        startingDayOfWeek: StartingDayOfWeek.monday,
-        rowHeight: 100.h,
-        daysOfWeekHeight: 50.h,
-        headerVisible: true,
-        daysOfWeekVisible: true,
-        shouldFillViewport: true,
-        firstDay: DateTime.utc(2019, 1, 1),
-        lastDay: DateTime.now().add(const Duration(days: 365)),
-        focusedDay: _focusedDay,
-        calendarFormat: CalendarFormat.week,
-        onFormatChanged: (format) {},
-        onDaySelected: (selectedDay, focusedDay) {
-          setState(() => _focusedDay = focusedDay);
-        },
-        selectedDayPredicate: (day) => isSameDay(day, _focusedDay),
-        headerStyle: HeaderStyle(
-          titleTextStyle: TextStyle(
-            color: FitTheme.textColor,
-            fontSize: 30.sp,
-          ),
-          formatButtonVisible: false,
-          titleCentered: true,
-          leftChevronPadding: const EdgeInsets.only(left: 15).r,
-          leftChevronIcon: Icon(
-            Icons.chevron_left,
-            color: const Color(0xFF515151),
-          ),
-          rightChevronIcon: Icon(
-            Icons.chevron_right,
-            color: const Color(0xFF515151),
-          ),
-          headerPadding: EdgeInsets.zero,
-        ),
-        daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
-          weekendStyle: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
-        ),
-        calendarStyle: const CalendarStyle(),
-      ),
-    );
-  }
-
-  /// 三环占位区域。
-  /// 当前阶段：无数据，三环显示灰色圆环 + 0 值文本。
-  Widget _buildThreeRingPlaceholder() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 65, vertical: 15).r,
-      height: 390.h,
-      width: 700.w,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 380.r,
-            height: 380.r,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 380.r,
-                  height: 380.r,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF333333),
-                    border: Border.all(
-                      color: FitTheme.textColor.withValues(alpha: 0.3),
-                      width: 35.r,
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 300.r,
-                  height: 300.r,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF444444),
-                    border: Border.all(
-                      color: FitTheme.textColor.withValues(alpha: 0.3),
-                      width: 35.r,
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 220.r,
-                  height: 220.r,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF555555),
-                    border: Border.all(
-                      color: FitTheme.textColor.withValues(alpha: 0.3),
-                      width: 35.r,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 40.w),
-          Container(
-            width: 150.w,
-            height: 380.h,
-            alignment: Alignment.centerLeft,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSideText('时长/分钟', '00:00:00'),
-                _buildSideText('MET', '0.0'),
-                _buildSideText('卡路里', '0'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSideText(String title, String value) {
-    return SizedBox(
-      width: 150.w,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120.w,
-            child: Text(
-              title,
-              style: TextStyle(
-                letterSpacing: 0.5,
+          automaticallyImplyLeading: false,
+          leading: InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onTap: () => context.pop(),
+            child: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 10).r,
+              child: Icon(
+                Icons.arrow_back_ios,
                 color: FitTheme.textColor,
-                fontSize: 25.sp,
-                fontFamily: 'hofontmedium',
+                size: 22,
               ),
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(bottom: 2).r,
-            width: 120.w,
-            height: 6.h,
-            decoration: BoxDecoration(
-              color: FitTheme.buttonColor,
-              borderRadius: BorderRadius.circular(5).r,
+          leadingWidth: 80.w,
+          title: Text(
+            '运动记录',
+            style: TextStyle(
+              color: FitTheme.textColor,
+              fontFamily: AppFonts.hofontmedium,
+              fontSize: 36.sp,
             ),
           ),
+          centerTitle: false,
+        ),
+        body: state.isLoading
+            ? Center(
+                child: CircularProgressIndicator(color: FitTheme.buttonColor),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: 10.h),
+                    _buildCalendar(state),
+                    SizedBox(height: 5.h),
+                    _buildThreeRingSection(state),
+                    _buildRecordListButton(),
+                    _buildChartCards(state),
+                    SizedBox(height: 40.h),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildCalendar(RecordMainState state) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 15).r,
+      height: 220.h,
+      child: TableCalendar(
+        locale: 'zh_CN',
+        weekendDays: const [DateTime.saturday, DateTime.sunday],
+        startingDayOfWeek: StartingDayOfWeek.monday,
+        rowHeight: 80.h,
+        daysOfWeekHeight: 28.h,
+        headerVisible: true,
+        daysOfWeekVisible: true,
+        shouldFillViewport: false,
+        firstDay: DateTime.utc(2019, 1, 1),
+        lastDay: DateTime.now().add(const Duration(days: 365)),
+        focusedDay: _focusedDay,
+        selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
+        calendarFormat: CalendarFormat.week,
+        availableCalendarFormats: const {CalendarFormat.week: ''},
+        onFormatChanged: (_) {},
+        onPageChanged: (focusedDay) {
+          setState(() => _focusedDay = focusedDay);
+        },
+        onDaySelected: (selectedDay, focusedDay) {
+          setState(() {
+            _selectedDay = selectedDay;
+            _focusedDay = focusedDay;
+          });
+          ref.read(recordMainProvider.notifier).selectDay(selectedDay);
+        },
+        headerStyle: HeaderStyle(
+          titleCentered: true,
+          formatButtonVisible: false,
+          titleTextFormatter: (date, _) => '${date.year}年${date.month}月',
+          titleTextStyle: TextStyle(
+            color: FitTheme.textColor,
+            fontSize: 28.sp,
+            fontFamily: AppFonts.hofontmedium,
+          ),
+          leftChevronIcon: Icon(
+            Icons.chevron_left,
+            color: Colors.grey,
+            size: 24,
+          ),
+          rightChevronIcon: Icon(
+            Icons.chevron_right,
+            color: Colors.grey,
+            size: 24,
+          ),
+          headerPadding: EdgeInsets.zero,
+          headerMargin: EdgeInsets.zero,
+          leftChevronPadding: const EdgeInsets.symmetric(horizontal: 16).r,
+          rightChevronPadding: const EdgeInsets.symmetric(horizontal: 16).r,
+        ),
+        daysOfWeekStyle: DaysOfWeekStyle(
+          weekdayStyle: TextStyle(fontSize: 20.sp, color: FitTheme.textColor),
+          weekendStyle: TextStyle(fontSize: 20.sp, color: FitTheme.textColor),
+          dowTextFormatter: (date, _) {
+            const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+            return weekdays[date.weekday - 1];
+          },
+        ),
+        calendarBuilders: CalendarBuilders(
+          defaultBuilder: (context, day, focusedDay) =>
+              _buildDayCell(day, state, isSelected: false),
+          todayBuilder: (context, day, focusedDay) =>
+              _buildDayCell(day, state, isSelected: false, isToday: true),
+          selectedBuilder: (context, day, focusedDay) =>
+              _buildDayCell(day, state, isSelected: true),
+          outsideBuilder: (context, day, focusedDay) =>
+              _buildDayCell(day, state, isSelected: false, isOutside: true),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayCell(
+    DateTime day,
+    RecordMainState state, {
+    required bool isSelected,
+    bool isToday = false,
+    bool isOutside = false,
+  }) {
+    final weekIndex = day.weekday - 1;
+    RecordStatsItem? dayStats;
+    if (weekIndex >= 0 && weekIndex < state.weekStats.length) {
+      final stats = state.weekStats[weekIndex];
+      final statsDate = stats.startTime?.substring(0, 10);
+      final dayStr =
+          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      if (statsDate == dayStr) {
+        dayStats = stats;
+      }
+    }
+
+    double dProg = 0, sProg = 0, cProg = 0;
+    if (dayStats != null) {
+      dProg = state.goalDuration > 0
+          ? ((dayStats.duringTime ~/ 60) / state.goalDuration).clamp(0.0, 1.0)
+          : 0.0;
+      sProg = state.goalStrength > 0
+          ? (dayStats.sportStrength / state.goalStrength).clamp(0.0, 1.0)
+          : 0.0;
+      cProg = state.goalCalorie > 0
+          ? (dayStats.calorie / state.goalCalorie).clamp(0.0, 1.0)
+          : 0.0;
+    }
+
+    return Container(
+      width: 65.r,
+      height: 150.h,
+
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
           Text(
-            value,
+            '${day.day}',
             style: TextStyle(
-              fontSize: 35.sp,
-              height: 1,
-              color: FitTheme.textColor,
-              fontFamily: 'BEBAS',
+              color: isOutside
+                  ? FitTheme.textColor.withValues(alpha: 0.3)
+                  : FitTheme.textColor,
+              fontSize: 24.sp,
+              fontFamily: AppFonts.bebas,
             ),
+          ),
+          SizedBox(height: 10.h),
+          MiniDayRings(
+            durationProgress: dProg,
+            strengthProgress: sProg,
+            calorieProgress: cProg,
+            isSelected: isSelected,
           ),
         ],
       ),
     );
   }
 
-  /// "运动记录"按钮，跳转到列表页。
+  Widget _buildThreeRingSection(RecordMainState state) {
+    final stats = state.selectedDayStats;
+    final durationSec = stats?.duringTime ?? 0;
+    final hours = (durationSec ~/ 3600).toString().padLeft(2, '0');
+    final mins = ((durationSec % 3600) ~/ 60).toString().padLeft(2, '0');
+    final secs = (durationSec % 60).toString().padLeft(2, '0');
+
+    final dProg = state.goalDuration > 0
+        ? ((durationSec ~/ 60) / state.goalDuration).clamp(0.0, 1.0)
+        : 0.0;
+    final sProg = state.goalStrength > 0
+        ? ((stats?.sportStrength ?? 0) / state.goalStrength).clamp(0.0, 1.0)
+        : 0.0;
+    final cProg = state.goalCalorie > 0
+        ? ((stats?.calorie ?? 0) / state.goalCalorie).clamp(0.0, 1.0)
+        : 0.0;
+
+    return RecordThreeRings(
+      durationProgress: dProg.toDouble(),
+      strengthProgress: sProg.toDouble(),
+      calorieProgress: cProg.toDouble(),
+      durationText: '$hours:$mins:$secs',
+      strengthText: (stats?.sportStrength ?? 0).toStringAsFixed(0),
+      calorieText: (stats?.calorie ?? 0).toStringAsFixed(0),
+    );
+  }
+
   Widget _buildRecordListButton() {
     return InkWell(
       splashColor: Colors.transparent,
@@ -253,88 +261,80 @@ class _RecordMainPageState extends State<RecordMainPage> {
         alignment: Alignment.center,
         margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 5).r,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20).r,
+          borderRadius: BorderRadius.circular(40.r),
           color: FitTheme.buttonColor,
         ),
         child: Text(
           '运动记录',
           style: TextStyle(
-            color: Colors.white,
+            color: FitTheme.textButtonColor,
             fontSize: 30.sp,
-            fontWeight: FontWeight.bold,
+            fontFamily: AppFonts.hofontmedium,
           ),
         ),
       ),
     );
   }
 
-  /// 单个指标图表占位卡。
-  Widget _buildChartPlaceholder(String title, Color color) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 25).r,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20).r,
-      decoration: BoxDecoration(
-        color: FitTheme.secondbackGround,
-        borderRadius: BorderRadius.circular(25.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    alignment: Alignment.bottomCenter,
-                    height: 40.r,
-                    width: 40.r,
-                    child: Icon(
-                      Icons.bar_chart,
-                      color: FitTheme.textColor,
-                      size: 30,
-                    ),
-                  ),
-                  SizedBox(width: 10.w),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 30.sp,
-                      height: 1.25,
-                      color: FitTheme.textColor,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '0',
-                style: TextStyle(
-                  fontSize: 35.sp,
-                  color: FitTheme.textColor,
-                  fontFamily: 'BEBAS',
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Container(
-            height: 150.h,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: Center(
-              child: Icon(
-                Icons.bar_chart,
-                color: color.withValues(alpha: 0.5),
-                size: 50,
-              ),
-            ),
-          ),
-        ],
-      ),
+  Widget _buildChartCards(RecordMainState state) {
+    final stats = state.selectedDayStats;
+    final durationMin = stats != null ? (stats.duringTime ~/ 60) : 0;
+    final met = stats?.sportStrength ?? 0.0;
+    final calorie = stats?.calorie ?? 0.0;
+
+    final dPct = state.goalDuration > 0
+        ? (durationMin / state.goalDuration * 100).toStringAsFixed(0)
+        : '0';
+    final sPct = state.goalStrength > 0
+        ? (met / state.goalStrength * 100).toStringAsFixed(0)
+        : '0';
+    final cPct = state.goalCalorie > 0
+        ? (calorie / state.goalCalorie * 100).toStringAsFixed(0)
+        : '0';
+
+    final weekDuration = state.weekStats
+        .map((e) => (e.duringTime / 60).toDouble())
+        .toList();
+    final weekStrength = state.weekStats
+        .map((e) => e.sportStrength.toDouble())
+        .toList();
+    final weekCalorie = state.weekStats
+        .map((e) => e.calorie.toDouble())
+        .toList();
+
+    return Column(
+      children: [
+        RecordChartCard(
+          icon: Icons.access_time,
+          title: '时长/ MIN',
+          currentValue: durationMin.toStringAsFixed(1),
+          completionPercent: '$dPct%',
+          goalValue: '${state.goalDuration}',
+          accentColor: FitTheme.threeRingsColorOutSide,
+          weekValues: weekDuration,
+          maxY: state.goalDuration.toDouble(),
+        ),
+        RecordChartCard(
+          icon: Icons.directions_run,
+          title: '运动强度/MET',
+          currentValue: met.toStringAsFixed(0),
+          completionPercent: '$sPct%',
+          goalValue: state.goalStrength.toStringAsFixed(1),
+          accentColor: FitTheme.threeRingsColorMiddle,
+          weekValues: weekStrength,
+          maxY: state.goalStrength,
+        ),
+        RecordChartCard(
+          icon: Icons.local_fire_department,
+          title: '消耗热量/K',
+          currentValue: calorie.toStringAsFixed(0),
+          completionPercent: '$cPct%',
+          goalValue: '${state.goalCalorie.toInt()}',
+          accentColor: FitTheme.threeRingsColorInSide,
+          weekValues: weekCalorie,
+          maxY: state.goalCalorie,
+        ),
+      ],
     );
   }
 }

@@ -1,30 +1,21 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
+import '../notifiers/gym_device_connect_notifier.dart';
 
 /// 设备搜索页(1:1 还原旧 `device_connect_screen.dart` 的 `_buildNewMainBody()`)。
 ///
-/// 结构:
-/// ```
-/// Container(full screen, backgroundColor)
-///   Column
-///     Container(margin:25.r, width:700.w)     ← 上半区
-///       Column
-///         Image.asset(搜索动画, fit:BoxFit.fitWidth)
-///         InkWell → "Search Device" 按钮(buttonColor, h:100, w:full, r:20, sp:40)
-///     Expanded                                ← 下半区
-///       Container(margin:left:25,right:25,bottom:25)
-///         ListView > Wrap(设备卡片网格,根据 _isSearching 切换 _buildDeviceContainers / _buildLoadingContainers)
-/// ```
-///
-/// 仅 UI 框架,不实现蓝牙搜索/连接/删除逻辑;无 GetX,无 permission_handler,无
-/// 任何 controller 依赖。所有交互(onTap 设备卡片、长按、删除对话框、搜索按钮)仅触发
-/// 一次 `print` 调试输出,保留 1:1 视觉结构以便后续接入真实逻辑。
+/// 已对接 [GymDeviceConnectNotifier],支持:
+/// - 点击搜索按钮:调用 [startDeviceScan] 启动蓝牙扫描
+/// - 搜索状态:通过 [ref.watch] 监听 isSearching / foundDeviceNames 实时更新
+/// - 选择设备:点击设备卡片调用 [connectSelectedDevice] 连接
+/// - 删除设备:长按设备卡片弹确认对话框
 class DeviceSearchScreen extends ConsumerStatefulWidget {
   const DeviceSearchScreen({super.key});
 
@@ -36,15 +27,6 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
   /// 搜索动画帧索引(对应旧 `ainimationIndex2`,范围 0-47)。
   int _animationFrameIndex = 0;
 
-  /// 是否正在搜索(对应旧 `searchingDevice`)。
-  bool _isSearching = false;
-
-  /// 搜索到的设备名列表(对应旧 `newSearchList`)。1:1 UI 无功能,留空。
-  final List<String> _foundDeviceNames = const [];
-
-  /// 加载中占位设备名列表(对应旧 `loadingList`)。1:1 UI 无功能,留空。
-  final List<String> _loadingDeviceNames = const [];
-
   /// 动画定时器(对应旧 `_timer`)。
   Timer? _animationTimer;
 
@@ -55,7 +37,6 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
   }
 
   /// 启动搜索动画(对应旧 `animationPlay`,40ms 间隔,0-47 循环)。
-  /// 仅在用户点击 "Search Device" 按钮后触发。
   void _startSearchAnimation() {
     _animationTimer?.cancel();
     _animationTimer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
@@ -76,35 +57,48 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
   void _stopSearchAnimation() {
     _animationTimer?.cancel();
     _animationTimer = null;
-  }
-
-  /// 1:1 还原旧 `checkPermission` + 点击搜索按钮的行为。
-  /// 1:1 UI 无功能,仅切换 _isSearching 并启动/停止动画。
-  /// 旧版 `animationPlay()` 在 elapsed >= 9000ms 后自动停止;
-  /// 同时蓝牙扫描结束后也会将 searchingDevice 置 false 停止动画。
-  /// 此处模拟 10 秒超时后自动停止。
-  void _onTapSearchDevice() {
-    print('[DeviceSearch] search device tapped, start searching');
-    if (_isSearching) {
-      return;
-    }
-    setState(() {
-      _isSearching = true;
-    });
-    _startSearchAnimation();
-    Future.delayed(const Duration(seconds: 10), () {
-      if (!mounted) return;
-      _stopSearchAnimation();
+    if (mounted) {
       setState(() {
-        _isSearching = false;
         _animationFrameIndex = 0;
       });
-      print('[DeviceSearch] search animation auto-stopped after 10s');
-    });
+    }
   }
 
-  /// 1:1 还原旧 `_deleteDeviceWidget` 的 Get.defaultDialog 弹窗。
-  /// 1:1 UI 无功能,仅 print 后关闭弹窗。
+  /// 点击搜索按钮:调用 Notifier 启动蓝牙扫描。
+  Future<void> _onTapSearchDevice() async {
+    debugPrint('[DeviceSearch] === search device tapped ===');
+    final notifier = ref.read(gymDeviceConnectProvider.notifier);
+    final connectState = ref.read(gymDeviceConnectProvider);
+    
+    if (connectState.isSearching) {
+      debugPrint('[DeviceSearch] already searching, skip');
+      return;
+    }
+
+    _startSearchAnimation();
+    debugPrint('[DeviceSearch] animation started, calling startDeviceScan...');
+    
+    try {
+      await notifier.startDeviceScan(context);
+      debugPrint('[DeviceSearch] startDeviceScan completed');
+    } catch (e) {
+      debugPrint('[DeviceSearch] ❌ startDeviceScan error: $e');
+      _stopSearchAnimation();
+    }
+  }
+
+  /// 选择设备:停止扫描并连接。
+  Future<void> _onSelectDevice(String name) async {
+    debugPrint('[DeviceSearch] === select device: "$name" ===');
+    final notifier = ref.read(gymDeviceConnectProvider.notifier);
+    
+    _stopSearchAnimation();
+    await notifier.stopScan();
+    debugPrint('[DeviceSearch] stopped scan, connecting to "$name"...');
+    await notifier.connectSelectedDevice(name);
+  }
+
+  /// 删除设备对话框。
   Future<void> _showDeleteDeviceDialog(int index) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -170,7 +164,8 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
       },
     );
     if (confirmed == true) {
-      print('[DeviceSearch] delete device at index=$index');
+      debugPrint('[DeviceSearch] delete device at index=$index');
+      // TODO: 实现删除已保存设备名的逻辑
     }
   }
 
@@ -180,7 +175,15 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // 1:1 还原旧 `_buildNewMainBody()`。
+    final connectState = ref.watch(gymDeviceConnectProvider);
+    final isSearching = connectState.isSearching;
+    final foundDevices = connectState.foundDeviceNames;
+
+    // 搜索结束后停止动画
+    if (!isSearching && _animationTimer != null) {
+      _stopSearchAnimation();
+    }
+
     return Container(
       height: screenHeight,
       width: screenWidth,
@@ -230,7 +233,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
               margin: const EdgeInsets.only(left: 25, right: 25, bottom: 25).r,
               child: ListView(
                 children: [
-                  _isSearching
+                  isSearching && foundDevices.isEmpty
                       ? Wrap(
                           spacing: 20.r,
                           runSpacing: 20.r,
@@ -240,7 +243,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
                           alignment: WrapAlignment.spaceBetween,
                           spacing: 20.r,
                           runSpacing: 20.r,
-                          children: _buildDeviceContainers(),
+                          children: _buildDeviceContainers(foundDevices),
                         ),
                 ],
               ),
@@ -251,17 +254,25 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
     );
   }
 
-  /// 1:1 还原旧 `_containers()` — 已发现/已配对设备卡片。
-  /// 1:1 UI 无功能:onTap 仅 print,onLongPress 弹删除确认。
-  List<Widget> _buildDeviceContainers() {
+  /// 已发现设备卡片列表。
+  List<Widget> _buildDeviceContainers(List<String> deviceNames) {
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
-    return List.generate(_foundDeviceNames.length, (index) {
-      final name = _foundDeviceNames[index];
+    
+    if (deviceNames.isEmpty) {
+      return [
+        SizedBox(height: 100.h),
+        Text(
+          l10n.noDevicesFound,
+          style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
+        ),
+      ];
+    }
+    
+    return List.generate(deviceNames.length, (index) {
+      final name = deviceNames[index];
       return InkWell(
-        onTap: () {
-          print('[DeviceSearch] device $index tapped: $name');
-        },
+        onTap: () => _onSelectDevice(name),
         onLongPress: () => _showDeleteDeviceDialog(index),
         child: Container(
           width: screenWidth / 2 - 40.w,
@@ -314,15 +325,13 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
     });
   }
 
-  /// 1:1 还原旧 `_loadingContainers()` — 搜索中加载占位卡片。
-  /// 1:1 UI 无功能:onTap 仅 print 一句 "请等待"。
+  /// 搜索中加载占位卡片。
   List<Widget> _buildLoadingContainers() {
     final l10n = AppLocalizations.of(context)!;
-    return List.generate(_loadingDeviceNames.length, (index) {
-      final name = _loadingDeviceNames[index];
+    return List.generate(4, (index) {
       return InkWell(
         onTap: () {
-          print('[DeviceSearch] loading device $index tapped: please wait');
+          debugPrint('[DeviceSearch] loading device $index tapped');
         },
         child: Container(
           width: 340.r,
@@ -338,12 +347,12 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                name,
+                '...',
                 textAlign: TextAlign.start,
                 style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
               ),
               Text(
-                name,
+                '...',
                 textAlign: TextAlign.start,
                 style: TextStyle(fontSize: 25.sp, color: FitTheme.textColor),
               ),
