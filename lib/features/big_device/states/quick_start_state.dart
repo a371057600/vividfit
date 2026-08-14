@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'goal_banner_display_state.dart';
+
 part 'quick_start_state.freezed.dart';
 
 @freezed
@@ -81,14 +83,14 @@ abstract class QuickStartState with _$QuickStartState {
     /// 已达成的卡路里目标档位索引。
     @Default(<int>[]) List<int> achievedEnergyLevels,
 
-    /// 是否显示【时间目标达成】弹窗。
-    @Default(false) bool showTimeGoalDialog,
+    /// 【时间目标达成】弹窗的显示状态。
+    @Default(GoalBannerDisplayState.hidden) GoalBannerDisplayState timeDialogDisplayState,
 
-    /// 是否显示【距离目标达成】弹窗。
-    @Default(false) bool showDistanceGoalDialog,
+    /// 【距离目标达成】弹窗的显示状态。
+    @Default(GoalBannerDisplayState.hidden) GoalBannerDisplayState distanceDialogDisplayState,
 
-    /// 是否显示【卡路里目标达成】弹窗。
-    @Default(false) bool showEnergyGoalDialog,
+    /// 【卡路里目标达成】弹窗的显示状态。
+    @Default(GoalBannerDisplayState.hidden) GoalBannerDisplayState energyDialogDisplayState,
 
     /// 当前触发的时间目标值（秒），供 UI 展示。
     @Default(0) int currentTimeGoalSec,
@@ -98,5 +100,15 @@ abstract class QuickStartState with _$QuickStartState {
 
     /// 当前触发的卡路里目标值（千卡），供 UI 展示。
     @Default(0.0) double currentEnergyGoalKcal,
+
+    // ==================== 阻力加载状态（任务3） ====================
+    /// 阻力指令下发后是否正在等待设备回执实际阻力值。
+    /// true 时中心按钮显示「获取中」，收到 0x07 回执或超时后置 false。
+    @Default(false) bool isFetchingResistance,
+
+    // ==================== 设备运行状态检测（任务5） ====================
+    /// 进入界面时检测到设备是否正在运行（speed/cadence/strokeRate > 0）。
+    /// true 时弹出引导用户先停止设备的阻塞弹窗，设备停转后自动置 false。
+    @Default(false) bool isDeviceRunningDetected,
   }) = _QuickStartState;
 }

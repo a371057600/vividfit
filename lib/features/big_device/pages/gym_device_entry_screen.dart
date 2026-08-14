@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 // ignore: unused_import
@@ -12,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../data/entry_card_data.dart';
 import '../notifiers/gym_course_home_notifier.dart';
 import '../notifiers/gym_device_connect_notifier.dart';
+import '../notifiers/quick_start_notifier.dart';
 import '../states/gym_course_home_state.dart';
 import '../states/gym_device_connect_state.dart';
 import 'device_search_dialog.dart';
@@ -41,6 +43,13 @@ class GymDeviceEntryScreen extends ConsumerStatefulWidget {
 class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
   /// 搜索对话框是否仍然打开(防止 5.5s 定时器误弹入口页)。
   bool _isSearchDialogOpen = false;
+
+  /// 是否允许直接 pop。PopScope 拦截所有返回（系统手势 + AppBar 返回），
+  /// 先执行断开蓝牙 + 恢复竖屏，再置 true 放行 pop，避免死循环。
+  bool _canPop = false;
+
+  /// 退出流程进行中标记，防止用户连续点击返回重复触发 haltSport。
+  bool _isExiting = false;
 
   @override
   void initState() {
@@ -89,6 +98,24 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     }
   }
 
+  /// 统一退出流程：断开蓝牙 → 恢复竖屏 → pop。
+  ///
+  /// 由 PopScope 统一拦截所有返回路径（系统返回手势 / AppBar 返回按钮）触发，
+  /// 确保无论以何种方式退出入口页，都会先断开蓝牙连接。
+  /// 用 `_isExiting` 防重入，用 `_canPop` 放行最终 pop 避免 PopScope 死循环。
+  Future<void> _handleExit() async {
+    if (_isExiting) return;
+    _isExiting = true;
+    final connectNotifier = ref.read(gymDeviceConnectProvider.notifier);
+    // 1. 断开蓝牙连接（含停止运动）
+    await connectNotifier.haltSport();
+    if (!mounted) return;
+    // 2. 放行 PopScope，避免下方 context.pop() 再次触发拦截
+    setState(() => _canPop = true);
+    // 3. 恢复竖屏并退出
+    await _restoreOrientationAndPop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final tr = AppLocalizations.of(context)!;
@@ -98,88 +125,100 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     final connectNotifier = ref.read(gymDeviceConnectProvider.notifier);
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: FitTheme.backgroundColor,
-        appBar: AppBar(
+    return PopScope(
+      // 拦截所有返回：先断开蓝牙再放行 pop
+      canPop: _canPop,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _handleExit();
+      },
+      child: SafeArea(
+        child: Scaffold(
           backgroundColor: FitTheme.backgroundColor,
-          elevation: 0,
-          actionsPadding: EdgeInsets.only(right: 45.w),
-          actions: [
-            InkWell(
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              onTap: () async {
-                // 先断开已有连接，避免状态冲突
-                connectNotifier.disconnectIfAny();
-                // 请求权限 + 启动蓝牙扫描（iOS首次触发系统权限弹窗的关键入口）
-                await connectNotifier.startDeviceScan(context);
-                if (!context.mounted) return;
-                // 弹出搜索对话框
-                _isSearchDialogOpen = true;
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => const DeviceSearchDialog(),
-                ).then((_) {
-                  // 对话框关闭(用户选择设备或手动关闭)后清除标记
-                  _isSearchDialogOpen = false;
-                });
-                // 5.5s后自动关闭对话框（仅当对话框仍然打开时才执行）
-                final selfContext = context;
-                Future.delayed(
-                  const Duration(seconds: 5, milliseconds: 500),
-                  () {
-                    if (!_isSearchDialogOpen) return;
-                    if (selfContext.mounted &&
-                        Navigator.of(selfContext).canPop()) {
-                      Navigator.pop(selfContext);
+          appBar: AppBar(
+            backgroundColor: FitTheme.backgroundColor,
+            elevation: 0,
+            actionsPadding: EdgeInsets.only(right: 45.w),
+            // 显隐守卫(1:1 还原旧项目 Obx: isDeviceConnect || searchStatus 时不渲染 actions)
+            // 设备已蓝牙连接(Layer1,含订阅中→设备就绪全过程)或正在搜索时隐藏按钮,
+            // 避免连接后仍可点击触发重复扫描;断开后自动恢复显示。
+            // 注:旧项目用 isDeviceConnect(Layer2),此处按需求改用 isBluetoothConnected(Layer1)
+            actions: [
+              if (!connectState.isBluetoothConnected &&
+                  !connectState.isSearching)
+                InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () async {
+                    // 先断开已有连接，避免状态冲突
+                    connectNotifier.disconnectIfAny();
+                    // 请求权限 + 启动蓝牙扫描（iOS首次触发系统权限弹窗的关键入口）
+                    await connectNotifier.startDeviceScan(context);
+                    if (!context.mounted) return;
+                    // 弹出搜索对话框
+                    _isSearchDialogOpen = true;
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => const DeviceSearchDialog(),
+                    ).then((_) {
+                      // 对话框关闭(用户选择设备或手动关闭)后清除标记
                       _isSearchDialogOpen = false;
-                    }
+                    });
+                    // 5.5s后自动关闭对话框（仅当对话框仍然打开时才执行）
+                    final selfContext = context;
+                    Future.delayed(
+                      const Duration(seconds: 5, milliseconds: 500),
+                      () {
+                        if (!_isSearchDialogOpen) return;
+                        if (selfContext.mounted &&
+                            Navigator.of(selfContext).canPop()) {
+                          Navigator.pop(selfContext);
+                          _isSearchDialogOpen = false;
+                        }
+                      },
+                    );
                   },
-                );
-              },
-              child: Text(
-                tr.deviceConnection,
-                style: TextStyle(
-                  color: FitTheme.textColor,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
+                  child: Text(
+                    tr.deviceConnection,
+                    style: TextStyle(
+                      color: FitTheme.textColor,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
-
-          leadingWidth: 50.w,
-          leading: IconButton(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            icon: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
-            onPressed: () async {
-              await connectNotifier.haltSport();
-              await _restoreOrientationAndPop();
-            },
-          ),
-        ),
-        body: Container(
-          width: screenWidth,
-          margin: EdgeInsets.only(left: 120, right: 15).r,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _buildHeaderTitle(homeState, tr),
-              SizedBox(height: 15.h),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: homeNotifier.resolvedEntryCards
-                      .map(
-                        (data) => _buildLandscapeCard(data, tr, connectState),
-                      )
-                      .toList(),
-                ),
-              ),
             ],
+
+            leadingWidth: 50.w,
+            leading: IconButton(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              icon: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),
+              // 触发 PopScope 统一退出流程（断开蓝牙 + 恢复竖屏 + pop）
+              onPressed: () => Navigator.maybePop(context),
+            ),
+          ),
+          body: Container(
+            width: screenWidth,
+            margin: EdgeInsets.only(left: 120, right: 15).r,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                _buildHeaderTitle(homeState, tr),
+                SizedBox(height: 15.h),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: homeNotifier.resolvedEntryCards
+                        .map(
+                          (data) => _buildLandscapeCard(data, tr, connectState),
+                        )
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -196,7 +235,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
           _tr(tr, titleKey),
           style: TextStyle(
             color: FitTheme.textColor,
-            fontSize: 20.sp,
+            fontSize: 16.sp,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -204,7 +243,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
           _deviceSubtitle(tr, titleKey),
           style: TextStyle(
             color: FitTheme.textColor,
-            fontSize: 14.sp,
+            fontSize: 10.sp,
             fontWeight: FontWeight.normal,
           ),
         ),
@@ -227,7 +266,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
         onTap: () => _handleCardTap(data, connectState),
         child: Container(
           width: 125.w,
-          margin: EdgeInsets.only(bottom: 15.h),
+          margin: EdgeInsets.only(bottom: 50.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30.r),
@@ -302,7 +341,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 15.h),
+                    SizedBox(height: 50.h),
                   ],
                 ),
               ),
@@ -315,33 +354,30 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
 
   /// 卡片点击:按 index 跳转到对应子页面。
   ///
-  /// 1:1 还原旧 `_handleCardTap` 的蓝牙连接守卫逻辑:
-  /// 1. 未连接 → 请求权限 → 检查蓝牙 → 断开已有连接 → 启动扫描 → 弹出搜索对话框
-  /// 2. 已连接 → 直接跳转到对应功能页面
+  /// 蓝牙连接守卫:
+  /// 1. 未连接 → 仅提示"请先连接设备"并 return，禁止进入任何子页面。
+  ///    搜索连接由 AppBar「设备连接」按钮统一触发，卡片点击不再弹搜索框。
+  /// 2. 已连接 → 清除共享运动数据后跳转到对应功能页面。
   void _handleCardTap(
     EntryCardData data,
     GymDeviceConnectState connectState,
   ) async {
     final deviceType = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
+    final tr = AppLocalizations.of(context)!;
 
-    // === 蓝牙连接守卫(临时隐藏,测试用) ===
-    // TODO(恢复时): 取消注释下方代码,启用蓝牙连接守卫
-    // if (!connectState.isEquipmentConnected) {
-    //   if (connectState.isBluetoothConnected) {
-    //     ref.read(gymDeviceConnectProvider.notifier).disconnectIfAny();
-    //   }
-    //   if (!connectState.isSearching) {
-    //     ref.read(gymDeviceConnectProvider.notifier).startDeviceScan();
-    //   }
-    //   if (!context.mounted) return;
-    //   showDialog(
-    //     context: context,
-    //     barrierDismissible: false,
-    //     builder: (_) => const DeviceSearchDialog(),
-    //   );
-    //   return;
-    // }
+    // === 蓝牙连接守卫 ===
+    // 未连接设备时：禁止进入子页面，仅 toast 提示（搜索连接由 AppBar「设备连接」按钮触发）
+    if (!connectState.isEquipmentConnected) {
+      Fluttertoast.showToast(msg: tr.pleaseConnectDevice);
+      return;
+    }
     // === 守卫结束 ===
+
+    // === 进入子页面前清除共享运动数据 ===
+    // quickStartProvider 为 keepAlive，跨页面常驻（快速开始页与游戏页共用）。
+    // 若残留脏数据（isPlaying / 计时器 / 目标弹窗状态），重新进入会导致功能冲突，
+    // 因此进入任何子页面前统一清零。
+    ref.read(quickStartProvider.notifier).clearData();
 
     // 跳转到对应子页面(1:1 还原旧 `_buildJumptoPage` 的 index 映射)
     // 使用 push 而非 go,保留入口页在栈底,避免返回时"popped last page"错误

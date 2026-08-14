@@ -249,6 +249,29 @@ abstract class GymCoursePlayState with _$GymCoursePlayState {
 
     /// 速度图表数据（每 5 秒采样）
     @Default([]) List<double> speedChartData,
+
+    // ─── 结束页统计字段（Task 13） ───
+
+    /// 最大踏频 (rpm)
+    @Default(0) int maxCadence,
+
+    /// 最大心率 (bpm)
+    @Default(0) int maxHeartRate,
+
+    /// 最大配速 (min/km)
+    @Default(0.0) double maxPace,
+
+    /// 平均阻力
+    @Default(0.0) double avgResistance,
+
+    /// 平均坡度
+    @Default(0.0) double avgInclination,
+
+    /// 平均桨频 (spm)
+    @Default(0.0) double avgStrokeRate,
+
+    /// 完成度百分比 (0-100)
+    @Default(0.0) double finishPercent,
   }) = _GymCoursePlayState;
 }
 

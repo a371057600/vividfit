@@ -118,7 +118,7 @@ abstract class FtmsServiceBase {
     debugPrint('[FTMS] === disconnect BEGIN ===');
     _hasReceivedFirstData = false;
     onDataReady = null;
-    
+
     await _dataSubscription?.cancel();
     await _statusSubscription?.cancel();
     _dataSubscription = null;
@@ -135,6 +135,14 @@ abstract class FtmsServiceBase {
 
     await _dataController.close();
     await _statusController.close();
+
+    // 清空所有特征值与服务引用,确保 dispose 后 isReady 返回 false。
+    // 防止持有旧引用的调用方(如未刷新的 dispatcher)误判为可用而写入失效特征值。
+    _dataCharacteristic = null;
+    _controlCharacteristic = null;
+    _statusCharacteristic = null;
+    _ftmsService = null;
+    _device = null;
     debugPrint('[FTMS] === disconnect END ===');
   }
 
@@ -194,6 +202,11 @@ abstract class FtmsServiceBase {
     debugPrint('[FTMS] >>> setTargetPower ${watts}W (0x09)');
     return _writeControl(FtmsCommandBuilder.setTargetPower(watts));
   }
+
+  /// 写入控制点(Control Point 0x2AD9)原始字节。
+  ///
+  /// 供 [FtmsCommandDispatcher] 等外部调度器直接下发已构建的指令字节。
+  Future<void> writeControlPoint(List<int> data) => _writeControl(data);
 
   // ---- 读取特征值 ----
 

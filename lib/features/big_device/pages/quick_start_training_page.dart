@@ -12,9 +12,16 @@ import '../../../core/widgets/oval_track_widget.dart';
 import '../../../core/widgets/realtime_chart_widget.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/exercise_song_library.dart';
-import '../data/sport_metric_icons.dart';
+import '../models/device_control_callbacks.dart';
+import '../models/device_control_data.dart';
+import '../models/sport_data_model.dart';
+import '../notifiers/distance_unit_notifier.dart';
 import '../notifiers/quick_start_notifier.dart';
+import '../states/goal_banner_display_state.dart';
 import '../states/quick_start_state.dart';
+import '../widgets/goal_banner_animator.dart';
+import '../widgets/sport_control_panel.dart';
+import '../widgets/sport_data_display.dart';
 
 /// 快速开始页（对应旧 `big_device_quick_start_screen.dart`）。
 ///
@@ -61,6 +68,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           final notifier = _quickStartNotifier;
           notifier.setDeviceType(widget.deviceType);
           notifier.sendResetToDevice();
+          // 任务5：进入界面后检测设备是否正在运行
+          notifier.checkDeviceRunningOnEntry();
         }
       });
     });
@@ -76,10 +85,19 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
   @override
   void dispose() {
     _controller.dispose();
-    _audioPlayer.stop();
-    _audioPlayer.dispose();
-    // ✅ 用字段引用（而非 ref.read）：页面即将/已经 unmounted 也是安全的
-    _quickStartNotifier.disposeGoalTimers();
+    // ✅ 仅调用 dispose()（内部会停止播放）；不再先 stop()，
+    // 避免 stop() 未 await 的 Future 与 dispose() 内部 Future 链相互 complete，
+    // 触发 "Cannot complete a future with itself" 异常。
+    // try-catch 防御性兜底：卸载阶段任何音频异常都不应影响页面退出。
+    try {
+      _audioPlayer.dispose();
+    } catch (e) {
+      print('[Music] dispose error: $e');
+    }
+    // ✅ dispose 阶段 widget tree 处于重建周期，仅清理 Timer 资源，
+    // 不修改 provider state，避免触发「Tried to modify a provider while
+    // the widget tree was building」异常。
+    _quickStartNotifier.cancelAllGoalTimers();
     super.dispose();
   }
 
@@ -109,41 +127,9 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                 _buildBackButton(state),
                 Positioned(
                   left: 40.w,
-                  top: 40.h,
+                  top: 80.h,
                   child: _buildMusicButton(state),
                 ),
-                // [DEBUG-TEST-BUTTONS] 开始：调试测试按钮（测试完成后搜索本标记删除整块）
-                Positioned(
-                  bottom: 12.h,
-                  left: 0,
-                  right: 0,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildDebugTestButton(
-                        label: '距离',
-                        onTap: ref
-                            .read(quickStartProvider.notifier)
-                            .debugForceTriggerDistanceDialog,
-                      ),
-                      SizedBox(width: 12.w),
-                      _buildDebugTestButton(
-                        label: '时间',
-                        onTap: ref
-                            .read(quickStartProvider.notifier)
-                            .debugForceTriggerTimeDialog,
-                      ),
-                      SizedBox(width: 12.w),
-                      _buildDebugTestButton(
-                        label: '卡路里',
-                        onTap: ref
-                            .read(quickStartProvider.notifier)
-                            .debugForceTriggerEnergyDialog,
-                      ),
-                    ],
-                  ),
-                ),
-                // [DEBUG-TEST-BUTTONS] 结束
                 // ==================== 3 个目标达成弹窗（下方胶囊 Banner 三等分布局） ====================
                 Builder(
                   builder: (ctx) {
@@ -151,13 +137,15 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                     // Provider 可能仍然发了最后一次 state 更新，导致 Builder 再进一次。
                     // 此时 ConsumerState.ref 已经不安全，先检查 mounted 再做任何操作。
                     if (!mounted) return const SizedBox.shrink();
+                    // 任务1：距离 Banner 单位跟随用户偏好
+                    final distUnit = ref.watch(distanceUnitProvider);
                     debugPrint(
                       '🔲 [DialogLayer] rebuild → '
-                      'showDist=${state.showDistanceGoalDialog} '
+                      'distState=${state.distanceDialogDisplayState} '
                       '(${state.currentDistanceGoalKm.toStringAsFixed(2)} km) · '
-                      'showTime=${state.showTimeGoalDialog} '
+                      'timeState=${state.timeDialogDisplayState} '
                       '(${state.currentTimeGoalSec ~/ 60} min) · '
-                      'showEnergy=${state.showEnergyGoalDialog} '
+                      'energyState=${state.energyDialogDisplayState} '
                       '(${state.currentEnergyGoalKcal.toStringAsFixed(0)} kcal)',
                     );
                     return Positioned(
@@ -166,47 +154,76 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                       bottom: 70.h,
                       child: Row(
                         children: [
-                          // 左 1/3 槽位 → 距离目标
+                          // 左 1/3 槽位 → 距离目标（从左侧滑入）
                           Expanded(
                             child: Center(
-                              child: (mounted && state.showDistanceGoalDialog)
-                                  ? Builder(
-                                      builder: (ctx2) {
-                                        debugPrint(
-                                          '🔲 [DialogLayer] 距离Banner: true，开始构建',
-                                        );
-                                        return _buildDistanceGoalBanner(state);
-                                      },
+                              child:
+                                  (mounted &&
+                                      state.distanceDialogDisplayState !=
+                                          GoalBannerDisplayState.hidden)
+                                  ? GoalBannerAnimator(
+                                      displayState:
+                                          state.distanceDialogDisplayState,
+                                      direction: EntryDirection.fromLeft,
+                                      child: Builder(
+                                        builder: (ctx2) {
+                                          debugPrint(
+                                            '🔲 [DialogLayer] 距离Banner: visible，开始构建',
+                                          );
+                                          return _buildDistanceGoalBanner(
+                                            state,
+                                            distUnit,
+                                          );
+                                        },
+                                      ),
                                     )
                                   : const SizedBox.shrink(),
                             ),
                           ),
-                          // 中 1/3 槽位 → 时长目标
+                          // 中 1/3 槽位 → 时长目标（从中心淡入）
                           Expanded(
                             child: Center(
-                              child: (mounted && state.showTimeGoalDialog)
-                                  ? Builder(
-                                      builder: (ctx2) {
-                                        debugPrint(
-                                          '🔲 [DialogLayer] 时长Banner: true，开始构建',
-                                        );
-                                        return _buildDurationGoalBanner(state);
-                                      },
+                              child:
+                                  (mounted &&
+                                      state.timeDialogDisplayState !=
+                                          GoalBannerDisplayState.hidden)
+                                  ? GoalBannerAnimator(
+                                      displayState:
+                                          state.timeDialogDisplayState,
+                                      direction: EntryDirection.fromCenter,
+                                      child: Builder(
+                                        builder: (ctx2) {
+                                          debugPrint(
+                                            '🔲 [DialogLayer] 时长Banner: visible，开始构建',
+                                          );
+                                          return _buildDurationGoalBanner(
+                                            state,
+                                          );
+                                        },
+                                      ),
                                     )
                                   : const SizedBox.shrink(),
                             ),
                           ),
-                          // 右 1/3 槽位 → 卡路里目标
+                          // 右 1/3 槽位 → 卡路里目标（从右侧滑入）
                           Expanded(
                             child: Center(
-                              child: (mounted && state.showEnergyGoalDialog)
-                                  ? Builder(
-                                      builder: (ctx2) {
-                                        debugPrint(
-                                          '🔲 [DialogLayer] 卡路里Banner: true，开始构建',
-                                        );
-                                        return _buildBurnGoalBanner(state);
-                                      },
+                              child:
+                                  (mounted &&
+                                      state.energyDialogDisplayState !=
+                                          GoalBannerDisplayState.hidden)
+                                  ? GoalBannerAnimator(
+                                      displayState:
+                                          state.energyDialogDisplayState,
+                                      direction: EntryDirection.fromRight,
+                                      child: Builder(
+                                        builder: (ctx2) {
+                                          debugPrint(
+                                            '🔲 [DialogLayer] 卡路里Banner: visible，开始构建',
+                                          );
+                                          return _buildBurnGoalBanner(state);
+                                        },
+                                      ),
                                     )
                                   : const SizedBox.shrink(),
                             ),
@@ -216,7 +233,102 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                     );
                   },
                 ),
+                // 任务5：设备运行中阻塞层（覆盖全屏，引导用户先停止设备）
+                if (state.isDeviceRunningDetected)
+                  _buildDeviceRunningBlocker(tr, state),
               ],
+        ),
+      ),
+    );
+  }
+
+  // ==================== 设备运行阻塞层（任务5） ====================
+
+  /// 设备运行中阻塞层：进入界面时若检测到设备正在运行，覆盖全屏引导用户先停止。
+  ///
+  /// - 半透明黑色遮罩 + 居中提示卡片
+  /// - 「发送停止指令」按钮：调用 stopSportImmediate 立即下发停止指令
+  /// - 「已停止，重新检测」按钮：重新调用 checkDeviceRunningOnEntry
+  /// - 数据流回落（isDeviceRunningDetected=false）时本层自动消失
+  Widget _buildDeviceRunningBlocker(
+    AppLocalizations tr,
+    QuickStartState state,
+  ) {
+    final notifier = ref.read(quickStartProvider.notifier);
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withValues(alpha: 0.75),
+        alignment: Alignment.center,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                size: 48,
+                color: const Color(0xFFE03B3B),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                tr.deviceInMotionPleaseStop,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Color(0xFF000000),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // 发送停止指令按钮
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE03B3B),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    notifier.stopSportImmediate();
+                    print('🔍 [DeviceCheck] 用户点击发送停止指令');
+                  },
+                  child: const Text(
+                    '发送停止指令',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // 重新检测按钮
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF000000),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    side: const BorderSide(color: Color(0xFFBBBBBB)),
+                  ),
+                  onPressed: () {
+                    notifier.checkDeviceRunningOnEntry();
+                    print('🔍 [DeviceCheck] 用户点击重新检测');
+                  },
+                  child: const Text('已停止，重新检测'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -302,106 +414,68 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     QuickStartState state,
     double screenWidth,
   ) {
-    final notifier = ref.read(quickStartProvider.notifier);
-    late List<_MetricConfig> metrics;
     late EdgeInsets padding;
-    late MainAxisAlignment mainAxisAlignment;
     late double containerWidth;
+
+    // 按设备类型精确构建数据模型（只传旧版对应字段，其余置 null 由组件自动过滤）
+    SportDataModel buildDataModel() {
+      switch (widget.deviceType) {
+        case FtmsDeviceType.indoorBike:
+          // 单车: 时间 / 距离 / 卡路里 / 速度 / 踏频
+          return SportDataModel(
+            elapsedSeconds: state.realSportTime,
+            distance: state.sportDistance,
+            energy: state.sportEnergy.toInt(),
+            speed: state.sportSpeed,
+            cadence: state.sportCadence.toInt(),
+          );
+        case FtmsDeviceType.treadmill:
+          // 跑步机: 时间 / 距离 / 卡路里 / 速度 / 心率
+          return SportDataModel(
+            elapsedSeconds: state.realSportTime,
+            distance: state.sportDistance,
+            energy: state.sportEnergy.toInt(),
+            speed: state.sportSpeed,
+            heartRate: state.sportHeartRate,
+          );
+        case FtmsDeviceType.crossTrainer:
+          // 椭圆机: 时间 / 距离 / 卡路里 / 速度 / 踏频
+          return SportDataModel(
+            elapsedSeconds: state.realSportTime,
+            distance: state.sportDistance,
+            energy: state.sportEnergy.toInt(),
+            speed: state.sportSpeed,
+            cadence: state.sportCadence.toInt(),
+          );
+        case FtmsDeviceType.rower:
+          // 划船机: 时间 / 距离 / 卡路里 / 桨数 / 桨频（不显示速度、心率）
+          return SportDataModel(
+            elapsedSeconds: state.realSportTime,
+            distance: state.sportDistance,
+            energy: state.sportEnergy.toInt(),
+            strokeCount: state.sportStrokeCount.toInt(),
+            strokeRate: state.sportStrokeRate.toInt(),
+          );
+        case FtmsDeviceType.strengthStation:
+          return const SportDataModel();
+      }
+    }
 
     switch (widget.deviceType) {
       case FtmsDeviceType.indoorBike:
-        padding = EdgeInsets.only(top: 30.h, right: 40.w, left: 80.w);
-        mainAxisAlignment = MainAxisAlignment.spaceBetween;
+      case FtmsDeviceType.rower:
+        padding = EdgeInsets.only(top: 30.h, right: 70.w, left: 60.w);
         containerWidth = screenWidth;
-        metrics = [
-          _MetricConfig(
-            SportMetricIcons.byIndex(0),
-            notifier.convertSecondsToTime(state.realSportTime),
-          ),
-          _MetricConfig(
-            SportMetricIcons.byIndex(1),
-            (state.sportDistance / 1000).toStringAsFixed(2),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(2), '${state.sportEnergy} '),
-          _MetricConfig(
-            SportMetricIcons.byIndex(3),
-            state.sportSpeed.toStringAsFixed(1),
-          ),
-          _MetricConfig(
-            SportMetricIcons.byIndex(7),
-            state.sportCadence.toStringAsFixed(0),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
-        ];
         break;
       case FtmsDeviceType.treadmill:
-        padding = EdgeInsets.only(top: 30.h, right: 50.w, left: 50.w);
-        mainAxisAlignment = MainAxisAlignment.spaceBetween;
+        padding = EdgeInsets.only(top: 30.h, right: 70.w, left: 60.w);
         containerWidth = screenWidth;
-        metrics = [
-          _MetricConfig(
-            SportMetricIcons.byIndex(0),
-            notifier.convertSecondsToTime(state.realSportTime),
-          ),
-          _MetricConfig(
-            SportMetricIcons.byIndex(1),
-            (state.sportDistance / 1000).toStringAsFixed(2),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(2), '${state.sportEnergy} '),
-          _MetricConfig(
-            SportMetricIcons.byIndex(3),
-            state.sportSpeed.toStringAsFixed(1),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
-        ];
         break;
       case FtmsDeviceType.crossTrainer:
-        padding = EdgeInsets.only(top: 30.h, right: 80.w, left: 60.w);
-        mainAxisAlignment = MainAxisAlignment.spaceAround;
+        padding = EdgeInsets.only(top: 30.h, right: 70.w, left: 60.w);
         containerWidth = screenWidth;
-        metrics = [
-          _MetricConfig(
-            SportMetricIcons.byIndex(0),
-            notifier.convertSecondsToTime(state.realSportTime),
-          ),
-          _MetricConfig(
-            SportMetricIcons.byIndex(1),
-            (state.sportDistance / 1000).toStringAsFixed(2),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(2), '${state.sportEnergy} '),
-          _MetricConfig(
-            SportMetricIcons.byIndex(3),
-            state.sportSpeed.toStringAsFixed(1),
-          ),
-          _MetricConfig(
-            SportMetricIcons.byIndex(7),
-            state.sportCadence.toStringAsFixed(0),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
-        ];
         break;
-      case FtmsDeviceType.rower:
-        padding = EdgeInsets.only(left: 120.w, top: 30.h, right: 50.w);
-        mainAxisAlignment = MainAxisAlignment.spaceBetween;
-        containerWidth = screenWidth - 170.w;
-        metrics = [
-          _MetricConfig(
-            SportMetricIcons.byIndex(0),
-            notifier.convertSecondsToTime(state.realSportTime),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(1), '${state.sportDistance} '),
-          _MetricConfig(SportMetricIcons.byIndex(2), '${state.sportEnergy} '),
-          _MetricConfig(
-            SportMetricIcons.byIndex(4),
-            state.sportStrokeCount.toStringAsFixed(0),
-          ),
-          _MetricConfig(
-            SportMetricIcons.byIndex(6),
-            state.sportStrokeRate.toStringAsFixed(0),
-          ),
-          _MetricConfig(SportMetricIcons.byIndex(5), '${state.sportHeartRate}'),
-        ];
-        break;
+
       case FtmsDeviceType.strengthStation:
         return [Container()];
     }
@@ -410,416 +484,89 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       Padding(
         padding: padding,
         child: Container(
-          width: containerWidth,
-          height: 150.h + kTopDataBarBottomPadding.h,
+          // width: containerWidth - 100,
+          height: 200.h + kTopDataBarBottomPadding.h,
           padding: EdgeInsets.only(bottom: kTopDataBarBottomPadding.h),
-          child: Row(
-            mainAxisAlignment: mainAxisAlignment,
-            children: metrics
-                .map((m) => _buildMetricItem(m.iconPath, m.value))
-                .toList(),
+          child: SportDataDisplay(
+            layout: DataDisplayLayout.horizontal,
+            deviceType: widget.deviceType,
+            data: buildDataModel(),
           ),
         ),
       ),
     ];
   }
 
-  Widget _buildMetricItem(String imagePath, String dataString) {
-    return Expanded(
-      child: Container(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 24.sp,
-              child: Image.asset(imagePath, fit: BoxFit.fill),
-            ),
-            Container(width: 3.w),
-            Container(
-              width: 50.w,
-              child: Text(
-                dataString,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: AppFonts.bebas,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ==================== 控制按钮层 ====================
 
   Widget _buildControllerButtonByDevice(QuickStartState state) {
-    switch (widget.deviceType) {
-      case FtmsDeviceType.indoorBike:
-      case FtmsDeviceType.crossTrainer:
-      case FtmsDeviceType.rower:
-        return _buildBikeController(state);
-      case FtmsDeviceType.treadmill:
-        return _buildTreadmillController(state);
-      case FtmsDeviceType.strengthStation:
-        return Container();
+    // 力量站无控制按钮（与原版一致）
+    if (widget.deviceType == FtmsDeviceType.strengthStation) {
+      return Container();
     }
-  }
 
-  Widget _buildBikeController(
-    QuickStartState state, {
-    // ===== 用户可调节的控制按钮容器参数（均有默认值） =====
-    double? controllerWidthFactor,
-    double? controllerHeightFactor,
-    EdgeInsetsGeometry? controllerMargin,
-  }) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final margin =
-        controllerMargin ??
-        EdgeInsets.only(
-          top: kControllerTopPaddingBike.h,
-          left: 40.w,
-          right: 40.w,
-          bottom: kControllerBottomPadding.h,
-        );
+    final notifier = ref.read(quickStartProvider.notifier);
+
+    // 按设备类型选择顶部间距常量（保留原版间距以维持终端观感一致）
+    final double topPadding = (widget.deviceType == FtmsDeviceType.treadmill)
+        ? kControllerTopPaddingTreadmill
+        : kControllerTopPaddingBike;
+
     return Container(
-      margin: margin,
+      margin: EdgeInsets.only(
+        top: 300.h,
+        left: 40.w,
+        right: 40.w,
+        bottom: kControllerBottomPadding.h,
+      ),
       width: screenWidth,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildLevelControlButton(
-            first: (state.buttonResistanceList[3]).toStringAsFixed(1),
-            second: (state.buttonResistanceList[2]).toStringAsFixed(1),
-            third: state.sportResistanceButton.toStringAsFixed(1),
-            fourth: (state.buttonResistanceList[1]).toStringAsFixed(1),
-            fifth: (state.buttonResistanceList[0]).toStringAsFixed(1),
-            type: "Resistance",
-            widthFactor: controllerWidthFactor,
-            heightFactor: controllerHeightFactor,
-            onTap: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonResistanceList[3], 2);
-            },
-            onTap1: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonResistanceList[2], 2);
-            },
-            onTap2: () {
-              ref.read(quickStartProvider.notifier).resistanceAdd();
-            },
-            onTap3: () {
-              ref.read(quickStartProvider.notifier).resistanceDown();
-            },
-            onTap4: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonResistanceList[1], 2);
-            },
-            onTap5: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonResistanceList[0], 2);
-            },
-            onLongPress2: () {
-              // TODO: 蓝牙模块迁移后对接 longPressResistanceAdd
-            },
-            onLongPressEnd2: (d) {
-              ref.read(quickStartProvider.notifier).longPressEnd();
-            },
-            onLongPress3: () {
-              // TODO: 蓝牙模块迁移后对接 longPressResistanceDown
-            },
-            onLongPressEnd3: (d) {
-              ref.read(quickStartProvider.notifier).longPressEnd();
-            },
-          ),
-          const Spacer(),
-          if (state.hasInclinationSupport)
-            _buildLevelControlButton(
-              first: (state.buttonInclinationList[3]).toStringAsFixed(1),
-              second: (state.buttonInclinationList[2]).toStringAsFixed(1),
-              third: state.sportInclinationButton.toStringAsFixed(1),
-              fourth: (state.buttonInclinationList[1]).toStringAsFixed(1),
-              fifth: (state.buttonInclinationList[0]).toStringAsFixed(1),
-              type: "Inclination",
-              widthFactor: controllerWidthFactor,
-              heightFactor: controllerHeightFactor,
-              onTap: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[3], 1);
-              },
-              onTap1: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[2], 1);
-              },
-              onTap2: () {
-                ref.read(quickStartProvider.notifier).inclinationAdd();
-              },
-              onTap3: () {
-                ref.read(quickStartProvider.notifier).inclinationDown();
-              },
-              onTap4: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[1], 1);
-              },
-              onTap5: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[0], 1);
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTreadmillController(
-    QuickStartState state, {
-    // ===== 用户可调节的控制按钮容器参数（均有默认值） =====
-    double? controllerWidthFactor,
-    double? controllerHeightFactor,
-    EdgeInsetsGeometry? controllerMargin,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final margin =
-        controllerMargin ??
-        EdgeInsets.only(
-          top: kControllerTopPaddingTreadmill.h,
-          left: 40.w,
-          right: 40.w,
-          bottom: kControllerBottomPadding.h,
-        );
-    return Container(
-      margin: margin,
-      width: screenWidth,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          if (state.hasInclinationSupport)
-            _buildLevelControlButton(
-              first: (state.buttonInclinationList[3]).toStringAsFixed(1),
-              second: (state.buttonInclinationList[2]).toStringAsFixed(1),
-              third: state.sportInclinationButton.toStringAsFixed(1),
-              fourth: (state.buttonInclinationList[1]).toStringAsFixed(1),
-              fifth: (state.buttonInclinationList[0]).toStringAsFixed(1),
-              type: "Inclination",
-              widthFactor: controllerWidthFactor,
-              heightFactor: controllerHeightFactor,
-              onTap: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[3], 1);
-              },
-              onTap1: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[2], 1);
-              },
-              onTap2: () {
-                ref.read(quickStartProvider.notifier).inclinationAdd();
-              },
-              onTap3: () {
-                ref.read(quickStartProvider.notifier).inclinationDown();
-              },
-              onTap4: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[1], 1);
-              },
-              onTap5: () {
-                final n = ref.read(quickStartProvider.notifier);
-                n.numberButton(state.buttonInclinationList[0], 1);
-              },
-            ),
-          const Spacer(),
-          _buildLevelControlButton(
-            first: (state.buttonSpeedList[3]).toStringAsFixed(1),
-            second: (state.buttonSpeedList[2]).toStringAsFixed(1),
-            third: state.sportSpeedButton.toStringAsFixed(1),
-            fourth: (state.buttonSpeedList[1]).toStringAsFixed(1),
-            fifth: (state.buttonSpeedList[0]).toStringAsFixed(1),
-            type: "Speed",
-            widthFactor: controllerWidthFactor,
-            heightFactor: controllerHeightFactor,
-            onTap: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonSpeedList[3], 0);
-            },
-            onTap1: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonSpeedList[2], 0);
-            },
-            onTap2: () {
-              ref.read(quickStartProvider.notifier).speedAdd();
-            },
-            onTap3: () {
-              ref.read(quickStartProvider.notifier).speedDown();
-            },
-            onTap4: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonSpeedList[1], 0);
-            },
-            onTap5: () {
-              final n = ref.read(quickStartProvider.notifier);
-              n.numberButton(state.buttonSpeedList[0], 0);
-            },
-            onLongPress2: () {
-              // TODO: 蓝牙模块迁移后对接 longPressSpeedAdd
-            },
-            onLongPressEnd2: (d) {
-              ref.read(quickStartProvider.notifier).longPressEnd();
-            },
-            onLongPress3: () {
-              // TODO: 蓝牙模块迁移后对接 longPressSpeedDown
-            },
-            onLongPressEnd3: (d) {
-              ref.read(quickStartProvider.notifier).longPressEnd();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 5 档控制按钮组件。
-  ///
-  /// 暴露 [widthFactor] / [heightFactor] 供用户按比例缩放整体尺寸。
-  /// 样式（色值、圆角、边框、布局）保持不变。
-  Widget _buildLevelControlButton({
-    required String first,
-    required String second,
-    required String third,
-    required String fourth,
-    required String fifth,
-    required String type,
-    Function()? onTap,
-    Function()? onTap1,
-    Function()? onTap2,
-    Function()? onTap3,
-    Function()? onTap4,
-    Function()? onTap5,
-    Function()? onLongPress2,
-    Function(LongPressEndDetails)? onLongPressEnd2,
-    Function()? onLongPress3,
-    Function(LongPressEndDetails)? onLongPressEnd3,
-    // ===== 用户可调节的尺寸参数（均有默认值） =====
-    double? widthFactor,
-    double? heightFactor,
-  }) {
-    final wf = widthFactor ?? kControllerWidthFactor;
-    final hf = heightFactor ?? kControllerHeightFactor;
-    final scaleFactor = wf < hf ? wf : hf; // 文字/图标取较小系数，保证不溢出
-
-    final screenHeight = MediaQuery.of(context).size.height;
-    final buttonWidth = 70.w * wf;
-    final buttonHeight = screenHeight * kControllerUsableHeightRatio * hf;
-
-    final buttonDecoration = BoxDecoration(
-      color: const Color.fromARGB(255, 25, 25, 25),
-      borderRadius: BorderRadius.circular(3),
-      border: Border.all(
-        color: const Color.fromARGB(255, 106, 95, 95),
-        width: 1,
-      ),
-    );
-
-    final textStyle = TextStyle(
-      fontSize: 18.sp * scaleFactor,
-      height: 0.8,
-      fontWeight: FontWeight.w500,
-      fontFamily: AppFonts.bebas,
-      color: Colors.white,
-    );
-
-    final innerMargin =
-        EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r * scaleFactor;
-    final innerBottomPadding = 4 * scaleFactor;
-
-    Widget buildButton(String value, Function()? onTapCallback) {
-      return Expanded(
-        flex: 1,
-        child: InkWell(
-          onTap: onTapCallback,
-          child: Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(bottom: innerBottomPadding),
-            margin: innerMargin,
-            decoration: buttonDecoration,
-            child: Text(value, style: textStyle),
-          ),
+      // 复用 SportControlPanel（full 模式内部使用 LevelControlButton 渲染 5 档按钮）：
+      // - 根据 deviceType 自动裁剪不支持的按钮组（速度 / 坡度 / 阻力）
+      // - hasInclinationSupport 控制坡度按钮组是否展示
+      child: SportControlPanel(
+        style: ControlPanelStyle.full,
+        deviceType: widget.deviceType,
+        data: DeviceControlData(
+          speedValue: state.sportSpeedButton,
+          inclineValue: state.sportInclinationButton,
+          resistanceValue: state.sportResistanceButton,
+          speedPresets: state.buttonSpeedList,
+          inclinePresets: state.buttonInclinationList,
+          resistancePresets: state.buttonResistanceList,
+          hasInclinationSupport: state.hasInclinationSupport,
+          resistanceLoading: state.isFetchingResistance,
         ),
-      );
-    }
+        callbacks: DeviceControlCallbacks(
+          // ===== 速度回调（跑步机） =====
+          onSpeedAdd: notifier.speedAdd,
+          onSpeedDown: notifier.speedDown,
+          // 长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
+          onSpeedLongPressAdd: notifier.speedLongPressAdd,
+          onSpeedLongPressDown: notifier.speedLongPressDown,
+          onSpeedPreset: (v) => notifier.numberButton(v, 0),
 
-    return SizedBox(
-      width: buttonWidth,
-      height: buttonHeight,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          buildButton(first, onTap),
-          buildButton(second, onTap1),
-          Expanded(
-            flex: 3,
-            child: Container(
-              margin: innerMargin,
-              decoration: buttonDecoration,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onLongPress: onLongPress2,
-                      onLongPressEnd: onLongPressEnd2,
-                      onTap: onTap2,
-                      child: Container(
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.add,
-                          size: 30.sp * scaleFactor,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(third, style: textStyle),
-                          SizedBox(height: 8.sp * scaleFactor),
-                          Text(
-                            type,
-                            style: TextStyle(
-                              fontSize: 8.sp * scaleFactor,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onLongPress: onLongPress3,
-                      onLongPressEnd: onLongPressEnd3,
-                      onTap: onTap3,
-                      child: Container(
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.remove,
-                          size: 30.sp * scaleFactor,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          buildButton(fourth, onTap4),
-          buildButton(fifth, onTap5),
-        ],
+          // ===== 坡度回调 =====
+          // 注意：Notifier 方法名为 inclinationAdd/inclinationDown（与 mixin 的 inclineAdd/inclineDown 不同），
+          // 这里通过方法引用直接绑定到 Notifier 的实际实现上。
+          onInclineAdd: notifier.inclinationAdd,
+          onInclineDown: notifier.inclinationDown,
+          // 长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
+          onInclineLongPressAdd: notifier.inclineLongPressAdd,
+          onInclineLongPressDown: notifier.inclineLongPressDown,
+          onInclinePreset: (v) => notifier.numberButton(v, 1),
+
+          // ===== 阻力回调（单车 / 椭圆机 / 划船机） =====
+          onResistanceAdd: notifier.resistanceAdd,
+          onResistanceDown: notifier.resistanceDown,
+          // 长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
+          onResistanceLongPressAdd: notifier.resistanceLongPressAdd,
+          onResistanceLongPressDown: notifier.resistanceLongPressDown,
+          onResistancePreset: (v) => notifier.numberButton(v, 2),
+
+          // ===== 长按结束（速度 / 坡度 / 阻力共用） =====
+          onLongPressEnd: notifier.longPressEnd,
+        ),
       ),
     );
   }
@@ -946,15 +693,20 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   Widget _buildBackButton(QuickStartState state) {
     return Positioned(
-      right: 30.w,
-      top: 30.h,
+      right: 40.w,
+      top: 80.h,
       child: InkWell(
         onTap: () {
           final notifier = ref.read(quickStartProvider.notifier);
-          notifier.clearData();
-          if (state.isPlaying) {
-            notifier.stopSport();
+          // 任务4：先停后退（对齐旧版 clearData + stopSport → Get.back 顺序）
+          // 1. 若设备正在运行，立即下发停止指令（dispatchImmediate 不走 debounce，
+          //    确保 pop 前停止指令必达设备）
+          if (state.isPlaying || state.sportSpeed > 0) {
+            notifier.stopSportImmediate();
           }
+          // 2. 清理本地运动数据（quickStartProvider 为 keepAlive，跨页面常驻）
+          notifier.clearData();
+          // 3. 退出页面（停止指令已即时下发，无需延迟）
           Navigator.of(context).pop();
         },
         child: SizedBox(
@@ -972,8 +724,13 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         ? InkWell(
             splashColor: Colors.transparent,
             onTap: () async {
-              await _audioPlayer.stop();
-              ref.read(quickStartProvider.notifier).updateMusicPlaying(false);
+              // ✅ 先切状态（乐观更新），等价旧项目"先 setState 再 stop"，
+              // 让按钮立即切回播放图标。
+              // 使用已缓存的 _quickStartNotifier 字段，避免异步/卸载场景下 ref 失效。
+              _quickStartNotifier.updateMusicPlaying(false);
+              print('[Music] stop');
+              // stop 不 await（与旧项目一致），避免阻塞 UI。
+              _audioPlayer.stop();
             },
             child: Container(
               height: 30.sp,
@@ -985,23 +742,26 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         : InkWell(
             splashColor: Colors.transparent,
             onTap: () async {
-              final index = _generateRandomNumber();
-              final songs = ExerciseSongLibrary.forType(widget.deviceType);
-              await _audioPlayer.setUrl(songs[index]);
-              // 音乐加载中过渡 Dialog
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (_) => const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              );
-              await _audioPlayer.play();
-              ref.read(quickStartProvider.notifier).updateMusicPlaying(true);
-              // 音乐开始播放后关闭对话框
-              Future.delayed(const Duration(milliseconds: 500), () {
-                if (mounted) Navigator.of(context).pop();
-              });
+              // ✅ 先切状态（乐观更新），等价旧项目"play() 后立即 setState"，
+              // 让按钮立即变成暂停图标；避免 await play() 在 Android 首次播放
+              // 因 MediaCodec 初始化耗时导致按钮迟迟不切换。
+              _quickStartNotifier.updateMusicPlaying(true);
+              print('[Music] play start');
+              try {
+                final index = _generateRandomNumber();
+                final songs = ExerciseSongLibrary.forType(widget.deviceType);
+                await _audioPlayer.setUrl(songs[index]);
+                // 页面可能在 setUrl 期间被退出（用户点返回），unmount 后不再操作 player。
+                if (!mounted) return;
+                // play 不 await（fire-and-forget），与旧项目一致，避免阻塞状态切换。
+                _audioPlayer.play();
+              } catch (e) {
+                print('[Music] play error: $e');
+                // 加载/播放失败，回退按钮状态。
+                if (mounted) {
+                  _quickStartNotifier.updateMusicPlaying(false);
+                }
+              }
             },
             child: Container(
               height: 25.sp,
@@ -1011,37 +771,6 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
             ),
           );
   }
-
-  // [DEBUG-TEST-BUTTONS] 开始：调试测试按钮封装（测试完成后搜索本标记删除整块）
-  Widget _buildDebugTestButton({
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8.r),
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.r, vertical: 10.r),
-        decoration: BoxDecoration(
-          color: Colors.red.withValues(alpha: 0.7),
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.5),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          '🧪 测试-$label',
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-  // [DEBUG-TEST-BUTTONS] 结束
 
   // ==================== 目标达成弹窗 UI（下方胶囊 Banner 并排） ====================
 
@@ -1127,127 +856,128 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         break;
     }
 
-    return AnimatedOpacity(
-      opacity: 1.0,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOut,
-      child: ClipRRect(
-        // 胶囊圆角：两端半圆，等于 bannerHeight / 2
-        // borderRadius: BorderRadius.circular(bannerHeight / 2),
-        child: Container(
-          width: bannerWidth,
-          height: bannerHeight,
-          // 背景图 + 纯色兜底层 + 细边框：三层叠加
-          decoration: BoxDecoration(
-            color: bgFallbackColor, // 最底层：兜底色
-            // border: Border.all(
-            //   // 边框缩小为 1，alpha 降低避免抢图片视觉
-            //   color: tagDebugColor.withValues(alpha: 0.22),
-            //   width: 1,
-            // ),
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: Colors.black.withValues(alpha: 0.30),
-            //     blurRadius: 16.r,
-            //     spreadRadius: 2.r,
-            //     offset: Offset(0, 6.r),
-            //   ),
-            // ],
-            image: DecorationImage(
-              image: AssetImage(backgroundAsset),
-              fit: BoxFit.fill,
-              onError: (e, s) {
-                debugPrint(
-                  '🖼️ [Banner-$bannerTag] 资源加载失败：$backgroundAsset, error=$e',
-                );
-              },
-              // 叠一层极淡的 tag 色，统一观感，不影响原图
-              colorFilter: ColorFilter.mode(
-                tagDebugColor.withValues(alpha: 0.08),
-                BlendMode.srcATop,
-              ),
+    // 动画效果由外层 GoalBannerAnimator 负责，此处直接返回内容
+    return ClipRRect(
+      // 胶囊圆角：两端半圆，等于 bannerHeight / 2
+      // borderRadius: BorderRadius.circular(bannerHeight / 2),
+      child: Container(
+        width: bannerWidth,
+        height: bannerHeight,
+        // 背景图 + 纯色兜底层 + 细边框：三层叠加
+        decoration: BoxDecoration(
+          color: bgFallbackColor, // 最底层：兜底色
+          // border: Border.all(
+          //   // 边框缩小为 1，alpha 降低避免抢图片视觉
+          //   color: tagDebugColor.withValues(alpha: 0.22),
+          //   width: 1,
+          // ),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.black.withValues(alpha: 0.30),
+          //     blurRadius: 16.r,
+          //     spreadRadius: 2.r,
+          //     offset: Offset(0, 6.r),
+          //   ),
+          // ],
+          image: DecorationImage(
+            image: AssetImage(backgroundAsset),
+            fit: BoxFit.fill,
+            onError: (e, s) {
+              debugPrint(
+                '🖼️ [Banner-$bannerTag] 资源加载失败：$backgroundAsset, error=$e',
+              );
+            },
+            // 叠一层极淡的 tag 色，统一观感，不影响原图
+            colorFilter: ColorFilter.mode(
+              tagDebugColor.withValues(alpha: 0.08),
+              BlendMode.srcATop,
             ),
           ),
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: textLeftPadding,
-              right: rightPadding,
-              top: vertPadding,
-              bottom: vertPadding,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 第 1 行：标题小字
-                Text(
-                  finalTitle,
-                  style: TextStyle(
-                    fontSize: titleFontSize,
-                    fontWeight: FontWeight.w500,
-                    color: titleColor,
-                  ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: textLeftPadding,
+            right: rightPadding,
+            top: vertPadding,
+            bottom: vertPadding,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 第 1 行：标题小字
+              Text(
+                finalTitle,
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.w500,
+                  color: titleColor,
                 ),
-                SizedBox(height: titleGap),
-                // 第 2 行：大字号数值 + 单位（自适应紧贴数值，不做 Expanded 撑满）
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        finalValue,
-                        maxLines: 1,
-                        overflow: TextOverflow.fade,
-                        softWrap: false,
-                        style: TextStyle(
-                          fontSize: valueFontSize,
-                          fontWeight: FontWeight.bold,
-                          color: valueColor,
-                          fontFamily: AppFonts.bebas,
-                          height: 1.05,
-                        ),
+              ),
+              SizedBox(height: titleGap),
+              // 第 2 行：大字号数值 + 单位（自适应紧贴数值，不做 Expanded 撑满）
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Flexible(
+                    child: Text(
+                      finalValue,
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      softWrap: false,
+                      style: TextStyle(
+                        fontSize: valueFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: valueColor,
+                        fontFamily: AppFonts.bebas,
+                        height: 1.05,
                       ),
                     ),
-                    if (finalUnit.isNotEmpty) ...[
-                      SizedBox(width: valueGap),
-                      Text(
-                        finalUnit,
-                        style: TextStyle(
-                          fontSize: unitFontSize,
-                          fontWeight: FontWeight.w700,
-                          color: valueColor.withValues(alpha: 0.9),
-                          fontFamily: AppFonts.bebas,
-                        ),
+                  ),
+                  if (finalUnit.isNotEmpty) ...[
+                    SizedBox(width: valueGap),
+                    Text(
+                      finalUnit,
+                      style: TextStyle(
+                        fontSize: unitFontSize,
+                        fontWeight: FontWeight.w700,
+                        color: valueColor.withValues(alpha: 0.9),
+                        fontFamily: AppFonts.bebas,
                       ),
-                    ],
+                    ),
                   ],
-                ),
-                // 第 3 行：非就绪状态提示（只在 loading/error 时展示）
-                if (status != _BannerDataStatus.ready) ...[
-                  SizedBox(height: tipGap),
-                  Text(
-                    status == _BannerDataStatus.loading
-                        ? '请稍候，数据即将就绪…'
-                        : '点击按钮重新触发即可',
-                    style: TextStyle(
-                      fontSize: tipFontSize,
-                      color: Colors.white.withValues(alpha: 0.75),
-                    ),
-                  ),
                 ],
+              ),
+              // 第 3 行：非就绪状态提示（只在 loading/error 时展示）
+              if (status != _BannerDataStatus.ready) ...[
+                SizedBox(height: tipGap),
+                Text(
+                  status == _BannerDataStatus.loading
+                      ? '请稍候，数据即将就绪…'
+                      : '点击按钮重新触发即可',
+                  style: TextStyle(
+                    fontSize: tipFontSize,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  /// 距离目标 Banner（左位置，紫胶囊 + 跑鞋）
-  Widget _buildDistanceGoalBanner(QuickStartState state) {
+  /// 距离目标 Banner（左位置，紫胶囊 + 跑鞋）。
+  ///
+  /// [distUnit] 控制距离单位展示（km / mile），与顶部数据栏保持一致。
+  Widget _buildDistanceGoalBanner(
+    QuickStartState state,
+    DistanceUnit distUnit,
+  ) {
     const tag = 'DIST';
     _BannerDataStatus status = _BannerDataStatus.ready;
     String formatted = '';
@@ -1259,16 +989,20 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         status = _BannerDataStatus.loading;
         debugPrint(
           '⚠️ [Banner-$tag] 数据未就绪：currentDistanceGoalKm=$km '
-          '(show=${state.showDistanceGoalDialog})',
+          '(displayState=${state.distanceDialogDisplayState})',
         );
       } else {
-        // ② 距离去零格式化：0.5→"0.5"，1→"1"，30→"30"，与 XML 表现一致
-        formatted = (km == km.roundToDouble())
-            ? km.toInt().toString()
-            : km.toStringAsFixed(1);
+        // ② 按用户偏好转换单位（km 直接用，mile 则 km × 0.621371）
+        final num displayValue = distUnit == DistanceUnit.mile
+            ? km * 0.621371
+            : km;
+        // ③ 距离去零格式化：0.5→"0.5"，1→"1"，30→"30"，与 XML 表现一致
+        formatted = (displayValue == displayValue.roundToDouble())
+            ? displayValue.toInt().toString()
+            : displayValue.toStringAsFixed(1);
       }
     } catch (e, s) {
-      // ③ 格式化发生任何异常（类型转换/toString 异常），统一进入 error 状态，防止崩溃+空白
+      // ④ 格式化发生任何异常（类型转换/toString 异常），统一进入 error 状态，防止崩溃+空白
       status = _BannerDataStatus.error;
       debugPrint('❌ [Banner-$tag] 格式化异常：$e\n$s');
     }
@@ -1277,7 +1011,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       backgroundAsset: 'images/newUIScreen/device_icons/quick_distance.png',
       title: '运动距离',
       valueText: formatted,
-      unitText: 'KM',
+      // 单位文案跟随用户偏好（km / mile）
+      unitText: distUnit.label.toUpperCase(),
       status: status,
       bannerTag: tag,
     );
@@ -1297,7 +1032,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         status = _BannerDataStatus.loading;
         debugPrint(
           '⚠️ [Banner-$tag] 数据未就绪：seconds=$seconds, minutes=$minutes '
-          '(show=${state.showTimeGoalDialog})',
+          '(displayState=${state.timeDialogDisplayState})',
         );
       } else {
         formatted = '$minutes';
@@ -1329,7 +1064,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         status = _BannerDataStatus.loading;
         debugPrint(
           '⚠️ [Banner-$tag] 数据未就绪：currentEnergyGoalKcal=$kcal '
-          '(show=${state.showEnergyGoalDialog})',
+          '(displayState=${state.energyDialogDisplayState})',
         );
       } else {
         formatted = kcal.toStringAsFixed(0);
@@ -1353,15 +1088,9 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 /// Banner 数据展示状态（区分「加载中 / 就绪 / 异常」，避免空白背景无任何提示）。
 enum _BannerDataStatus { loading, ready, error }
 
-/// ==================== 控制按钮缩放与间距常量（集中调节入口） ====================
-/// 控制按钮整体宽度缩放系数，用户可直接调此值控制整体大小。
-const double kControllerWidthFactor = 1;
-
-/// 控制按钮整体高度缩放系数。
-const double kControllerHeightFactor = 0.98;
-
-/// 控制按钮可用高度占屏幕高度的比例（0.82 × 0.86 ≈ 70% 屏占比）。
-const double kControllerUsableHeightRatio = 0.82;
+/// ==================== 控制按钮间距常量（集中调节入口） ====================
+/// 注：宽度/高度缩放系数与可用高度比例已迁移至 LevelControlButton 内部私有常量，
+/// 此处仅保留页面外层布局所需的间距常量。
 
 /// 控制按钮距顶部的额外间距（避免遮挡顶部数据栏）。
 const double kControllerTopPaddingBike = 200.0;
@@ -1372,10 +1101,3 @@ const double kControllerBottomPadding = 70.0;
 
 /// 顶部数据栏底部额外安全间隙。
 const double kTopDataBarBottomPadding = 25.0;
-
-/// 顶部数据栏单项配置。
-class _MetricConfig {
-  final String iconPath;
-  final String value;
-  const _MetricConfig(this.iconPath, this.value);
-}

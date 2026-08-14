@@ -54,4 +54,7 @@ class StorageKeys {
   static const String ellipticalMachine = 'ellipticalMachine';
   static const String powerMachine = 'powerMachine';
   static const String powerStationMachine = 'powerStationMachine';
+
+  /// 大设备距离单位偏好（0=km 公制，1=mile 英制），默认公制与旧版一致。
+  static const String bigDeviceDistanceUnit = 'bigDeviceDistanceUnit';
 }

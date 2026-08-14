@@ -139,6 +139,12 @@ class StorageService {
   Future<void> setStrengthStationName(String v) =>
       _prefs.setString(StorageKeys.powerStationMachine, v);
 
+  // ---- 大设备模块:距离单位偏好（0=km 公制，1=mile 英制）----
+  int get bigDeviceDistanceUnit =>
+      _prefs.getInt(StorageKeys.bigDeviceDistanceUnit) ?? 0;
+  Future<void> setBigDeviceDistanceUnit(int v) =>
+      _prefs.setInt(StorageKeys.bigDeviceDistanceUnit, v);
+
   /// 清除所有登录相关数据(登出时调用)
   Future<void> clearAuth() async {
     await _prefs.remove(StorageKeys.accessToken);

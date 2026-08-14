@@ -9,9 +9,11 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../core/ftms/ftms_device_type.dart';
 import '../../../l10n/app_localizations.dart';
-import '../data/sport_metric_icons.dart';
+import '../models/sport_data_model.dart';
 import '../notifiers/gym_course_play_notifier.dart';
 import '../states/gym_course_play_state.dart';
+import '../widgets/pill_control_button.dart';
+import '../widgets/sport_data_display.dart';
 import '../widgets/triple_ring_progress.dart';
 
 /// 大设备运动播放页 (对应原版 big_device_play_screen.dart)
@@ -428,64 +430,72 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   // ── 4. 顶部数据条 ──
   Widget _buildTopDataBar(GymCoursePlayState state, double sw, double sh) {
     final deviceType = state.deviceType;
-    final fourthIcon = deviceType == FtmsDeviceType.rower
-        ? SportMetricIcons.strokeCount
-        : SportMetricIcons.speed;
-    final fourthValue = deviceType == FtmsDeviceType.rower
-        ? state.sportStrokeRate
-        : state.sportSpeed;
+
+    // 按设备类型精确构建数据模型（只传对应5个字段，其余置 null）
+    SportDataModel buildDataModel() {
+      switch (deviceType) {
+        case FtmsDeviceType.indoorBike:
+          // 单车: 时间 / 距离 / 卡路里 / 速度 / 踏频
+          return SportDataModel(
+            elapsedSeconds: _parseTimeToSeconds(state.sportTime),
+            distance: double.tryParse(state.sportDistance),
+            energy: double.tryParse(state.sportCalories)?.round(),
+            speed: state.sportDeviceSpeed,
+            cadence: int.tryParse(state.sportCadence),
+          );
+        case FtmsDeviceType.treadmill:
+          // 跑步机: 时间 / 距离 / 卡路里 / 速度 / 心率
+          return SportDataModel(
+            elapsedSeconds: _parseTimeToSeconds(state.sportTime),
+            distance: double.tryParse(state.sportDistance),
+            energy: double.tryParse(state.sportCalories)?.round(),
+            speed: state.sportDeviceSpeed,
+            heartRate: int.tryParse(state.sportHeartRate),
+          );
+        case FtmsDeviceType.crossTrainer:
+          // 椭圆机: 时间 / 距离 / 卡路里 / 速度 / 踏频
+          return SportDataModel(
+            elapsedSeconds: _parseTimeToSeconds(state.sportTime),
+            distance: double.tryParse(state.sportDistance),
+            energy: double.tryParse(state.sportCalories)?.round(),
+            speed: state.sportDeviceSpeed,
+            cadence: int.tryParse(state.sportCadence),
+          );
+        case FtmsDeviceType.rower:
+          // 划船机: 时间 / 距离 / 卡路里 / 桨数 / 桨频
+          return SportDataModel(
+            elapsedSeconds: _parseTimeToSeconds(state.sportTime),
+            distance: double.tryParse(state.sportDistance),
+            energy: double.tryParse(state.sportCalories)?.round(),
+            strokeCount: int.tryParse(state.sportStrokeCount),
+            strokeRate: int.tryParse(state.sportStrokeRate),
+          );
+        case FtmsDeviceType.strengthStation:
+          return const SportDataModel();
+      }
+    }
 
     return Container(
-      margin: EdgeInsets.only(
-        left: sw * 0.23,
-        top: sh * 0.03,
-        right: sw * 0.16,
-      ),
+      margin: EdgeInsets.only(left: 100, top: sh * 0.03, right: 100),
       height: sh * 0.12,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _topDataItem(SportMetricIcons.time, state.sportTime, sh, sw),
-          _topDataItem(SportMetricIcons.distance, state.sportDistance, sh, sw),
-          _topDataItem(SportMetricIcons.calories, state.sportCalories, sh, sw),
-          _topDataItem(fourthIcon, fourthValue, sh, sw),
-          _topDataItem(
-            SportMetricIcons.heartRate,
-            state.sportHeartRate,
-            sh,
-            sw,
-          ),
-        ],
+      child: SportDataDisplay(
+        layout: DataDisplayLayout.compact,
+        deviceType: deviceType,
+        data: buildDataModel(),
       ),
     );
   }
 
-  Widget _topDataItem(String iconPath, String value, double sh, double sw) {
-    final iconH = sh * 0.05;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Image.asset(
-          iconPath,
-          height: iconH,
-          fit: BoxFit.contain,
-          errorBuilder: (_, _, _) {
-            return Icon(Icons.circle, size: iconH, color: Colors.white);
-          },
-        ),
-        SizedBox(width: sw * 0.006),
-        Text(
-          value,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: sh * 0.038,
-            fontWeight: FontWeight.w500,
-            height: 1.0,
-          ),
-        ),
-      ],
-    );
+  /// 将 "MM:SS" 格式的时间字符串解析为秒数。
+  /// 用于把 state.sportTime 转换为 SportDataModel.elapsedSeconds。
+  int? _parseTimeToSeconds(String? time) {
+    if (time == null || time.isEmpty) return null;
+    final parts = time.split(':');
+    if (parts.length != 2) return null;
+    final m = int.tryParse(parts[0]);
+    final s = int.tryParse(parts[1]);
+    if (m == null || s == null) return null;
+    return m * 60 + s;
   }
 
   // ── 5. 左侧课程信息 ──
@@ -704,7 +714,8 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     );
   }
 
-  // ── 9. 控制按钮（阻力/速度/坡度，右侧BPM下方） ──
+  // ── 9. 控制按钮（左侧竖排：跑步机=坡度+速度，其他设备=阻力） ──
+  // 使用药丸形胶囊按钮（PillControlButton），按设备类型显示对应按钮组
   List<Widget> _buildControlButtons(
     GymCoursePlayState state,
     double sw,
@@ -712,148 +723,68 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   ) {
     final notifier = ref.read(gymCoursePlayProvider.notifier);
     final deviceType = state.deviceType;
-    final btnW = sw * 0.14;
-    final btnRadius = sh * 0.022;
-    final titleFs = sh * 0.022;
-    final valueFs = sh * 0.034;
-    final iconSize = sh * 0.042;
     final firstTop = sh * 0.18;
-    final gap = sh * 0.13;
+    final gap = sh * 0.16; // 按钮组之间的竖排间距
+
+    final result = <Widget>[];
 
     switch (deviceType) {
       case FtmsDeviceType.treadmill:
-        return [
-          if (state.hasInclinationSupport)
+        // 跑步机：坡度（若支持）+ 速度，竖排叠加
+        var top = firstTop;
+        if (state.hasInclinationSupport) {
+          result.add(
             Positioned(
               right: sw * 0.02,
-              top: firstTop,
-              child: _buildControlButton(
-                title: '速度',
-                value: state.sportSpeedButton.toStringAsFixed(1),
-                btnW: btnW,
-                radius: btnRadius,
-                titleFs: titleFs,
-                valueFs: valueFs,
-                iconSize: iconSize,
-                onAdd: notifier.speedAdd,
-                onSub: notifier.speedDown,
+              top: top,
+              child: PillControlButton(
+                title: '坡度',
+                value: state.sportInclinationButton.toStringAsFixed(1),
+                onAdd: notifier.inclinationAdd,
+                onDown: notifier.inclinationDown,
               ),
             ),
+          );
+          top += gap;
+        }
+        result.add(
           Positioned(
             right: sw * 0.02,
-            top: state.hasInclinationSupport ? firstTop + gap + 20 : firstTop,
-            child: _buildControlButton(
-              title: '坡度',
-              value: state.sportInclinationButton.toStringAsFixed(0),
-              btnW: btnW,
-              radius: btnRadius,
-              titleFs: titleFs,
-              valueFs: valueFs,
-              iconSize: iconSize,
-              onAdd: notifier.inclinationAdd,
-              onSub: notifier.inclinationDown,
+            top: top,
+            child: PillControlButton(
+              title: '速度',
+              value: state.sportSpeedButton.toStringAsFixed(1),
+              onAdd: notifier.speedAdd,
+              onDown: notifier.speedDown,
+              onLongPressAdd: notifier.speedAddLongPress,
+              onLongPressDown: notifier.speedDownLongPress,
+              onLongPressEnd: notifier.longPressEnd,
             ),
           ),
-        ];
+        );
+        break;
 
       case FtmsDeviceType.indoorBike:
       case FtmsDeviceType.crossTrainer:
       case FtmsDeviceType.rower:
       case FtmsDeviceType.strengthStation:
-        return [
+        // 单车/椭圆机/划船机/力量站：仅阻力按钮
+        result.add(
           Positioned(
             right: sw * 0.02,
             top: firstTop,
-            child: _buildControlButton(
+            child: PillControlButton(
               title: '阻力',
               value: state.sportResistanceButton.toStringAsFixed(1),
-              btnW: btnW,
-              radius: btnRadius,
-              titleFs: titleFs,
-              valueFs: valueFs,
-              iconSize: iconSize,
               onAdd: notifier.resistanceAdd,
-              onSub: notifier.resistanceDown,
+              onDown: notifier.resistanceDown,
             ),
           ),
-        ];
+        );
+        break;
     }
-  }
 
-  Widget _buildControlButton({
-    required String title,
-    required String value,
-    required double btnW,
-    required double radius,
-    required double titleFs,
-    required double valueFs,
-    required double iconSize,
-    required VoidCallback onAdd,
-    required VoidCallback onSub,
-  }) {
-    final padH = btnW * 0.12;
-    final padV = iconSize * 0.25;
-    final tapPad = iconSize * 0.45;
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF242424),
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      width: btnW,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: padH, vertical: padV),
-            child: Text(
-              title,
-              style: TextStyle(color: Colors.white, fontSize: titleFs),
-            ),
-          ),
-          Divider(height: 1, thickness: 0.5, color: Colors.white24),
-          Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: padH * 0.4,
-              vertical: padV * 0.5,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: onAdd,
-                  child: Padding(
-                    padding: EdgeInsets.all(tapPad),
-                    child: Icon(Icons.add, size: iconSize, color: Colors.white),
-                  ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: valueFs,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: onSub,
-                  child: Padding(
-                    padding: EdgeInsets.all(tapPad),
-                    child: Icon(
-                      Icons.remove,
-                      size: iconSize,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return result;
   }
 
   // ── 10. 右侧动作列表 ──
@@ -926,16 +857,16 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
               height: btnSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.25),
+                color: Colors.white.withValues(alpha: 0.49),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.5),
+                  color: Colors.white.withValues(alpha: 0.49),
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    blurRadius: btnSize * 0.15,
-                    spreadRadius: btnSize * 0.03,
+                    color: Colors.white.withValues(alpha: 0.30),
+                    blurRadius: 10,
+                    spreadRadius: 2,
                   ),
                 ],
               ),

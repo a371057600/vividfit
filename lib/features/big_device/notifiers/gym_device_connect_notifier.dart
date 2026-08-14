@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -75,6 +74,10 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
           isEquipmentConnected: false,
           isConnecting: false,
         );
+        // 清理旧 FTMS 服务实例(触发 dispose → disconnect),
+        // 避免下次连接复用失效的 _controlCharacteristic 引用
+        ref.invalidate(ftmsServiceProvider(_deviceCategory));
+        debugPrint('[Notifier] invalidated ftmsServiceProvider on disconnect');
         // 只有曾经连接过才显示断连提示(对应旧 _hasConnected 逻辑)
         if (state.hasConnectedOnce) {
           debugPrint('[Notifier] showing disconnect toast');
@@ -117,11 +120,23 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   ///
   /// 对应旧代码中 `connectSmartBike()` 里的 `bikeBluetoothTools().discoverS(...)` 调用。
   /// FTMS 服务内部会发现特征并开始订阅数据,收到第一个数据包后调用 [markEquipmentReady]。
+  ///
+  /// **关键修复**：每次蓝牙连接成功时,先 invalidate 旧的 [ftmsServiceProvider] 实例,
+  /// 强制销毁旧 FtmsService(触发其 disconnect 清理失效的特征值引用),
+  /// 再 read 触发重建,确保新实例基于当前连接重新执行服务发现。
+  /// 否则 keepAlive 缓存的旧实例在断开重连后,_controlCharacteristic 引用失效,
+  /// 写入时报 `primary service not found '1826'`。
   void _initializeFtmsService() {
     debugPrint('[Notifier] === _initializeFtmsService BEGIN ===');
     debugPrint('[Notifier] deviceCategory=$_deviceCategory');
 
     try {
+      // 强制销毁旧实例(断开重连场景下旧 characteristic 引用已失效)
+      ref.invalidate(ftmsServiceProvider(_deviceCategory));
+      debugPrint(
+        '[Notifier] invalidated old ftmsServiceProvider, rebuilding...',
+      );
+
       final ftmsService = ref.read(ftmsServiceProvider(_deviceCategory));
       if (ftmsService != null) {
         debugPrint(

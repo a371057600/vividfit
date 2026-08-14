@@ -6,7 +6,15 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/ftms/device_time_normalizer.dart';
+import '../../../core/ftms/ftms_command_dispatcher.dart';
+import '../../../core/ftms/ftms_data_sync_guard.dart';
+import '../../../core/ftms/ftms_device_data.dart';
 import '../../../core/ftms/ftms_device_type.dart';
+import '../../../core/ftms/ftms_service_base.dart';
+import '../../../core/ftms/ftms_service_provider.dart';
+import '../../../core/ftms/ftms_status_parser.dart';
+import '../../../core/ftms/sport_timer.dart';
 import '../states/gym_course_detail_state.dart';
 import '../states/gym_course_play_state.dart';
 import 'gym_course_detail_notifier.dart';
@@ -47,6 +55,48 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     return true;
   }
 
+  // ══════════════════════════════════════════════════════════
+  // FTMS 核心组件（Task 11）
+  // ══════════════════════════════════════════════════════════
+
+  /// 当前设备类型（默认单车，由 initCourseContext 设置）
+  FtmsDeviceType _deviceType = FtmsDeviceType.indoorBike;
+
+  /// 运动计时器（本地计时 + 设备时间校准）
+  SportTimer? _sportTimer;
+
+  /// 设备时间归一化器（补偿 60 秒循环归零）
+  DeviceTimeNormalizer? _timeNormalizer;
+
+  /// 数据同步保护器（长按松手后屏蔽设备回调）
+  FtmsDataSyncGuard? _syncGuard;
+
+  /// FTMS 指令调度器（debounce / immediate 双模式）
+  FtmsCommandDispatcher? _dispatcher;
+
+  /// 实时数据流订阅
+  StreamSubscription<FtmsDeviceData>? _dataSubscription;
+
+  /// 设备状态流订阅
+  StreamSubscription<FtmsStatusEvent>? _statusSubscription;
+
+  // ─── 结束页统计采样列表（Task 13） ───
+
+  /// 阻力采样列表（每 60 秒采样一次）
+  final List<int> _resistanceSamples = [];
+
+  /// 坡度采样列表（每 60 秒采样一次）
+  final List<double> _inclinationSamples = [];
+
+  /// 最大踏频（实时跟踪）
+  int _maxCadence = 0;
+
+  /// 最大心率（实时跟踪）
+  int _maxHeartRate = 0;
+
+  /// 最大配速（实时跟踪，min/km）
+  double _maxPace = 0.0;
+
   @override
   GymCoursePlayState build() {
     // Notifier 销毁时清理定时器，避免泄漏
@@ -55,8 +105,14 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       _imageFrameTimer?.cancel();
       _bgmPlayer.dispose();
       _voicePlayer.dispose();
+      // Task 11: 清理 FTMS 资源
+      _dataSubscription?.cancel();
+      _statusSubscription?.cancel();
+      _sportTimer?.dispose();
+      _dispatcher?.dispose();
       debugPrint('🧹 [PlayNotifier] onDispose 定时器已清理');
       debugPrint('🧹 [Audio] 播放器已释放');
+      debugPrint('🧹 [CoursePlay] onDispose FTMS 资源已清理');
     });
 
     return GymCoursePlayState(
@@ -159,81 +215,12 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       ),
     ];
 
-    final actionNames = _buildRightActionNameList(actions);
-    final progressSegments = _buildProgressSegments(actions, deviceType);
-    final totalDuration = actions.fold<int>(0, (a, b) => a + b.duration);
-
-    // 图片根路径（本地 courses/课程ID/pictures 目录）
-    final rootImagePath = await _resolveRootImagePath();
-
-    // BGM / Voice 根路径（本地 courses/bgm 和 courses/voice 目录）
-    final dir = await getApplicationDocumentsDirectory();
-    final rootBgmPath = '${dir.path}/course/bgm/';
-    final rootVoicePath = '${dir.path}/course/voice/';
-    debugPrint('🎵 [PlayNotifier] BGM根路径: $rootBgmPath');
-    debugPrint('🎵 [PlayNotifier] Voice根路径: $rootVoicePath');
-
-    // 按设备类型生成结束页数据
-    final finishData = _buildFinishData(deviceType);
-    final ratingData = _buildRatingData(deviceType);
-
-    return GymCoursePlayState(
+    return _buildPlayState(
+      actions: actions,
       deviceType: deviceType,
-      screenStatus: GymPlayScreenStatus.playing,
-      allowTouch: true,
-      showPlayButton: true, // ⚠️ 初始显示中央 Play（需要用户点击启动）
-      isPlaying: false,
-      isPause: false,
-      isStopScreen: false,
       courseTitle: '金字塔变速跑',
       difficulty: '进阶',
       level: 3,
-      targetResistanceLevel: 3,
-      // 实时数据（初始值0，由后续定时器累加）
-      sportTime: '00:00',
-      sportDistance: '0.00',
-      sportCalories: '0.0',
-      sportSpeed: '0.0',
-      sportDeviceSpeed: 0.0,
-      sportHeartRate: '0',
-      sportCadence: '0',
-      sportStrokeRate: '28',
-      sportStrokeCount: '0',
-      sportInclination: '0.0',
-      sportResistance: '3',
-      // 按钮值
-      sportSpeedButton: 0.0,
-      sportInclinationButton: 3.0,
-      sportResistanceButton: 3.0,
-      hasInclinationSupport: deviceType == FtmsDeviceType.treadmill,
-      // 进度
-      playIndex: 0,
-      currentDuration: actions.first.duration,
-      playIndexDuration: 0,
-      playTotalDuration: 0,
-      totalPlayProgressDuration: totalDuration,
-      imagePlayIndex: 0,
-      imageFps: 10,
-      rootImagePath: rootImagePath,
-      rootBgmPath: rootBgmPath,
-      rootVoicePath: rootVoicePath,
-      playProgressPercent: 0.0,
-      // 动作
-      courseActions: actions,
-      currentActionNameList: actionNames,
-      progressSegments: progressSegments,
-      // 结束页
-      finishDataIcons: finishData.$1,
-      finishDataTitles: finishData.$2,
-      finishDataValues: finishData.$3,
-      finishDataUnits: finishData.$4,
-      // 评分
-      ratingTitles: ratingData.$1,
-      ratingScores: ratingData.$2,
-      scoreLevel: ratingData.$3,
-      ratingImageIndices: ratingData.$4,
-      // 速度图（由定时器逐步填充，初始为空）
-      speedChartData: [],
     );
   }
 
@@ -678,6 +665,12 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     _playTickTimer?.cancel();
     _imageFrameTimer?.cancel();
     _stopAudio();
+    // Task 13: 重置统计采样列表
+    _resistanceSamples.clear();
+    _inclinationSamples.clear();
+    _maxCadence = 0;
+    _maxHeartRate = 0;
+    _maxPace = 0.0;
     state = state.copyWith(
       screenStatus: GymPlayScreenStatus.loading,
       isPause: false,
@@ -699,6 +692,19 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     _audioTerminated = false;
     debugPrint('🛑 [AudioGuard] _audioTerminated = false（新课程初始化，允许启音）');
     if (deviceType != null) {
+      // Task 11: 设置设备类型并初始化 FTMS 核心组件
+      _deviceType = deviceType;
+      _sportTimer ??= SportTimer();
+      _timeNormalizer ??= DeviceTimeNormalizer();
+      _syncGuard ??= FtmsDataSyncGuard();
+      _setupDispatcher();
+      _setupStreams();
+      debugPrint(
+        '📡 [CoursePlay] FTMS 初始化完成: deviceType=$_deviceType, '
+        'dispatcher=${_dispatcher != null ? "ready" : "null(mock模式)"}, '
+        'dataStream=${_dataSubscription != null ? "subscribed" : "无订阅"}',
+      );
+
       // 优先从详情页 Provider 读取真实课程数据（已下载完成的课程）
       final detailState = ref.read(gymCourseDetailProvider);
       final realActions = detailState.courseActionList;
@@ -755,10 +761,28 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       );
     }).toList();
 
-    final actionNames = _buildRightActionNameList(playActions);
-    final progressSegments = _buildProgressSegments(playActions, deviceType);
-    final totalDuration = playActions.fold<int>(0, (a, b) => a + b.duration);
+    return _buildPlayState(
+      actions: playActions,
+      deviceType: deviceType,
+      courseTitle: '训练课程',
+      difficulty: '进阶',
+      level: 3,
+    );
+  }
 
+  /// 公共构建方法：将 action list 和 device type 转换为 GymCoursePlayState
+  Future<GymCoursePlayState> _buildPlayState({
+    required List<ActionItemState> actions,
+    required FtmsDeviceType deviceType,
+    required String courseTitle,
+    required String difficulty,
+    required int level,
+  }) async {
+    final actionNames = _buildRightActionNameList(actions);
+    final progressSegments = _buildProgressSegments(actions, deviceType);
+    final totalDuration = actions.fold<int>(0, (a, b) => a + b.duration);
+
+    // 路径初始化
     final rootImagePath = await _resolveRootImagePath();
     final dir = await getApplicationDocumentsDirectory();
     final rootBgmPath = '${dir.path}/course/bgm/';
@@ -766,6 +790,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     debugPrint('🎵 [PlayNotifier] BGM根路径: $rootBgmPath');
     debugPrint('🎵 [PlayNotifier] Voice根路径: $rootVoicePath');
 
+    // 按设备类型生成结束页数据
     final finishData = _buildFinishData(deviceType);
     final ratingData = _buildRatingData(deviceType);
 
@@ -777,10 +802,11 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       isPlaying: false,
       isPause: false,
       isStopScreen: false,
-      courseTitle: '训练课程',
-      difficulty: '进阶',
-      level: 3,
+      courseTitle: courseTitle,
+      difficulty: difficulty,
+      level: level,
       targetResistanceLevel: 3,
+      // 实时数据（初始值0，由后续定时器累加）
       sportTime: '00:00',
       sportDistance: '0.00',
       sportCalories: '0.0',
@@ -792,34 +818,300 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       sportStrokeCount: '0',
       sportInclination: '0.0',
       sportResistance: '3',
+      // 按钮值
       sportSpeedButton: 0.0,
       sportInclinationButton: 3.0,
       sportResistanceButton: 3.0,
       hasInclinationSupport: deviceType == FtmsDeviceType.treadmill,
+      // 进度
       playIndex: 0,
-      currentDuration: playActions.first.duration,
+      currentDuration: actions.isNotEmpty ? actions.first.duration : 60,
       playIndexDuration: 0,
       playTotalDuration: 0,
       totalPlayProgressDuration: totalDuration,
       imagePlayIndex: 0,
-      imageFps: playActions.first.imageFps,
+      imageFps: actions.isNotEmpty ? actions.first.imageFps : 10,
       rootImagePath: rootImagePath,
       rootBgmPath: rootBgmPath,
       rootVoicePath: rootVoicePath,
       playProgressPercent: 0.0,
-      courseActions: playActions,
+      // 动作
+      courseActions: actions,
       currentActionNameList: actionNames,
       progressSegments: progressSegments,
+      // 结束页
       finishDataIcons: finishData.$1,
       finishDataTitles: finishData.$2,
       finishDataValues: finishData.$3,
       finishDataUnits: finishData.$4,
+      // 评分
       ratingTitles: ratingData.$1,
       ratingScores: ratingData.$2,
       scoreLevel: ratingData.$3,
       ratingImageIndices: ratingData.$4,
+      // 速度图
       speedChartData: [],
     );
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // FTMS 蓝牙数据流接入（Task 11）
+  // ══════════════════════════════════════════════════════════
+
+  /// 获取当前设备类型对应的 FtmsServiceBase 实例。
+  /// 若蓝牙未连接（Provider 返回 null），返回 null，Notifier 走 mock 降级模式。
+  FtmsServiceBase? _getFtmsService() {
+    try {
+      return ref.read(ftmsServiceProvider(_deviceType));
+    } catch (e) {
+      debugPrint('📡 [CoursePlay] _getFtmsService error: $e');
+      return null;
+    }
+  }
+
+  /// 初始化 FTMS 指令调度器。
+  /// 若 ftmsService 为 null（无设备连接），跳过，Notifier 走 mock 降级模式。
+  void _setupDispatcher() {
+    final ftmsService = _getFtmsService();
+    if (ftmsService == null) {
+      debugPrint(
+        '📡 [CoursePlay] _setupDispatcher: ftmsService 为 null，跳过（mock 降级模式）',
+      );
+      return;
+    }
+    _dispatcher = FtmsCommandDispatcher(
+      serviceGetter: _getFtmsService,
+      syncGuard: _syncGuard,
+    );
+    debugPrint('📡 [CoursePlay] _setupDispatcher: dispatcher 已创建');
+  }
+
+  /// 绑定 FTMS 数据流与状态流监听。
+  /// 在 initCourseContext 时调用，会先取消旧订阅再创建新订阅。
+  /// 若 ftmsService 为 null（无设备连接），跳过，保留 mock 定时器逻辑。
+  void _setupStreams() {
+    final ftmsService = _getFtmsService();
+    if (ftmsService == null) {
+      debugPrint(
+        '📡 [CoursePlay] _setupStreams: ftmsService 为 null，跳过（保留 mock 定时器）',
+      );
+      return;
+    }
+
+    // 取消旧订阅
+    _dataSubscription?.cancel();
+    _statusSubscription?.cancel();
+
+    // 监听实时数据流（0x2AD1）
+    _dataSubscription = ftmsService.dataStream.listen(_onDataReceived);
+    // 监听设备状态流（0x2ADA）
+    _statusSubscription = ftmsService.statusStream.listen(_onStatusReceived);
+
+    debugPrint('📡 [CoursePlay] _setupStreams: dataStream 与 statusStream 已订阅');
+  }
+
+  /// 收到 FTMS 实时数据时的处理逻辑。
+  /// 1. 归一化设备时间
+  /// 2. 校准 SportTimer
+  /// 3. 更新 state 实时运动数据字段
+  ///
+  /// 注意：_playTickTimer 继续负责课程进度（playIndex/playTotalDuration），
+  /// 本方法仅负责更新运动数据（速度/距离/卡路里/心率等），两者职责分离。
+  void _onDataReceived(FtmsDeviceData data) {
+    // 屏态守卫：暂停/结算态不处理设备数据
+    if (state.isPause || state.isPauseScreen || state.isStopScreen) return;
+
+    // 归一化设备时间（补偿 60 秒循环归零）
+    final rawElapsed = data.timeElapsed ?? 0;
+    final normalizedTime = _timeNormalizer?.normalize(rawElapsed) ?? rawElapsed;
+
+    // 用归一化值校准本地计时器
+    _sportTimer?.syncFromDevice(normalizedTime);
+
+    // 解析实时数据字段
+    final speed = data.instSpeed ?? state.sportDeviceSpeed;
+    final cadence = data.instCadence ?? 0.0;
+    final hr = data.hr ?? 0;
+    final distance = (data.distTotal ?? 0).toDouble();
+    final calories = (data.energyTotal ?? 0).toDouble();
+    final strokeRate = data.strokesPerMin ?? 0.0;
+    final strokeCount = (data.strokeCountTotal ?? 0).toDouble();
+    final resistance = data.resistanceLvl ?? state.sportResistanceButton;
+    final inclination = data.inclineAngle ?? state.sportInclinationButton;
+
+    // 实时跟踪最大值（用于结束页统计）
+    if (cadence.round() > _maxCadence) _maxCadence = cadence.round();
+    if (hr > _maxHeartRate) _maxHeartRate = hr;
+    final pace = _calculatePace(speed);
+    if (pace > _maxPace) _maxPace = pace;
+
+    // 更新 state 实时运动数据字段
+    state = state.copyWith(
+      sportTime: formatDuration(normalizedTime),
+      sportDistance: (distance / 1000.0).toStringAsFixed(2), // m → km
+      sportCalories: calories.toStringAsFixed(1),
+      sportSpeed: speed.toStringAsFixed(1),
+      sportDeviceSpeed: speed,
+      sportHeartRate: hr.toString(),
+      sportCadence: cadence.round().toString(),
+      sportStrokeRate: strokeRate.round().toString(),
+      sportStrokeCount: strokeCount.round().toString(),
+      sportResistance: resistance.round().toString(),
+      sportInclination: inclination.toStringAsFixed(1),
+    );
+
+    debugPrint(
+      '📡 [CoursePlay] _onDataReceived: time=$normalizedTime, speed=${speed.toStringAsFixed(1)}, '
+      'cadence=${cadence.round()}, hr=$hr, dist=${(distance / 1000.0).toStringAsFixed(2)}km, '
+      'kcal=${calories.toStringAsFixed(1)}',
+    );
+  }
+
+  /// 收到 FTMS 设备状态通知（0x2ADA）时的处理逻辑。
+  /// 处理设备开始/暂停/停止/速度/坡度/阻力变化回调。
+  void _onStatusReceived(FtmsStatusEvent event) {
+    switch (event) {
+      case FtmsStatusStartedResumed():
+        // 0x04：设备开始/恢复运动
+        debugPrint('📡 [CoursePlay] 设备状态: opCode=0x04, action=start/resume');
+        if (!state.isPlaying) {
+          _sportTimer?.start();
+        }
+        break;
+
+      case FtmsStatusStoppedPaused(:final isPause):
+        if (isPause) {
+          // 0x02 + 0x02：设备暂停
+          debugPrint('📡 [CoursePlay] 设备状态: opCode=0x02, action=pause');
+          _sportTimer?.pause();
+        } else {
+          // 0x02 + 0x01：设备停止
+          debugPrint('📡 [CoursePlay] 设备状态: opCode=0x02, action=stop');
+          _sportTimer?.stop();
+        }
+        break;
+
+      case FtmsStatusTargetSpeedChanged(:final speedKmPerH):
+        // 0x05：速度回调
+        debugPrint(
+          '📡 [CoursePlay] 设备状态: opCode=0x05, action=speed, value=$speedKmPerH',
+        );
+        if (_syncGuard?.isInGuardWindow() ?? false) {
+          debugPrint('📡 [CoursePlay] 在保护窗口内，跳过速度更新');
+        } else {
+          state = state.copyWith(sportSpeedButton: speedKmPerH);
+        }
+        break;
+
+      case FtmsStatusTargetInclineChanged(:final inclinePercent):
+        // 0x06：坡度回调
+        debugPrint(
+          '📡 [CoursePlay] 设备状态: opCode=0x06, action=incline, value=$inclinePercent',
+        );
+        if (_syncGuard?.isInGuardWindow() ?? false) {
+          debugPrint('📡 [CoursePlay] 在保护窗口内，跳过坡度更新');
+        } else {
+          state = state.copyWith(sportInclinationButton: inclinePercent);
+        }
+        break;
+
+      case FtmsStatusTargetResistanceChanged(:final resistanceLevel):
+        // 0x07：阻力回调
+        debugPrint(
+          '📡 [CoursePlay] 设备状态: opCode=0x07, action=resistance, value=$resistanceLevel',
+        );
+        if (_syncGuard?.isInGuardWindow() ?? false) {
+          debugPrint('📡 [CoursePlay] 在保护窗口内，跳过阻力更新');
+        } else {
+          state = state.copyWith(sportResistanceButton: resistanceLevel);
+        }
+        break;
+
+      case FtmsStatusReset():
+        debugPrint('📡 [CoursePlay] 设备状态: opCode=0x01, action=reset');
+        break;
+
+      case FtmsStatusSafetyKey():
+        debugPrint('📡 [CoursePlay] 设备状态: opCode=0x03, action=safetyKey');
+        break;
+
+      case FtmsStatusTargetPowerChanged(:final powerWatts):
+        debugPrint(
+          '📡 [CoursePlay] 设备状态: opCode=0x08, action=power, value=${powerWatts}W',
+        );
+        break;
+
+      case FtmsStatusControlPermissionLost():
+        debugPrint('📡 [CoursePlay] 设备状态: opCode=0xFF, action=permissionLost');
+        break;
+
+      case FtmsStatusUnknown(:final opCode):
+        debugPrint(
+          '📡 [CoursePlay] 设备状态: opCode=0x${opCode.toRadixString(16)}, action=unknown',
+        );
+        break;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // 课程动作参数自动下发（Task 12）
+  // ══════════════════════════════════════════════════════════
+
+  /// 动作切换时调用，根据设备类型下发参数到设备。
+  /// - 单车/椭圆机/划船机：下发阻力 (0x07 + [0x0B, ...value])
+  /// - 跑步机：下发速度 (0x07 + [0x02, ...value])
+  /// 若 _dispatcher 为 null（无蓝牙连接），仅更新本地 state（降级模式）。
+  void _applyActionParameters(ActionItemState action) {
+    if (_dispatcher == null) {
+      // 降级模式：无蓝牙连接，仅更新本地按钮值
+      debugPrint(
+        '🎯 [Action] _applyActionParameters (mock模式): name=${action.name}, '
+        'resistance=${action.resistance}, cadence=${action.cadence}',
+      );
+      state = state.copyWith(
+        sportResistanceButton: action.resistance.toDouble(),
+        sportSpeedButton: action.cadence.toDouble(),
+      );
+      return;
+    }
+
+    final FtmsCommand command;
+    switch (_deviceType) {
+      case FtmsDeviceType.treadmill:
+        // 跑步机：下发速度 (0x02)
+        command = FtmsCommand(0x07, [
+          0x02,
+          ..._buildValueBytes(action.cadence.toDouble()),
+        ]);
+        state = state.copyWith(sportSpeedButton: action.cadence.toDouble());
+        break;
+      case FtmsDeviceType.indoorBike:
+      case FtmsDeviceType.crossTrainer:
+      case FtmsDeviceType.rower:
+      case FtmsDeviceType.strengthStation:
+        // 单车/椭圆机/划船机/力量站：下发阻力 (0x0B)
+        command = FtmsCommand(0x07, [
+          0x0B,
+          ..._buildValueBytes(action.resistance.toDouble()),
+        ]);
+        state = state.copyWith(
+          sportResistanceButton: action.resistance.toDouble(),
+        );
+        break;
+    }
+
+    _dispatcher!.dispatch(command);
+    debugPrint(
+      '🎯 [Action] _applyActionParameters: name=${action.name}, '
+      'deviceType=$_deviceType, resistance=${action.resistance}, cadence=${action.cadence}, '
+      'command已下发',
+    );
+  }
+
+  /// 将 double 值转为 2 字节小端序列（uint16 LE）。
+  List<int> _buildValueBytes(double value) {
+    final raw = value.round().clamp(0, 65535);
+    return [raw & 0xFF, (raw >> 8) & 0xFF];
   }
 
   // ══════════════════════════════════════════════════════════
@@ -903,17 +1195,50 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       playIndex++;
       playIndexDuration = 0;
       currentDuration = actions[playIndex].duration;
+      final newFps = actions[playIndex].imageFps;
       debugPrint(
         '🔁 [PlayTick] 阶段切换 playIndex=$playIndex, '
-        'name=${actions[playIndex].name}, duration=${actions[playIndex].duration}s',
+        'name=${actions[playIndex].name}, duration=${actions[playIndex].duration}s, fps=$newFps',
       );
       _switchVoice();
+      // 动态调整帧动画帧率（根据新动作的imageFps）
+      _restartImageFrameTimer(newFps);
+      // Task 12: 动作切换时下发参数到设备
+      _applyActionParameters(actions[playIndex]);
     }
 
     // 全部结束 → 显示结束页
     final totalDuration = state.totalPlayProgressDuration;
     if (playTotalDuration >= totalDuration) {
       _finishPlay();
+      return;
+    }
+
+    // ─── Task 13: 每 60 秒采样一次阻力和坡度（用于结束页统计） ───
+    if (playTotalDuration > 0 && playTotalDuration % 60 == 0) {
+      _resistanceSamples.add(state.sportResistanceButton.round());
+      _inclinationSamples.add(state.sportInclinationButton);
+      debugPrint(
+        '📊 [CourseStats] 采样: resistance=${state.sportResistanceButton.round()}, '
+        'inclination=${state.sportInclinationButton}, sampleCount=${_resistanceSamples.length}',
+      );
+    }
+
+    final percent = playTotalDuration / totalDuration.clamp(1, 1 << 30);
+
+    // ─── 蓝牙模式 vs Mock 模式分支 ───
+    // 有蓝牙连接时：_onDataReceived 负责更新运动数据，_tickPlaySecond 仅更新课程进度
+    // 无蓝牙连接时：保留 mock 模拟运动数据逻辑
+    final hasBluetooth = _dispatcher != null;
+    if (hasBluetooth) {
+      // 蓝牙模式：仅更新课程进度字段（运动数据由 _onDataReceived 更新）
+      state = state.copyWith(
+        playIndex: playIndex,
+        playIndexDuration: playIndexDuration,
+        playTotalDuration: playTotalDuration,
+        currentDuration: currentDuration,
+        playProgressPercent: percent,
+      );
       return;
     }
 
@@ -957,7 +1282,13 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
         ? state.sportStrokeRate
         : deviceSpeed.toStringAsFixed(1);
 
-    final percent = playTotalDuration / totalDuration.clamp(1, 1 << 30);
+    // mock 模式下也跟踪最大值（用于结束页统计）
+    if ((deviceSpeed * 3.0).round() > _maxCadence) {
+      _maxCadence = (deviceSpeed * 3.0).round();
+    }
+    if (curHr > _maxHeartRate) _maxHeartRate = curHr;
+    final mockPace = _calculatePace(deviceSpeed);
+    if (mockPace > _maxPace) _maxPace = mockPace;
 
     state = state.copyWith(
       playIndex: playIndex,
@@ -993,6 +1324,171 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     state = state.copyWith(imagePlayIndex: nextFrame);
   }
 
+  // ══════════════════════════════════════════════════════════
+  // 结束页数据统计计算（Task 13）
+  // ══════════════════════════════════════════════════════════
+
+  /// 配速计算：配速 = 60 / speed（min/km），speed 为 0 时返回 0。
+  double _calculatePace(double speedKmh) {
+    if (speedKmh <= 0) return 0.0;
+    return 60.0 / speedKmh;
+  }
+
+  /// 完成度计算：完成度 = actual / total * 100。
+  double _calculateFinishPercent(double actualDistance, double totalDistance) {
+    if (totalDistance <= 0) return 0.0;
+    return (actualDistance / totalDistance * 100).clamp(0.0, 100.0);
+  }
+
+  /// 平均阻力计算：采样列表平均值。
+  double _calculateAvgResistance() {
+    if (_resistanceSamples.isEmpty) return 0.0;
+    final sum = _resistanceSamples.reduce((a, b) => a + b);
+    return sum / _resistanceSamples.length;
+  }
+
+  /// 平均坡度计算：采样列表平均值。
+  double _calculateAvgInclination() {
+    if (_inclinationSamples.isEmpty) return 0.0;
+    final sum = _inclinationSamples.reduce((a, b) => a + b);
+    return sum / _inclinationSamples.length;
+  }
+
+  /// 平均桨频计算：平均桨频 = totalStrokes / (elapsedSeconds / 60)。
+  double _calculateAvgStrokeRate(int totalStrokes, int elapsedSeconds) {
+    if (elapsedSeconds <= 0) return 0.0;
+    return totalStrokes / (elapsedSeconds / 60.0);
+  }
+
+  /// 格式化配速：min/km → mm:ss 字符串。
+  String _formatPace(double paceMinPerKm) {
+    if (paceMinPerKm <= 0) return '00:00';
+    final totalSeconds = (paceMinPerKm * 60).round();
+    final m = totalSeconds ~/ 60;
+    final s = totalSeconds % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  /// 构建结束页统计数据值列表（根据设备类型选择对应数据项）。
+  /// 用真实统计计算结果替换 mock 值。
+  List<String> _buildFinishDataValues() {
+    final deviceType = state.deviceType;
+    final elapsedSeconds = state.playTotalDuration;
+    final sportTimeStr = formatDuration(elapsedSeconds);
+    final distance = double.tryParse(state.sportDistance) ?? 0.0;
+    final calories = double.tryParse(state.sportCalories) ?? 0.0;
+    final speed = state.sportDeviceSpeed;
+    final pace = _calculatePace(speed);
+    final paceStr = _formatPace(pace);
+    final maxPaceStr = _formatPace(_maxPace);
+    final avgResistance = _calculateAvgResistance();
+    final avgInclination = _calculateAvgInclination();
+    final totalStrokes = int.tryParse(state.sportStrokeCount) ?? 0;
+    final avgStrokeRate = _calculateAvgStrokeRate(totalStrokes, elapsedSeconds);
+    // 完成度：基于已播放时长 / 总时长（复用 _calculateFinishPercent 通用计算）
+    final finishPercent = _calculateFinishPercent(
+      elapsedSeconds.toDouble(),
+      state.totalPlayProgressDuration.toDouble(),
+    );
+    final cadenceVal = int.tryParse(state.sportCadence) ?? 0;
+
+    debugPrint(
+      '📊 [CourseStats] 统计计算: time=$sportTimeStr, dist=${distance.toStringAsFixed(2)}km, '
+      'kcal=${calories.toStringAsFixed(0)}, pace=$paceStr, maxPace=$maxPaceStr, '
+      'maxCadence=$_maxCadence, maxHr=$_maxHeartRate, avgResistance=${avgResistance.toStringAsFixed(1)}, '
+      'avgInclination=${avgInclination.toStringAsFixed(1)}, avgStrokeRate=${avgStrokeRate.toStringAsFixed(1)}, '
+      'totalStrokes=$totalStrokes, finish%=${finishPercent.toStringAsFixed(1)}',
+    );
+
+    switch (deviceType) {
+      case FtmsDeviceType.indoorBike:
+        return [
+          sportTimeStr, // Sport Time
+          distance.toStringAsFixed(2), // Total Distance (km)
+          calories.toStringAsFixed(0), // Total Calories (kcal)
+          paceStr, // Pace (min/km)
+          cadenceVal.toString(), // Avg Cadence (rpm)
+          _maxCadence.toString(), // Max Cadence (rpm)
+          _maxHeartRate.toString(), // Max Heart Rate (bpm)
+          cadenceVal.toString(), // Total Cadence (近似)
+          '00:00', // Rest Time
+          finishPercent.toStringAsFixed(1), // Completion (%)
+        ];
+      case FtmsDeviceType.treadmill:
+        return [
+          sportTimeStr, // Sport Time
+          distance.toStringAsFixed(2), // Total Distance (km)
+          calories.toStringAsFixed(0), // Total Calories (kcal)
+          paceStr, // Pace (min/km)
+          maxPaceStr, // Max Pace (min/km)
+          _maxCadence.toString(), // Max Cadence (rpm)
+          _maxHeartRate.toString(), // Max Heart Rate (bpm)
+          cadenceVal.toString(), // Avg Cadence (rpm)
+          cadenceVal.toString(), // Total Cadence (近似)
+          finishPercent.toStringAsFixed(1), // Completion (%)
+        ];
+      case FtmsDeviceType.crossTrainer:
+        return [
+          sportTimeStr, // Sport Time
+          distance.toStringAsFixed(2), // Total Distance (km)
+          calories.toStringAsFixed(0), // Total Calories (kcal)
+          paceStr, // Pace (min/km)
+          cadenceVal.toString(), // Avg Cadence (rpm)
+          cadenceVal.toString(), // Total Cadence (近似)
+          _maxCadence.toString(), // Max Cadence (rpm)
+          _maxHeartRate.toString(), // Max Heart Rate (bpm)
+          '00:00', // Rest Time
+          finishPercent.toStringAsFixed(1), // Completion (%)
+        ];
+      case FtmsDeviceType.rower:
+        return [
+          sportTimeStr, // Sport Time
+          distance.toStringAsFixed(2), // Total Distance (km)
+          calories.toStringAsFixed(0), // Total Calories (kcal)
+          avgStrokeRate.toStringAsFixed(0), // Avg Strokes (spm)
+          avgResistance.toStringAsFixed(0), // Avg Resistance
+          totalStrokes.toString(), // Total Strokes
+          _maxCadence.toString(), // Max Stroke Rate (spm)
+          _maxHeartRate.toString(), // Avg Heart Rate (bpm)
+          '00:00', // Rest Time
+          finishPercent.toStringAsFixed(1), // Completion (%)
+        ];
+      case FtmsDeviceType.strengthStation:
+        // 力量站预留：暂与单车使用相同的结束页结构
+        return _buildFinishDataValuesForIndoorBike(
+          sportTimeStr,
+          distance,
+          calories,
+          paceStr,
+          cadenceVal,
+          finishPercent,
+        );
+    }
+  }
+
+  /// 力量站复用单车结束页数据构建（内部辅助方法）。
+  List<String> _buildFinishDataValuesForIndoorBike(
+    String sportTimeStr,
+    double distance,
+    double calories,
+    String paceStr,
+    int cadenceVal,
+    double finishPercent,
+  ) {
+    return [
+      sportTimeStr,
+      distance.toStringAsFixed(2),
+      calories.toStringAsFixed(0),
+      paceStr,
+      cadenceVal.toString(),
+      _maxCadence.toString(),
+      _maxHeartRate.toString(),
+      cadenceVal.toString(),
+      '00:00',
+      finishPercent.toStringAsFixed(1),
+    ];
+  }
+
   /// 播放完成 → 进入结束页
   /// 🔴 顺序：先 setState + _audioTerminated=true（同步锁，防 await 穿透
   void _finishPlay() {
@@ -1001,13 +1497,36 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     debugPrint(
       '🛑 [AudioGuard] _finishPlay() → _audioTerminated = true（禁止再启音）',
     );
-    // 🔴 第一步：先写 state（锁 isStopScreen=true）
+    // Task 13: 计算结束页统计数据
+    final finishDataValues = _buildFinishDataValues();
+    final avgResistance = _calculateAvgResistance();
+    final avgInclination = _calculateAvgInclination();
+    final totalStrokes = int.tryParse(state.sportStrokeCount) ?? 0;
+    final avgStrokeRate = _calculateAvgStrokeRate(
+      totalStrokes,
+      state.playTotalDuration,
+    );
+    final finishPercent = _calculateFinishPercent(
+      state.playTotalDuration.toDouble(),
+      state.totalPlayProgressDuration.toDouble(),
+    );
+    final pace = _calculatePace(state.sportDeviceSpeed);
+    debugPrint('📊 [CourseStats] _finishPlay: 结束页统计数据已计算完成');
+    // 🔴 第一步：先写 state（锁 isStopScreen=true + 填充统计字段）
     state = state.copyWith(
       isPlaying: false,
       isStopScreen: true,
       screenStatus: GymPlayScreenStatus.finished,
       showPlayButton: false,
       sportTime: formatDuration(state.totalPlayProgressDuration),
+      finishDataValues: finishDataValues,
+      maxCadence: _maxCadence,
+      maxHeartRate: _maxHeartRate,
+      maxPace: _maxPace,
+      avgResistance: avgResistance,
+      avgInclination: avgInclination,
+      avgStrokeRate: avgStrokeRate,
+      finishPercent: finishPercent,
     );
     // 🔴 第二步：cancel + stop + seek zero
     _playTickTimer?.cancel();
@@ -1016,6 +1535,8 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     unawaited(_bgmPlayer.seek(Duration.zero));
     unawaited(_voicePlayer.seek(Duration.zero));
     debugPrint('🏁 [Play] 课程播放完成，已进入结束页（先锁屏再stop）');
+    // 抑制未使用变量警告（pace 用于日志调试参考）
+    debugPrint('📊 [CourseStats] final pace=${_formatPace(pace)}');
   }
 
   /// 用户主动结束课程 → 进入结束页（复刻原版返回按钮逻辑）
@@ -1026,6 +1547,20 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     debugPrint(
       '🛑 [AudioGuard] manualFinish() → _audioTerminated = true（禁止再启音）',
     );
+    // Task 13: 计算结束页统计数据（用户主动结束也填充统计）
+    final finishDataValues = _buildFinishDataValues();
+    final avgResistance = _calculateAvgResistance();
+    final avgInclination = _calculateAvgInclination();
+    final totalStrokes = int.tryParse(state.sportStrokeCount) ?? 0;
+    final avgStrokeRate = _calculateAvgStrokeRate(
+      totalStrokes,
+      state.playTotalDuration,
+    );
+    final finishPercent = _calculateFinishPercent(
+      state.playTotalDuration.toDouble(),
+      state.totalPlayProgressDuration.toDouble(),
+    );
+    debugPrint('📊 [CourseStats] manualFinish: 结束页统计数据已计算完成');
     // 🔴 第一步：锁屏态（先写 state，拦截 _switchVoice/_tickPlaySecond）
     state = state.copyWith(
       isPlaying: false,
@@ -1035,6 +1570,14 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       screenStatus: GymPlayScreenStatus.finished,
       showPlayButton: false,
       sportTime: formatDuration(state.playTotalDuration),
+      finishDataValues: finishDataValues,
+      maxCadence: _maxCadence,
+      maxHeartRate: _maxHeartRate,
+      maxPace: _maxPace,
+      avgResistance: avgResistance,
+      avgInclination: avgInclination,
+      avgStrokeRate: avgStrokeRate,
+      finishPercent: finishPercent,
     );
     // 🔴 第二步：cancel + stop + seek zero
     _playTickTimer?.cancel();
@@ -1049,27 +1592,64 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // 暂停/恢复/退出
   // ══════════════════════════════════════════════════════════
 
+  /// 暂停运动：暂停定时器+音频，进入暂停覆盖层
   void pauseSport() {
-    debugPrint(
-      '⚠️ [PlayNotifier] pauseSport 已废弃（流程=直接结算→manualFinish，不再弹中间确认）',
+    if (!state.isPlaying || state.isPauseScreen) {
+      debugPrint(
+        '⚠️ [PlayNotifier] pauseSport 被守卫拦截 (isPlaying=${state.isPlaying}, isPauseScreen=${state.isPauseScreen})',
+      );
+      return;
+    }
+    debugPrint('⏸️ [PlayNotifier] pauseSport 暂停运动');
+    state = state.copyWith(
+      isPause: true,
+      isPauseScreen: true,
+      showPlayButton: true,
     );
-    manualFinish();
+    // 暂停音频（保留位置）
+    unawaited(_bgmPlayer.pause());
+    unawaited(_voicePlayer.pause());
   }
 
+  /// 恢复运动：恢复定时器+音频，关闭暂停覆盖层
   void resumeSport() {
-    debugPrint('⚠️ [PlayNotifier] resumeSport 已被禁用（流程=结束后不能再返回播放，直接走结算）');
+    if (!state.isPauseScreen) {
+      debugPrint(
+        '⚠️ [PlayNotifier] resumeSport 被守卫拦截 (isPauseScreen=${state.isPauseScreen})',
+      );
+      return;
+    }
+    debugPrint('▶️ [PlayNotifier] resumeSport 恢复运动');
+    state = state.copyWith(
+      isPause: false,
+      isPauseScreen: false,
+      showPlayButton: false,
+      isPlaying: true,
+    );
+    // 恢复音频（从暂停位置继续播放）
+    unawaited(_bgmPlayer.play());
+    unawaited(_voicePlayer.play());
   }
 
+  /// 退出课程播放页，重置所有状态为loading
   void exitToDetail() {
+    debugPrint('🚪 [PlayNotifier] exitToDetail 退出课程播放');
     _playTickTimer?.cancel();
     _imageFrameTimer?.cancel();
     _stopAudio();
+    _audioTerminated = true;
     state = state.copyWith(
+      screenStatus: GymPlayScreenStatus.loading,
       isPause: false,
       isPauseScreen: false,
       isPlaying: false,
       showPlayButton: false,
       isStopScreen: false,
+      playIndex: 0,
+      playIndexDuration: 0,
+      playTotalDuration: 0,
+      playProgressPercent: 0.0,
+      imagePlayIndex: 0,
     );
   }
 
@@ -1083,54 +1663,161 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   }
 
   // ══════════════════════════════════════════════════════════
-  // 控制按钮 +/−（无蓝牙，纯修改本地 state 值）
+  // 控制按钮 +/−（纯本地 state 修改，预留蓝牙指令接口）
   // ══════════════════════════════════════════════════════════
 
+  // ─── 单次点击版本 ───
+
   void speedAdd() {
-    final v = (state.sportSpeedButton + 0.5).clamp(0.0, 50.0);
-    state = state.copyWith(
-      sportSpeedButton: double.parse(v.toStringAsFixed(1)),
+    final current = state.sportSpeedButton;
+    final v = (current + 0.5).clamp(0.0, 50.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    // Task 12: 通过 dispatcher 下发速度指令 (0x07 + [0x02, ...value])
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
     );
+    state = state.copyWith(sportSpeedButton: newValue);
+    debugPrint('📤 [CourseControl] speedAdd: $current → $newValue');
   }
 
   void speedDown() {
-    final v = (state.sportSpeedButton - 0.5).clamp(0.0, 50.0);
-    state = state.copyWith(
-      sportSpeedButton: double.parse(v.toStringAsFixed(1)),
+    final current = state.sportSpeedButton;
+    final v = (current - 0.5).clamp(0.0, 50.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
     );
+    state = state.copyWith(sportSpeedButton: newValue);
+    debugPrint('📤 [CourseControl] speedDown: $current → $newValue');
   }
 
   void inclinationAdd() {
-    final v = (state.sportInclinationButton + 1.0).clamp(-5.0, 15.0);
-    state = state.copyWith(
-      sportInclinationButton: double.parse(v.toStringAsFixed(1)),
+    final current = state.sportInclinationButton;
+    final v = (current + 1.0).clamp(-5.0, 15.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    // Task 12: 通过 dispatcher 下发坡度指令 (0x07 + [0x03, ...value])
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
     );
+    state = state.copyWith(sportInclinationButton: newValue);
+    debugPrint('📤 [CourseControl] inclinationAdd: $current → $newValue');
   }
 
   void inclinationDown() {
-    final v = (state.sportInclinationButton - 1.0).clamp(-5.0, 15.0);
-    state = state.copyWith(
-      sportInclinationButton: double.parse(v.toStringAsFixed(1)),
+    final current = state.sportInclinationButton;
+    final v = (current - 1.0).clamp(-5.0, 15.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
     );
+    state = state.copyWith(sportInclinationButton: newValue);
+    debugPrint('📤 [CourseControl] inclinationDown: $current → $newValue');
   }
 
   void resistanceAdd() {
-    final v = (state.sportResistanceButton + 1.0).clamp(1.0, 20.0);
-    state = state.copyWith(
-      sportResistanceButton: double.parse(v.toStringAsFixed(1)),
+    final current = state.sportResistanceButton;
+    final v = (current + 1.0).clamp(1.0, 20.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    // Task 12: 通过 dispatcher 下发阻力指令 (0x07 + [0x0B, ...value])
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
     );
+    state = state.copyWith(sportResistanceButton: newValue);
+    debugPrint('📤 [CourseControl] resistanceAdd: $current → $newValue');
   }
 
   void resistanceDown() {
-    final v = (state.sportResistanceButton - 1.0).clamp(1.0, 20.0);
-    state = state.copyWith(
-      sportResistanceButton: double.parse(v.toStringAsFixed(1)),
+    final current = state.sportResistanceButton;
+    final v = (current - 1.0).clamp(1.0, 20.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
     );
+    state = state.copyWith(sportResistanceButton: newValue);
+    debugPrint('📤 [CourseControl] resistanceDown: $current → $newValue');
+  }
+
+  // ─── 长按版本（步进更小，连续触发，使用 debounce 模式） ───
+
+  void speedAddLongPress() {
+    final v = (state.sportSpeedButton + 0.2).clamp(0.0, 50.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+    );
+    state = state.copyWith(sportSpeedButton: newValue);
+  }
+
+  void speedDownLongPress() {
+    final v = (state.sportSpeedButton - 0.2).clamp(0.0, 50.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+    );
+    state = state.copyWith(sportSpeedButton: newValue);
+  }
+
+  void inclinationAddLongPress() {
+    final v = (state.sportInclinationButton + 0.5).clamp(-5.0, 15.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+    );
+    state = state.copyWith(sportInclinationButton: newValue);
+  }
+
+  void inclinationDownLongPress() {
+    final v = (state.sportInclinationButton - 0.5).clamp(-5.0, 15.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+    );
+    state = state.copyWith(sportInclinationButton: newValue);
+  }
+
+  void resistanceAddLongPress() {
+    final v = (state.sportResistanceButton + 0.5).clamp(1.0, 20.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+    );
+    state = state.copyWith(sportResistanceButton: newValue);
+  }
+
+  void resistanceDownLongPress() {
+    final v = (state.sportResistanceButton - 0.5).clamp(1.0, 20.0);
+    final newValue = double.parse(v.toStringAsFixed(1));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+    );
+    state = state.copyWith(sportResistanceButton: newValue);
+  }
+
+  // ─── 长按结束保护窗口（对接 SportControlPanel.onLongPressEnd） ───
+
+  /// 长按结束时调用，开启 1500ms 保护窗口，防止设备 0x2ADA 回调覆盖本地按钮值。
+  void longPressEnd() {
+    _syncGuard?.beginGuardWindow(const Duration(milliseconds: 1500));
+    debugPrint('🛡️ [CourseControl] longPressEnd: 保护窗口已开启 (1500ms)');
   }
 
   // ══════════════════════════════════════════════════════════
   // 工具方法
   // ══════════════════════════════════════════════════════════
+
+  /// 动态重建帧动画定时器（根据当前动作的imageFps调整帧率）
+  void _restartImageFrameTimer(int imageFps) {
+    // 防止帧率为0或负数
+    final fps = imageFps < 1 ? 10 : imageFps;
+    final intervalMs = (1000 / fps).round();
+    debugPrint('🎬 [Frame] 重建帧动画定时器: fps=$fps, interval=${intervalMs}ms');
+
+    _imageFrameTimer?.cancel();
+    _imageFrameTimer = Timer.periodic(
+      Duration(milliseconds: intervalMs),
+      (_) => _tickImageFrame(),
+    );
+  }
 
   String formatDuration(int seconds) {
     final m = seconds ~/ 60;

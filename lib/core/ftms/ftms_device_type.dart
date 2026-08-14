@@ -73,8 +73,10 @@ extension FtmsDeviceTypeConfig on FtmsDeviceType {
   }
 
   /// 是否支持速度控制。
-  bool get supportsSpeedControl =>
-      this == FtmsDeviceType.treadmill || this == FtmsDeviceType.indoorBike;
+  ///
+  /// 仅跑步机支持速度调节；单车（indoorBike）按用户需求移除速度调节控件，
+  /// 仅保留速度数据展示（顶部数据栏仍显示 sportSpeed）。
+  bool get supportsSpeedControl => this == FtmsDeviceType.treadmill;
 
   /// 是否支持坡度控制。
   bool get supportsInclinationControl =>
@@ -83,4 +85,23 @@ extension FtmsDeviceTypeConfig on FtmsDeviceType {
   /// 是否支持阻力控制。
   bool get supportsResistanceControl =>
       this != FtmsDeviceType.treadmill;
+
+  /// 是否显示踏频。
+  bool get supportsCadenceDisplay =>
+      this == FtmsDeviceType.indoorBike || this == FtmsDeviceType.crossTrainer;
+
+  /// 是否显示桨频/桨数。
+  bool get supportsStrokeDisplay => this == FtmsDeviceType.rower;
+
+  /// 是否显示功率。
+  bool get supportsPowerDisplay =>
+      this == FtmsDeviceType.indoorBike ||
+      this == FtmsDeviceType.crossTrainer ||
+      this == FtmsDeviceType.rower;
+
+  /// 速度是否需要单位转换（划船机 m/s → km/h）。
+  bool get needsSpeedConversion => this == FtmsDeviceType.rower;
+
+  /// 距离是否需要单位转换（划船机 m → km）。
+  bool get needsDistanceConversion => this == FtmsDeviceType.rower;
 }

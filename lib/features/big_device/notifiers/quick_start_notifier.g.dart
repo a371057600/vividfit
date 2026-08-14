@@ -8,21 +8,33 @@ part of 'quick_start_notifier.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// 快速开始 Notifier（Riverpod 3.0 代码生成，业务逻辑留白）。
+/// 快速开始 Notifier（Riverpod 3.0 代码生成）。
 ///
-/// 所有运动控制方法暂留 TODO，待蓝牙模块完整迁移后实现。
+/// 接入 FTMS 蓝牙数据监听与运动控制，负责：
+/// - 实时数据流（0x2AD1）解析与状态同步
+/// - 设备状态流（0x2ADA）回调处理
+/// - 运动控制指令（0x2AD9）下发
+/// - 目标达成弹窗三态管理
 
 @ProviderFor(QuickStartNotifier)
 final quickStartProvider = QuickStartNotifierProvider._();
 
-/// 快速开始 Notifier（Riverpod 3.0 代码生成，业务逻辑留白）。
+/// 快速开始 Notifier（Riverpod 3.0 代码生成）。
 ///
-/// 所有运动控制方法暂留 TODO，待蓝牙模块完整迁移后实现。
+/// 接入 FTMS 蓝牙数据监听与运动控制，负责：
+/// - 实时数据流（0x2AD1）解析与状态同步
+/// - 设备状态流（0x2ADA）回调处理
+/// - 运动控制指令（0x2AD9）下发
+/// - 目标达成弹窗三态管理
 final class QuickStartNotifierProvider
     extends $NotifierProvider<QuickStartNotifier, QuickStartState> {
-  /// 快速开始 Notifier（Riverpod 3.0 代码生成，业务逻辑留白）。
+  /// 快速开始 Notifier（Riverpod 3.0 代码生成）。
   ///
-  /// 所有运动控制方法暂留 TODO，待蓝牙模块完整迁移后实现。
+  /// 接入 FTMS 蓝牙数据监听与运动控制，负责：
+  /// - 实时数据流（0x2AD1）解析与状态同步
+  /// - 设备状态流（0x2ADA）回调处理
+  /// - 运动控制指令（0x2AD9）下发
+  /// - 目标达成弹窗三态管理
   QuickStartNotifierProvider._()
     : super(
         from: null,
@@ -51,11 +63,15 @@ final class QuickStartNotifierProvider
 }
 
 String _$quickStartNotifierHash() =>
-    r'd65583692673e36c04e96cb7e419f49e3a2afd01';
+    r'624899fae287f7d91ac46634420b7a1d954d7ff5';
 
-/// 快速开始 Notifier（Riverpod 3.0 代码生成，业务逻辑留白）。
+/// 快速开始 Notifier（Riverpod 3.0 代码生成）。
 ///
-/// 所有运动控制方法暂留 TODO，待蓝牙模块完整迁移后实现。
+/// 接入 FTMS 蓝牙数据监听与运动控制，负责：
+/// - 实时数据流（0x2AD1）解析与状态同步
+/// - 设备状态流（0x2ADA）回调处理
+/// - 运动控制指令（0x2AD9）下发
+/// - 目标达成弹窗三态管理
 
 abstract class _$QuickStartNotifier extends $Notifier<QuickStartState> {
   QuickStartState build();
