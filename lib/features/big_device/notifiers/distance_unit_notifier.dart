@@ -45,11 +45,10 @@ class DistanceUnitNotifier extends _$DistanceUnitNotifier {
   @override
   DistanceUnit build() {
     _storage = ref.watch(storageServiceProvider);
-    // 读取持久化偏好，默认公制（与旧版一致）
-    final saved = _storage.bigDeviceDistanceUnit;
-    final unit = DistanceUnit.fromCode(saved);
-    print('📏 [DistanceUnit] init: unit=$unit (savedCode=$saved)');
-    return unit;
+    // 固定返回公制 km，对齐旧版（旧版无 km/mile 单位切换业务）。
+    // 保留 _storage 引用与 toggle/setUnit 方法为死代码，保证 UI 层 watch 引用编译通过。
+    print('📏 [DistanceUnit] init: unit=km (固定公制，旧版无单位切换)');
+    return DistanceUnit.km;
   }
 
   /// 切换单位（km ↔ mile）并持久化。

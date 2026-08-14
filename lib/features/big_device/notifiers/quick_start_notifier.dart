@@ -124,13 +124,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 当前长按调节维度（用于 longPressEnd 时识别上下文）。
   _LongPressDimension? _currentLongPressDimension;
 
-  // ==================== 阻力加载态（任务3） ====================
-  /// 阻力指令下发后等待设备回执的超时定时器（3 秒）。
-  Timer? _resistanceFetchTimeout;
-
-  /// 阻力加载超时阈值。
-  static const Duration _resistanceFetchTimeoutDur = Duration(seconds: 3);
-
   // ==================== 目标达成弹窗：Timer 与队列 ====================
   // 自动关闭计时（visible 状态 5 秒后触发 exiting）
   Timer? _timeGoalTimer;
@@ -229,8 +222,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       _dispatcher?.dispose();
       _longPressTimer?.cancel();
       _longPressTimer = null;
-      _resistanceFetchTimeout?.cancel();
-      _resistanceFetchTimeout = null;
       _cancelTimeGoalTimers();
       _cancelDistanceGoalTimers();
       _cancelEnergyGoalTimers();
@@ -447,8 +438,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           '[DeviceStatus] opCode=0x07, action=resistance, value=$resistanceLevel',
         );
         _onReceiptReceived(0x07, true);
-        // 收到设备实际阻力回执 → 解除加载态（与保护窗口无关，loading 必须复位）
-        _clearResistanceFetch();
+        // 注：不再调用加载态清理（无加载态被设置），直接按保护窗口规则更新阻力值。
         if (_syncGuard?.isInGuardWindow() ?? false) {
           print('[DeviceStatus] 在保护窗口内，跳过阻力数值更新');
         } else {
@@ -511,39 +501,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   List<int> _buildValueBytes(double value) {
     final raw = value.round().clamp(0, 65535);
     return [raw & 0xFF, (raw >> 8) & 0xFF];
-  }
-
-  // ==================== 阻力加载态辅助（任务3） ====================
-
-  /// 启动阻力加载等待：置 isFetchingResistance=true 并启动超时定时器。
-  ///
-  /// 超时后自动解除加载态（保留乐观更新值），避免设备不发 0x07 回执时永久 loading。
-  /// 每次下发阻力指令都调用本方法重置定时器。
-  void _startResistanceFetch() {
-    _resistanceFetchTimeout?.cancel();
-    state = state.copyWith(isFetchingResistance: true);
-    _resistanceFetchTimeout = Timer(_resistanceFetchTimeoutDur, () {
-      // 超时兜底：解除 loading，保留乐观更新值
-      if (state.isFetchingResistance) {
-        state = state.copyWith(isFetchingResistance: false);
-        print(
-          '🎯 [Resistance] fetch timeout, cleared loading '
-          '(value=${state.sportResistanceButton})',
-        );
-      }
-      _resistanceFetchTimeout = null;
-    });
-    print('🎯 [Resistance] fetching start, waiting 0x07 receipt');
-  }
-
-  /// 解除阻力加载等待（收到 0x07 回执时调用）。
-  void _clearResistanceFetch() {
-    if (_resistanceFetchTimeout != null || state.isFetchingResistance) {
-      _resistanceFetchTimeout?.cancel();
-      _resistanceFetchTimeout = null;
-      state = state.copyWith(isFetchingResistance: false);
-      print('🎯 [Resistance] receipt received, cleared loading');
-    }
   }
 
   // ==================== 目标达成弹窗：判定与队列 ====================
@@ -926,14 +883,13 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
     _dispatcher?.dispatch(
       FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
     );
-    // 乐观更新本地值（保证边界检测准确）+ 启动加载等待
+    // 乐观更新本地值（保证边界检测准确）。
+    // 注：不再启动加载态，对齐旧版 resistanceAdd 行为（旧版点按后值立即显示）。
     state = state.copyWith(sportResistanceButton: newValue);
-    _startResistanceFetch();
     print('[Notifier] resistanceAdd: $current → $newValue');
   }
 
   /// 阻力 -（对应旧 cnfbd.resistanceDown）。
-  /// 下发后进入加载态，等待设备 0x07 回执返回实际阻力值。
   @override
   void resistanceDown() {
     final current = state.sportResistanceButton;
@@ -945,7 +901,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
     );
     state = state.copyWith(sportResistanceButton: newValue);
-    _startResistanceFetch();
     print('[Notifier] resistanceDown: $current → $newValue');
   }
 
@@ -1076,8 +1031,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportResistanceButton: newValue);
-        // 长按期间持续 loading，松手后等待最终回执解除
-        _startResistanceFetch();
         print('[Notifier] longPress resistance: $current → $newValue');
     }
   }
@@ -1154,8 +1107,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
         break;
       case 2:
         state = state.copyWith(sportResistanceButton: value);
-        // 阻力档位预设下发后进入加载态，等待 0x07 回执
-        _startResistanceFetch();
         break;
     }
     print('[Notifier] numberButton: target=$value, type=$type');

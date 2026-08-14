@@ -54,17 +54,16 @@ class DeviceFieldVisibility {
     return rawSpeed;
   }
 
-  /// 距离单位转换：原始值（米）→ km（默认）或 mile（英制）。
+  /// 距离单位转换：原始值（米）→ km，固定公制。
   ///
-  /// **修复说明**：旧实现仅对划船机做 m→km，其余设备直接返回米数却显示单位「km」，
-  /// 导致单车/跑步机/椭圆机距离数值偏大 1000 倍。
-  /// 现统一为：所有设备原始距离均为米，按 [unit] 转换为 km 或 mile。
+  /// 对齐旧版 `big_device_quick_start_screen.dart` L639 的
+  /// `(sportDistance.value / 1000).toStringAsFixed(2)` 逻辑。
+  ///
+  /// 保留 [unit] 参数签名仅为 UI 调用处兼容（死参数），实际永远按 km 处理。
   double convertDistance(
     double rawMeters, {
     DistanceUnit unit = DistanceUnit.km,
   }) {
-    final kmValue = rawMeters / 1000.0;
-    if (unit == DistanceUnit.mile) return kmValue * 0.621371;
-    return kmValue;
+    return rawMeters / 1000.0;
   }
 }
