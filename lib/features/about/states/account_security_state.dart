@@ -17,6 +17,10 @@ abstract class AccountSecurityState with _$AccountSecurityState {
     @Default('') String bindAccount,
     @Default('') String areaCode,
     @Default(false) bool isLoading,
+    @Default(false) bool isDeleting,
     @Default(true) bool ishasInternet,
+    @Default('') String changepassword,
+    @Default('') String changepassword2,
+    @Default('') String checkVerCode,
   }) = _AccountSecurityState;
 }

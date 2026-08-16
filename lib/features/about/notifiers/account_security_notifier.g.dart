@@ -8,12 +8,21 @@ part of 'account_security_notifier.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 账号安全 Notifier（对应旧 AccountSecurityPage 的 GetX Controller 逻辑）。
+///
+/// 职责：承载账号绑定信息 + 身份校验验证码（发送/校验）+ 修改密码。
 
 @ProviderFor(AccountSecurityNotifier)
 final accountSecurityProvider = AccountSecurityNotifierProvider._();
 
+/// 账号安全 Notifier（对应旧 AccountSecurityPage 的 GetX Controller 逻辑）。
+///
+/// 职责：承载账号绑定信息 + 身份校验验证码（发送/校验）+ 修改密码。
 final class AccountSecurityNotifierProvider
     extends $NotifierProvider<AccountSecurityNotifier, AccountSecurityState> {
+  /// 账号安全 Notifier（对应旧 AccountSecurityPage 的 GetX Controller 逻辑）。
+  ///
+  /// 职责：承载账号绑定信息 + 身份校验验证码（发送/校验）+ 修改密码。
   AccountSecurityNotifierProvider._()
     : super(
         from: null,
@@ -42,7 +51,11 @@ final class AccountSecurityNotifierProvider
 }
 
 String _$accountSecurityNotifierHash() =>
-    r'af904abed859fe98915c36da3e09ce43e2ee1399';
+    r'1667a89657c120bb61178da7a513aec8fdb506d5';
+
+/// 账号安全 Notifier（对应旧 AccountSecurityPage 的 GetX Controller 逻辑）。
+///
+/// 职责：承载账号绑定信息 + 身份校验验证码（发送/校验）+ 修改密码。
 
 abstract class _$AccountSecurityNotifier
     extends $Notifier<AccountSecurityState> {

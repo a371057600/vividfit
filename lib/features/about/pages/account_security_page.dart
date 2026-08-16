@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
@@ -16,6 +17,16 @@ class AccountSecurityPage extends ConsumerStatefulWidget {
 }
 
 class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
+  @override
+  void initState() {
+    super.initState();
+    // 页面进入后异步加载手机号/邮箱/unionId 等绑定信息（对应老 getData()）
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.read(accountSecurityProvider.notifier).loadUserInfo();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -68,7 +79,13 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
             _buildListItem(
               l10n.phoneNumber,
               state.phoneNumber.isEmpty ? '138****8888' : state.phoneNumber,
-              onTap: () => _showPhoneDialog(),
+              onTap: () {
+                // 0=绑定手机场景（对应老 _buildSelectDialog(0)），校验后跳绑定手机页
+                ref
+                    .read(accountSecurityProvider.notifier)
+                    .setAccountAddType(0);
+                _showPhoneDialog();
+              },
             ),
             const SizedBox(height: 10),
             _buildDivider(),
@@ -87,7 +104,13 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
               state.emailAddress.isEmpty
                   ? 'u***@email.com'
                   : state.emailAddress,
-              onTap: () => _showEmailDialog(),
+              onTap: () {
+                // 3=绑定邮箱场景（对应老 bindingAccount case 3），校验后跳绑定邮箱页
+                ref
+                    .read(accountSecurityProvider.notifier)
+                    .setAccountAddType(3);
+                _showEmailDialog();
+              },
             ),
             const SizedBox(height: 10),
             _buildDivider(),
@@ -212,7 +235,7 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
                         : state.phoneNumber,
                     style: TextStyle(color: FitTheme.textColor, fontSize: 10),
                   ),
-                  _buildVerificationCodeField(state, notifier),
+                  _buildVerificationCodeField(state, notifier, 0),
                   const SizedBox(height: 10),
                   if (state.hasEmailAddress)
                     InkWell(
@@ -256,15 +279,28 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
                       InkWell(
                         splashColor: Colors.transparent,
                         highlightColor: Colors.transparent,
-                        onTap: () {
+                        onTap: () async {
+                          // 异步校验验证码（手机弹窗传 0），成功后才关弹窗跳转
+                          final notifier =
+                              ref.read(accountSecurityProvider.notifier);
+                          final ok = await notifier.verifyCheckVerCode(0);
+                          if (!ok) return; // 老代码：失败静默，保持弹窗打开
+                          if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);
+                          if (!mounted) return;
                           final accountAddType = ref
                               .read(accountSecurityProvider)
                               .accountAddType;
-                          context.push(
-                            '/add-verification',
-                            extra: {'accountAddType': accountAddType},
-                          );
+                          if (accountAddType == 1) {
+                            // 设置密码场景：跳设置新密码页
+                            context.push('/set-new-password');
+                          } else {
+                            // 其他场景：跳添加验证方式页
+                            context.push(
+                              '/add-verification',
+                              extra: {'accountAddType': accountAddType},
+                            );
+                          }
                         },
                         child: Container(
                           width: 100,
@@ -341,7 +377,7 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
                         : state.emailAddress,
                     style: TextStyle(color: FitTheme.textColor, fontSize: 10),
                   ),
-                  _buildVerificationCodeField(state, notifier),
+                  _buildVerificationCodeField(state, notifier, 1),
                   const SizedBox(height: 10),
                   if (state.hasPhoneNumber)
                     InkWell(
@@ -385,15 +421,28 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
                       InkWell(
                         splashColor: Colors.transparent,
                         highlightColor: Colors.transparent,
-                        onTap: () {
+                        onTap: () async {
+                          // 异步校验验证码（邮箱弹窗传 1），成功后才关弹窗跳转
+                          final notifier =
+                              ref.read(accountSecurityProvider.notifier);
+                          final ok = await notifier.verifyCheckVerCode(1);
+                          if (!ok) return; // 老代码：失败静默，保持弹窗打开
+                          if (!dialogContext.mounted) return;
                           Navigator.pop(dialogContext);
+                          if (!mounted) return;
                           final accountAddType = ref
                               .read(accountSecurityProvider)
                               .accountAddType;
-                          context.push(
-                            '/add-verification',
-                            extra: {'accountAddType': accountAddType},
-                          );
+                          if (accountAddType == 1) {
+                            // 设置密码场景：跳设置新密码页
+                            context.push('/set-new-password');
+                          } else {
+                            // 其他场景：跳添加验证方式页
+                            context.push(
+                              '/add-verification',
+                              extra: {'accountAddType': accountAddType},
+                            );
+                          }
                         },
                         child: Container(
                           width: 100,
@@ -417,12 +466,26 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
   }
 
   void _showPasswordDialog() {
-    context.push('/set-new-password');
+    final notifier = ref.read(accountSecurityProvider.notifier);
+    final state = ref.read(accountSecurityProvider);
+    notifier.setAccountAddType(1); // 1=设置密码场景
+    if (!state.isLoading) {
+      // 数据未加载完成时点击无响应（老代码行为）
+      if (state.hasPhoneNumber) {
+        _showPhoneDialog(); // 优先手机校验
+      } else if (state.hasEmailAddress) {
+        _showEmailDialog(); // 次选邮箱校验
+      } else {
+        // 都未绑定：跳绑定验证方式页（老代码行为）
+        context.push('/add-verification', extra: {'accountAddType': 1});
+      }
+    }
   }
 
   Widget _buildVerificationCodeField(
     AccountSecurityState state,
     AccountSecurityNotifier notifier,
+    int type,
   ) {
     final l10n = AppLocalizations.of(context)!;
     return Stack(
@@ -443,7 +506,7 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          onChanged: (value) => notifier.setVerCode(value),
+          onChanged: (value) => notifier.setCheckVerCode(value),
         ),
         Positioned(
           bottom: 10,
@@ -451,7 +514,12 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
           child: InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            onTap: () {},
+            onTap: () {
+              // 发送身份校验验证码：type 0=手机 1=邮箱；倒计时中不可重复发送
+              if (!state.isCounting) {
+                notifier.sendCheckVerCode(type);
+              }
+            },
             child: state.isCounting
                 ? Text(
                     '${l10n.codeSent}(${state.counter})',
@@ -527,8 +595,20 @@ class _AccountSecurityPageState extends ConsumerState<AccountSecurityPage> {
                   InkWell(
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
-                    onTap: () {
+                    onTap: () async {
+                      // 先缓存 notifier，await 后不再使用 dialogContext（async 安全）
+                      final notifier = ref.read(accountSecurityProvider.notifier);
+                      // 注销：先关弹窗再调接口（对应老 HomeController.loginOut 行为）
                       Navigator.pop(dialogContext);
+                      final ok = await notifier.deleteAccount();
+                      if (!mounted) return;
+                      if (ok) {
+                        // 注销成功：本地登录态已清空，跳转登录页
+                        context.go('/login');
+                      } else {
+                        // 失败：老代码统一 toast "It seems that there is no internet"
+                        Fluttertoast.showToast(msg: l10n.itSeemsNoInternet);
+                      }
                     },
                     child: Container(
                       width: 100,

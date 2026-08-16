@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AccountSecurityState {
 
- String get phoneNumber; String get emailAddress; String get unionId; bool get hasPhoneNumber; bool get hasEmailAddress; String get verCode; bool get isCounting; int get counter; int get accountAddType; String get bindAccount; String get areaCode; bool get isLoading; bool get ishasInternet;
+ String get phoneNumber; String get emailAddress; String get unionId; bool get hasPhoneNumber; bool get hasEmailAddress; String get verCode; bool get isCounting; int get counter; int get accountAddType; String get bindAccount; String get areaCode; bool get isLoading; bool get isDeleting; bool get ishasInternet; String get changepassword; String get changepassword2; String get checkVerCode;
 /// Create a copy of AccountSecurityState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $AccountSecurityStateCopyWith<AccountSecurityState> get copyWith => _$AccountSec
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountSecurityState&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.unionId, unionId) || other.unionId == unionId)&&(identical(other.hasPhoneNumber, hasPhoneNumber) || other.hasPhoneNumber == hasPhoneNumber)&&(identical(other.hasEmailAddress, hasEmailAddress) || other.hasEmailAddress == hasEmailAddress)&&(identical(other.verCode, verCode) || other.verCode == verCode)&&(identical(other.isCounting, isCounting) || other.isCounting == isCounting)&&(identical(other.counter, counter) || other.counter == counter)&&(identical(other.accountAddType, accountAddType) || other.accountAddType == accountAddType)&&(identical(other.bindAccount, bindAccount) || other.bindAccount == bindAccount)&&(identical(other.areaCode, areaCode) || other.areaCode == areaCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.ishasInternet, ishasInternet) || other.ishasInternet == ishasInternet));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountSecurityState&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.unionId, unionId) || other.unionId == unionId)&&(identical(other.hasPhoneNumber, hasPhoneNumber) || other.hasPhoneNumber == hasPhoneNumber)&&(identical(other.hasEmailAddress, hasEmailAddress) || other.hasEmailAddress == hasEmailAddress)&&(identical(other.verCode, verCode) || other.verCode == verCode)&&(identical(other.isCounting, isCounting) || other.isCounting == isCounting)&&(identical(other.counter, counter) || other.counter == counter)&&(identical(other.accountAddType, accountAddType) || other.accountAddType == accountAddType)&&(identical(other.bindAccount, bindAccount) || other.bindAccount == bindAccount)&&(identical(other.areaCode, areaCode) || other.areaCode == areaCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isDeleting, isDeleting) || other.isDeleting == isDeleting)&&(identical(other.ishasInternet, ishasInternet) || other.ishasInternet == ishasInternet)&&(identical(other.changepassword, changepassword) || other.changepassword == changepassword)&&(identical(other.changepassword2, changepassword2) || other.changepassword2 == changepassword2)&&(identical(other.checkVerCode, checkVerCode) || other.checkVerCode == checkVerCode));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,phoneNumber,emailAddress,unionId,hasPhoneNumber,hasEmailAddress,verCode,isCounting,counter,accountAddType,bindAccount,areaCode,isLoading,ishasInternet);
+int get hashCode => Object.hash(runtimeType,phoneNumber,emailAddress,unionId,hasPhoneNumber,hasEmailAddress,verCode,isCounting,counter,accountAddType,bindAccount,areaCode,isLoading,isDeleting,ishasInternet,changepassword,changepassword2,checkVerCode);
 
 @override
 String toString() {
-  return 'AccountSecurityState(phoneNumber: $phoneNumber, emailAddress: $emailAddress, unionId: $unionId, hasPhoneNumber: $hasPhoneNumber, hasEmailAddress: $hasEmailAddress, verCode: $verCode, isCounting: $isCounting, counter: $counter, accountAddType: $accountAddType, bindAccount: $bindAccount, areaCode: $areaCode, isLoading: $isLoading, ishasInternet: $ishasInternet)';
+  return 'AccountSecurityState(phoneNumber: $phoneNumber, emailAddress: $emailAddress, unionId: $unionId, hasPhoneNumber: $hasPhoneNumber, hasEmailAddress: $hasEmailAddress, verCode: $verCode, isCounting: $isCounting, counter: $counter, accountAddType: $accountAddType, bindAccount: $bindAccount, areaCode: $areaCode, isLoading: $isLoading, isDeleting: $isDeleting, ishasInternet: $ishasInternet, changepassword: $changepassword, changepassword2: $changepassword2, checkVerCode: $checkVerCode)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $AccountSecurityStateCopyWith<$Res>  {
   factory $AccountSecurityStateCopyWith(AccountSecurityState value, $Res Function(AccountSecurityState) _then) = _$AccountSecurityStateCopyWithImpl;
 @useResult
 $Res call({
- String phoneNumber, String emailAddress, String unionId, bool hasPhoneNumber, bool hasEmailAddress, String verCode, bool isCounting, int counter, int accountAddType, String bindAccount, String areaCode, bool isLoading, bool ishasInternet
+ String phoneNumber, String emailAddress, String unionId, bool hasPhoneNumber, bool hasEmailAddress, String verCode, bool isCounting, int counter, int accountAddType, String bindAccount, String areaCode, bool isLoading, bool isDeleting, bool ishasInternet, String changepassword, String changepassword2, String checkVerCode
 });
 
 
@@ -63,7 +63,7 @@ class _$AccountSecurityStateCopyWithImpl<$Res>
 
 /// Create a copy of AccountSecurityState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? phoneNumber = null,Object? emailAddress = null,Object? unionId = null,Object? hasPhoneNumber = null,Object? hasEmailAddress = null,Object? verCode = null,Object? isCounting = null,Object? counter = null,Object? accountAddType = null,Object? bindAccount = null,Object? areaCode = null,Object? isLoading = null,Object? ishasInternet = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? phoneNumber = null,Object? emailAddress = null,Object? unionId = null,Object? hasPhoneNumber = null,Object? hasEmailAddress = null,Object? verCode = null,Object? isCounting = null,Object? counter = null,Object? accountAddType = null,Object? bindAccount = null,Object? areaCode = null,Object? isLoading = null,Object? isDeleting = null,Object? ishasInternet = null,Object? changepassword = null,Object? changepassword2 = null,Object? checkVerCode = null,}) {
   return _then(AccountSecurityState(
 phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
 as String,emailAddress: null == emailAddress ? _self.emailAddress : emailAddress // ignore: cast_nullable_to_non_nullable
@@ -77,8 +77,12 @@ as int,accountAddType: null == accountAddType ? _self.accountAddType : accountAd
 as int,bindAccount: null == bindAccount ? _self.bindAccount : bindAccount // ignore: cast_nullable_to_non_nullable
 as String,areaCode: null == areaCode ? _self.areaCode : areaCode // ignore: cast_nullable_to_non_nullable
 as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,isDeleting: null == isDeleting ? _self.isDeleting : isDeleting // ignore: cast_nullable_to_non_nullable
 as bool,ishasInternet: null == ishasInternet ? _self.ishasInternet : ishasInternet // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,changepassword: null == changepassword ? _self.changepassword : changepassword // ignore: cast_nullable_to_non_nullable
+as String,changepassword2: null == changepassword2 ? _self.changepassword2 : changepassword2 // ignore: cast_nullable_to_non_nullable
+as String,checkVerCode: null == checkVerCode ? _self.checkVerCode : checkVerCode // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -163,10 +167,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String phoneNumber,  String emailAddress,  String unionId,  bool hasPhoneNumber,  bool hasEmailAddress,  String verCode,  bool isCounting,  int counter,  int accountAddType,  String bindAccount,  String areaCode,  bool isLoading,  bool ishasInternet)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String phoneNumber,  String emailAddress,  String unionId,  bool hasPhoneNumber,  bool hasEmailAddress,  String verCode,  bool isCounting,  int counter,  int accountAddType,  String bindAccount,  String areaCode,  bool isLoading,  bool isDeleting,  bool ishasInternet,  String changepassword,  String changepassword2,  String checkVerCode)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AccountSecurityState() when $default != null:
-return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhoneNumber,_that.hasEmailAddress,_that.verCode,_that.isCounting,_that.counter,_that.accountAddType,_that.bindAccount,_that.areaCode,_that.isLoading,_that.ishasInternet);case _:
+return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhoneNumber,_that.hasEmailAddress,_that.verCode,_that.isCounting,_that.counter,_that.accountAddType,_that.bindAccount,_that.areaCode,_that.isLoading,_that.isDeleting,_that.ishasInternet,_that.changepassword,_that.changepassword2,_that.checkVerCode);case _:
   return orElse();
 
 }
@@ -184,10 +188,10 @@ return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhon
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String phoneNumber,  String emailAddress,  String unionId,  bool hasPhoneNumber,  bool hasEmailAddress,  String verCode,  bool isCounting,  int counter,  int accountAddType,  String bindAccount,  String areaCode,  bool isLoading,  bool ishasInternet)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String phoneNumber,  String emailAddress,  String unionId,  bool hasPhoneNumber,  bool hasEmailAddress,  String verCode,  bool isCounting,  int counter,  int accountAddType,  String bindAccount,  String areaCode,  bool isLoading,  bool isDeleting,  bool ishasInternet,  String changepassword,  String changepassword2,  String checkVerCode)  $default,) {final _that = this;
 switch (_that) {
 case _AccountSecurityState():
-return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhoneNumber,_that.hasEmailAddress,_that.verCode,_that.isCounting,_that.counter,_that.accountAddType,_that.bindAccount,_that.areaCode,_that.isLoading,_that.ishasInternet);case _:
+return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhoneNumber,_that.hasEmailAddress,_that.verCode,_that.isCounting,_that.counter,_that.accountAddType,_that.bindAccount,_that.areaCode,_that.isLoading,_that.isDeleting,_that.ishasInternet,_that.changepassword,_that.changepassword2,_that.checkVerCode);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +208,10 @@ return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhon
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String phoneNumber,  String emailAddress,  String unionId,  bool hasPhoneNumber,  bool hasEmailAddress,  String verCode,  bool isCounting,  int counter,  int accountAddType,  String bindAccount,  String areaCode,  bool isLoading,  bool ishasInternet)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String phoneNumber,  String emailAddress,  String unionId,  bool hasPhoneNumber,  bool hasEmailAddress,  String verCode,  bool isCounting,  int counter,  int accountAddType,  String bindAccount,  String areaCode,  bool isLoading,  bool isDeleting,  bool ishasInternet,  String changepassword,  String changepassword2,  String checkVerCode)?  $default,) {final _that = this;
 switch (_that) {
 case _AccountSecurityState() when $default != null:
-return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhoneNumber,_that.hasEmailAddress,_that.verCode,_that.isCounting,_that.counter,_that.accountAddType,_that.bindAccount,_that.areaCode,_that.isLoading,_that.ishasInternet);case _:
+return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhoneNumber,_that.hasEmailAddress,_that.verCode,_that.isCounting,_that.counter,_that.accountAddType,_that.bindAccount,_that.areaCode,_that.isLoading,_that.isDeleting,_that.ishasInternet,_that.changepassword,_that.changepassword2,_that.checkVerCode);case _:
   return null;
 
 }
@@ -219,7 +223,7 @@ return $default(_that.phoneNumber,_that.emailAddress,_that.unionId,_that.hasPhon
 
 
 class _AccountSecurityState implements AccountSecurityState {
-  const _AccountSecurityState({this.phoneNumber = '', this.emailAddress = '', this.unionId = '', this.hasPhoneNumber = false, this.hasEmailAddress = false, this.verCode = '', this.isCounting = false, this.counter = 0, this.accountAddType = 0, this.bindAccount = '', this.areaCode = '', this.isLoading = false, this.ishasInternet = true});
+  const _AccountSecurityState({this.phoneNumber = '', this.emailAddress = '', this.unionId = '', this.hasPhoneNumber = false, this.hasEmailAddress = false, this.verCode = '', this.isCounting = false, this.counter = 0, this.accountAddType = 0, this.bindAccount = '', this.areaCode = '', this.isLoading = false, this.isDeleting = false, this.ishasInternet = true, this.changepassword = '', this.changepassword2 = '', this.checkVerCode = ''});
   
 
 @override@JsonKey() final  String phoneNumber;
@@ -234,7 +238,11 @@ class _AccountSecurityState implements AccountSecurityState {
 @override@JsonKey() final  String bindAccount;
 @override@JsonKey() final  String areaCode;
 @override@JsonKey() final  bool isLoading;
+@override@JsonKey() final  bool isDeleting;
 @override@JsonKey() final  bool ishasInternet;
+@override@JsonKey() final  String changepassword;
+@override@JsonKey() final  String changepassword2;
+@override@JsonKey() final  String checkVerCode;
 
 /// Create a copy of AccountSecurityState
 /// with the given fields replaced by the non-null parameter values.
@@ -246,16 +254,16 @@ _$AccountSecurityStateCopyWith<_AccountSecurityState> get copyWith => __$Account
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccountSecurityState&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.unionId, unionId) || other.unionId == unionId)&&(identical(other.hasPhoneNumber, hasPhoneNumber) || other.hasPhoneNumber == hasPhoneNumber)&&(identical(other.hasEmailAddress, hasEmailAddress) || other.hasEmailAddress == hasEmailAddress)&&(identical(other.verCode, verCode) || other.verCode == verCode)&&(identical(other.isCounting, isCounting) || other.isCounting == isCounting)&&(identical(other.counter, counter) || other.counter == counter)&&(identical(other.accountAddType, accountAddType) || other.accountAddType == accountAddType)&&(identical(other.bindAccount, bindAccount) || other.bindAccount == bindAccount)&&(identical(other.areaCode, areaCode) || other.areaCode == areaCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.ishasInternet, ishasInternet) || other.ishasInternet == ishasInternet));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccountSecurityState&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.emailAddress, emailAddress) || other.emailAddress == emailAddress)&&(identical(other.unionId, unionId) || other.unionId == unionId)&&(identical(other.hasPhoneNumber, hasPhoneNumber) || other.hasPhoneNumber == hasPhoneNumber)&&(identical(other.hasEmailAddress, hasEmailAddress) || other.hasEmailAddress == hasEmailAddress)&&(identical(other.verCode, verCode) || other.verCode == verCode)&&(identical(other.isCounting, isCounting) || other.isCounting == isCounting)&&(identical(other.counter, counter) || other.counter == counter)&&(identical(other.accountAddType, accountAddType) || other.accountAddType == accountAddType)&&(identical(other.bindAccount, bindAccount) || other.bindAccount == bindAccount)&&(identical(other.areaCode, areaCode) || other.areaCode == areaCode)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.isDeleting, isDeleting) || other.isDeleting == isDeleting)&&(identical(other.ishasInternet, ishasInternet) || other.ishasInternet == ishasInternet)&&(identical(other.changepassword, changepassword) || other.changepassword == changepassword)&&(identical(other.changepassword2, changepassword2) || other.changepassword2 == changepassword2)&&(identical(other.checkVerCode, checkVerCode) || other.checkVerCode == checkVerCode));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,phoneNumber,emailAddress,unionId,hasPhoneNumber,hasEmailAddress,verCode,isCounting,counter,accountAddType,bindAccount,areaCode,isLoading,ishasInternet);
+int get hashCode => Object.hash(runtimeType,phoneNumber,emailAddress,unionId,hasPhoneNumber,hasEmailAddress,verCode,isCounting,counter,accountAddType,bindAccount,areaCode,isLoading,isDeleting,ishasInternet,changepassword,changepassword2,checkVerCode);
 
 @override
 String toString() {
-  return 'AccountSecurityState(phoneNumber: $phoneNumber, emailAddress: $emailAddress, unionId: $unionId, hasPhoneNumber: $hasPhoneNumber, hasEmailAddress: $hasEmailAddress, verCode: $verCode, isCounting: $isCounting, counter: $counter, accountAddType: $accountAddType, bindAccount: $bindAccount, areaCode: $areaCode, isLoading: $isLoading, ishasInternet: $ishasInternet)';
+  return 'AccountSecurityState(phoneNumber: $phoneNumber, emailAddress: $emailAddress, unionId: $unionId, hasPhoneNumber: $hasPhoneNumber, hasEmailAddress: $hasEmailAddress, verCode: $verCode, isCounting: $isCounting, counter: $counter, accountAddType: $accountAddType, bindAccount: $bindAccount, areaCode: $areaCode, isLoading: $isLoading, isDeleting: $isDeleting, ishasInternet: $ishasInternet, changepassword: $changepassword, changepassword2: $changepassword2, checkVerCode: $checkVerCode)';
 }
 
 
@@ -266,7 +274,7 @@ abstract mixin class _$AccountSecurityStateCopyWith<$Res> implements $AccountSec
   factory _$AccountSecurityStateCopyWith(_AccountSecurityState value, $Res Function(_AccountSecurityState) _then) = __$AccountSecurityStateCopyWithImpl;
 @override @useResult
 $Res call({
- String phoneNumber, String emailAddress, String unionId, bool hasPhoneNumber, bool hasEmailAddress, String verCode, bool isCounting, int counter, int accountAddType, String bindAccount, String areaCode, bool isLoading, bool ishasInternet
+ String phoneNumber, String emailAddress, String unionId, bool hasPhoneNumber, bool hasEmailAddress, String verCode, bool isCounting, int counter, int accountAddType, String bindAccount, String areaCode, bool isLoading, bool isDeleting, bool ishasInternet, String changepassword, String changepassword2, String checkVerCode
 });
 
 
@@ -283,7 +291,7 @@ class __$AccountSecurityStateCopyWithImpl<$Res>
 
 /// Create a copy of AccountSecurityState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? emailAddress = null,Object? unionId = null,Object? hasPhoneNumber = null,Object? hasEmailAddress = null,Object? verCode = null,Object? isCounting = null,Object? counter = null,Object? accountAddType = null,Object? bindAccount = null,Object? areaCode = null,Object? isLoading = null,Object? ishasInternet = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? phoneNumber = null,Object? emailAddress = null,Object? unionId = null,Object? hasPhoneNumber = null,Object? hasEmailAddress = null,Object? verCode = null,Object? isCounting = null,Object? counter = null,Object? accountAddType = null,Object? bindAccount = null,Object? areaCode = null,Object? isLoading = null,Object? isDeleting = null,Object? ishasInternet = null,Object? changepassword = null,Object? changepassword2 = null,Object? checkVerCode = null,}) {
   return _then(_AccountSecurityState(
 phoneNumber: null == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
 as String,emailAddress: null == emailAddress ? _self.emailAddress : emailAddress // ignore: cast_nullable_to_non_nullable
@@ -297,8 +305,12 @@ as int,accountAddType: null == accountAddType ? _self.accountAddType : accountAd
 as int,bindAccount: null == bindAccount ? _self.bindAccount : bindAccount // ignore: cast_nullable_to_non_nullable
 as String,areaCode: null == areaCode ? _self.areaCode : areaCode // ignore: cast_nullable_to_non_nullable
 as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,isDeleting: null == isDeleting ? _self.isDeleting : isDeleting // ignore: cast_nullable_to_non_nullable
 as bool,ishasInternet: null == ishasInternet ? _self.ishasInternet : ishasInternet // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,changepassword: null == changepassword ? _self.changepassword : changepassword // ignore: cast_nullable_to_non_nullable
+as String,changepassword2: null == changepassword2 ? _self.changepassword2 : changepassword2 // ignore: cast_nullable_to_non_nullable
+as String,checkVerCode: null == checkVerCode ? _self.checkVerCode : checkVerCode // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

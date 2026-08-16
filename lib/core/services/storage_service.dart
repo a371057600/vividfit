@@ -104,6 +104,19 @@ class StorageService {
   String? get myRank => _prefs.getString(StorageKeys.myRank);
   Future<void> setMyRank(String v) => _prefs.setString(StorageKeys.myRank, v);
 
+  // ---- 绑定信息（账号安全页绑定成功后写入，对应老 JSpName.phoneNumber/emailAddress）----
+  String? get phoneNumber => _prefs.getString(StorageKeys.phoneNumber);
+  Future<void> setPhoneNumber(String v) =>
+      _prefs.setString(StorageKeys.phoneNumber, v);
+
+  String? get emailAddress => _prefs.getString(StorageKeys.emailAddress);
+  Future<void> setEmailAddress(String v) =>
+      _prefs.setString(StorageKeys.emailAddress, v);
+
+  // ---- saveFile(裁剪后头像图片路径)----
+  String? get saveFile => _prefs.getString(StorageKeys.saveFile);
+  Future<void> setSaveFile(String v) => _prefs.setString(StorageKeys.saveFile, v);
+
   String? get tokenDateTime => _prefs.getString(StorageKeys.tokenDateTime);
   Future<void> setTokenDateTime(String v) =>
       _prefs.setString(StorageKeys.tokenDateTime, v);

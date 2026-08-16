@@ -18,8 +18,11 @@ import '../../features/home/pages/home_shell_screen.dart';
 import '../../features/home/pages/placeholder_page.dart';
 import '../../features/about/pages/about_info_page.dart';
 import '../../features/about/pages/account_security_page.dart';
+import '../../features/about/pages/add_verification_method_page.dart';
 import '../../features/about/pages/avatar_select_page.dart';
+import '../../features/about/pages/image_crop_page.dart';
 import '../../features/about/pages/medal_display_page.dart';
+import '../../features/about/pages/set_new_password_page.dart';
 import '../../features/about/pages/sport_setting_page.dart';
 import '../../features/about/pages/user_settings_page.dart';
 import '../../features/course/pages/course_list_page.dart';
@@ -71,6 +74,9 @@ GoRouter appRouter(Ref ref) {
       if (location == '/splash') return null;
       // 测试页面免登录
       if (_testRoutes.contains(location)) return null;
+      // 公开页面:未登录也可访问(协议、隐私政策等公开内容)
+      const publicRoutes = {'/policy-webview'};
+      if (publicRoutes.contains(location)) return null;
       // 注册流程路由集合
       const registerFlowRoutes = {
         '/nickname-setup',
@@ -201,6 +207,12 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => const AvatarSelectPage(),
       ),
       GoRoute(
+        path: '/image-crop',
+        name: 'image-crop',
+        builder: (context, state) =>
+            ImageCropPage(imagePath: state.extra as String),
+      ),
+      GoRoute(
         path: '/about-info',
         name: 'about-info',
         builder: (context, state) => const AboutInfoPage(),
@@ -214,6 +226,21 @@ GoRouter appRouter(Ref ref) {
         path: '/account-security',
         name: 'account-security',
         builder: (context, state) => const AccountSecurityPage(),
+      ),
+      GoRoute(
+        path: '/set-new-password',
+        name: 'set-new-password',
+        builder: (context, state) => const SetNewPasswordPage(),
+      ),
+      GoRoute(
+        path: '/add-verification',
+        name: 'add-verification',
+        builder: (context, state) {
+          // accountAddType 0=绑定手机 1=绑定邮箱（对应旧 NewAddVerificationModeScreen 传参）
+          final extra = state.extra as Map<String, dynamic>?;
+          final accountAddType = extra?['accountAddType'] as int? ?? 0;
+          return AddVerificationMethodPage(accountAddType: accountAddType);
+        },
       ),
       GoRoute(
         path: '/medal-display',

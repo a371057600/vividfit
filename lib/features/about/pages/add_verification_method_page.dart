@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
+import '../notifiers/account_security_notifier.dart';
+import '../states/account_security_state.dart';
 
+/// 绑定验证方式页（对应旧 NewAddVerificationModeScreen）。
+///
+/// [accountAddType] 0=绑定手机 1=绑定邮箱（设置密码流程未绑定时传 1，先绑邮箱）。
 class AddVerificationMethodPage extends ConsumerStatefulWidget {
   const AddVerificationMethodPage({super.key, this.accountAddType = 0});
 
@@ -18,13 +24,10 @@ class AddVerificationMethodPage extends ConsumerStatefulWidget {
 
 class _AddVerificationMethodPageState
     extends ConsumerState<AddVerificationMethodPage> {
-  String _bindAccount = '';
-  String _areaCode = '';
-  String _verCode = '';
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(accountSecurityProvider);
     final isPhone = widget.accountAddType == 0;
 
     return Scaffold(
@@ -70,14 +73,29 @@ class _AddVerificationMethodPageState
         child: Column(
           children: [
             _buildInputTypeWidget(isPhone, l10n),
-            _buildVerificationCodeField(l10n),
+            _buildVerificationCodeField(l10n, state),
             const SizedBox(height: 20),
             const Spacer(),
             InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
-              onTap: () {
-                context.pop();
+              onTap: () async {
+                // 提交绑定（对应老 bindingAccount case 0/3）
+                // await 前捕获 router，避免跨异步间隙使用 BuildContext
+                final router = GoRouter.of(context);
+                final notifier = ref.read(accountSecurityProvider.notifier);
+                final code = await notifier.bindAccount(widget.accountAddType);
+                if (!mounted) return;
+                if (code == '200') {
+                  // 老代码：绑定成功直接返回上一页（账号安全页自动刷新列表）
+                  router.pop(true);
+                } else if (code == '405') {
+                  Fluttertoast.showToast(msg: l10n.accountBound);
+                } else if (code == '400') {
+                  Fluttertoast.showToast(msg: l10n.incorrectVerificationCode);
+                } else {
+                  Fluttertoast.showToast(msg: l10n.itSeemsNoInternet);
+                }
               },
               child: Container(
                 alignment: Alignment.center,
@@ -124,10 +142,10 @@ class _AddVerificationMethodPageState
         invalidNumberMessage: l10n.enterCorrectPhoneNumber,
         initialCountryCode: "CN",
         onChanged: (phone) {
-          setState(() {
-            _bindAccount = phone.number;
-            _areaCode = phone.countryCode.replaceFirst("+", "");
-          });
+          // 输入同步到 Notifier（对应老 asc.bindAccount / areaCode）
+          final notifier = ref.read(accountSecurityProvider.notifier);
+          notifier.setBindAccount(phone.number);
+          notifier.setAreaCode(phone.countryCode.replaceFirst("+", ""));
         },
         onCountryChanged: (country) {},
       );
@@ -147,16 +165,20 @@ class _AddVerificationMethodPageState
             hintStyle: const TextStyle(color: Colors.grey),
           ),
           onChanged: (value) {
-            setState(() {
-              _bindAccount = value;
-            });
+            // 输入同步到 Notifier（对应老 asc.bindAccount）
+            ref
+                .read(accountSecurityProvider.notifier)
+                .setBindAccount(value);
           },
         ),
       );
     }
   }
 
-  Widget _buildVerificationCodeField(AppLocalizations l10n) {
+  Widget _buildVerificationCodeField(
+    AppLocalizations l10n,
+    AccountSecurityState state,
+  ) {
     return Stack(
       children: [
         TextField(
@@ -172,9 +194,8 @@ class _AddVerificationMethodPageState
             hintStyle: const TextStyle(color: Colors.grey),
           ),
           onChanged: (value) {
-            setState(() {
-              _verCode = value;
-            });
+            // 输入同步到 Notifier（对应老 asc.verCode）
+            ref.read(accountSecurityProvider.notifier).setVerCode(value);
           },
         ),
         Positioned(
@@ -184,15 +205,35 @@ class _AddVerificationMethodPageState
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
             onTap: () {
-              // TODO: 后续接入发送验证码业务逻辑 + 倒计时
+              // 发送绑定验证码：倒计时中不可重复发送（对应老 sendverCode）
+              if (!state.isCounting) {
+                final code =
+                    ref
+                        .read(accountSecurityProvider.notifier)
+                        .sendBindVerCode(widget.accountAddType);
+                // 405 提示已被绑定（请求失败信息由日志输出）
+                code.then((value) {
+                  if (value == '405' && mounted) {
+                    Fluttertoast.showToast(msg: l10n.accountBound);
+                  }
+                });
+              }
             },
-            child: Text(
-              l10n.getCode,
-              style: TextStyle(
-                color: FitTheme.buttonColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            child: state.isCounting
+                ? Text(
+                    '${l10n.codeSent}(${state.counter})',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : Text(
+                    l10n.getCode,
+                    style: TextStyle(
+                      color: FitTheme.buttonColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
           ),
         ),
       ],
