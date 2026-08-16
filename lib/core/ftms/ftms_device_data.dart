@@ -44,8 +44,8 @@ abstract class FtmsDeviceData with _$FtmsDeviceData {
     double? resistanceLvl,    // 阻力等级
     double? inclineAngle,     // 坡度(百分比)
     double? rampAngle,        // 坡度角度(度)
-    int? elevationGainPos,    // 正海拔增益(米)
-    int? elevationGainNeg,    // 负海拔增益(米)
+    double? elevationGainPos, // 正海拔增益(米)
+    double? elevationGainNeg, // 负海拔增益(米)
     int? instPower,           // 瞬时功率(瓦)
     int? avgPower,            // 平均功率(瓦)
     int? forceOnBelt,         // 皮带受力(牛,跑步机)

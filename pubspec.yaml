@@ -44,6 +44,11 @@ dependencies:
   percent_indicator: ^4.2.3
   cached_network_image: ^3.4.1
 
+  # 头像上传(拍照/相册/裁剪)
+  image_picker: ^1.1.2
+  crop_image: ^1.0.17
+  image: ^4.3.0
+
   # 系统
   connectivity_plus: ^7.3.1
   url_launcher: ^6.3.1

@@ -1019,4 +1019,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rankRower => 'Rower';
+
+  @override
+  String get pictureCropping => 'Picture Cropping';
+
+  @override
+  String get uploading => 'Uploading';
+
+  @override
+  String get pleaseWait => 'Please Wait';
+
+  @override
+  String get uploadSuccess => 'Upload Success';
+
+  @override
+  String get uploadFailed => 'Upload failed, please check network';
 }

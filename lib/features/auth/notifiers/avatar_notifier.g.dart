@@ -41,7 +41,7 @@ final class AvatarNotifierProvider
   }
 }
 
-String _$avatarNotifierHash() => r'e98b12ce389afb66eff3197067dca8c8c95cc6ae';
+String _$avatarNotifierHash() => r'534862fba3a2d622134ce15035aca7b65102c788';
 
 abstract class _$AvatarNotifier extends $Notifier<AvatarState> {
   AvatarState build();

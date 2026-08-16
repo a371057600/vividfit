@@ -1003,4 +1003,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get rankRower => '划船机';
+
+  @override
+  String get pictureCropping => '图片裁剪';
+
+  @override
+  String get uploading => '上传中';
+
+  @override
+  String get pleaseWait => '请稍候';
+
+  @override
+  String get uploadSuccess => '上传成功';
+
+  @override
+  String get uploadFailed => '上传失败,请检查网络';
 }

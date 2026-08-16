@@ -8,6 +8,7 @@ import '../../../core/constants/them_change.dart';
 import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
+import '../widgets/privacy_agreement_check.dart';
 
 /// 手机登录(发送验证码→跳 GetCodePage)。对应旧项目 NewPhoneLoginScreen。
 ///
@@ -49,8 +50,9 @@ class _PhoneLoginPageState extends ConsumerState<PhoneLoginPage> {
     n
       ..setCountryCode('86')
       ..setPhoneNumber(parsedPhone);
-    if (!ref.read(authProvider).ishasInternet) {
-      Fluttertoast.showToast(msg: l10n.noInternetConnectionOrNoInput);
+    // 隐私协议前置校验
+    if (!ref.read(authProvider).agreedToPrivacy) {
+      Fluttertoast.showToast(msg: l10n.pleaseAgreePrivacy);
       return;
     }
     showLoadingDialog(context, message: l10n.getCaptcha);
@@ -169,6 +171,8 @@ class _PhoneLoginPageState extends ConsumerState<PhoneLoginPage> {
                   ),
                 ),
               ),
+              SizedBox(height: 40.r),
+              const PrivacyAgreementCheck(),
             ],
           ),
         ),

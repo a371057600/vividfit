@@ -69,7 +69,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
     debugPrint('[DeviceSearch] === search device tapped ===');
     final notifier = ref.read(gymDeviceConnectProvider.notifier);
     final connectState = ref.read(gymDeviceConnectProvider);
-    
+
     if (connectState.isSearching) {
       debugPrint('[DeviceSearch] already searching, skip');
       return;
@@ -77,7 +77,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
 
     _startSearchAnimation();
     debugPrint('[DeviceSearch] animation started, calling startDeviceScan...');
-    
+
     try {
       await notifier.startDeviceScan(context);
       debugPrint('[DeviceSearch] startDeviceScan completed');
@@ -91,7 +91,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
   Future<void> _onSelectDevice(String name) async {
     debugPrint('[DeviceSearch] === select device: "$name" ===');
     final notifier = ref.read(gymDeviceConnectProvider.notifier);
-    
+
     _stopSearchAnimation();
     await notifier.stopScan();
     debugPrint('[DeviceSearch] stopped scan, connecting to "$name"...');
@@ -207,7 +207,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
                 ),
                 // "Search Device" 按钮
                 InkWell(
-                  onTap: _onTapSearchDevice,
+                  onTap: () {},
                   onLongPress: () {},
                   child: Container(
                     margin: const EdgeInsets.only(top: 20).r,
@@ -258,7 +258,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
   List<Widget> _buildDeviceContainers(List<String> deviceNames) {
     final l10n = AppLocalizations.of(context)!;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     if (deviceNames.isEmpty) {
       return [
         SizedBox(height: 100.h),
@@ -268,7 +268,7 @@ class _DeviceSearchScreenState extends ConsumerState<DeviceSearchScreen> {
         ),
       ];
     }
-    
+
     return List.generate(deviceNames.length, (index) {
       final name = deviceNames[index];
       return InkWell(

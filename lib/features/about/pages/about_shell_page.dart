@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -169,15 +170,29 @@ class _AboutShellPageState extends ConsumerState<AboutShellPage> {
   }
 
   Widget _buildHeadImageWidget(BuildContext context, state) {
+    // headImage 为服务器返回的完整 URL,直接使用,无需拼接
+    final hasCustomAvatar = state.headImage.isNotEmpty;
+    print('🖼️ [AboutShell] render avatar headImage="${state.headImage}"');
+    final defaultAvatar = Image.asset(
+      "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
+      fit: BoxFit.fill,
+    );
     return Container(
       clipBehavior: Clip.hardEdge,
       height: 80.r,
       width: 80.r,
       decoration: const BoxDecoration(shape: BoxShape.circle),
-      child: Image.asset(
-        "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
-        fit: BoxFit.fill,
-      ),
+      child: hasCustomAvatar
+          ? CachedNetworkImage(
+              imageUrl: state.headImage,
+              fit: BoxFit.fill,
+              placeholder: (context, url) => defaultAvatar,
+              errorWidget: (context, url, error) {
+                print('❌ [AboutShell] avatar load failed: $url error=$error');
+                return defaultAvatar;
+              },
+            )
+          : defaultAvatar,
     );
   }
 

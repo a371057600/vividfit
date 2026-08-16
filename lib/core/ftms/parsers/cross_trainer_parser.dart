@@ -5,7 +5,11 @@ import '../ftms_device_data.dart';
 
 /// 椭圆机数据解析器(对应 0x2ACE Cross Trainer Data)。
 ///
-/// Flags bit 定义(FTMS 协议 V2):
+/// 解析规则与旧项目 cross_trainer_blueTooth_data_tool.dart 保持一致:
+/// - direction 在 Flags 之后无条件读取第 1 字节(不受 bit15 控制)
+/// - bit5(Elevation Gain)先于 bit6(Inclination)解析(按协议顺序)
+///
+/// Flags bit 定义:
 /// bit0: More Data(0=存在)
 /// bit1: Average Speed
 /// bit2: Total Distance
@@ -21,7 +25,6 @@ import '../ftms_device_data.dart';
 /// bit12: Metabolic Equivalent
 /// bit13: Elapsed Time
 /// bit14: Remaining Time
-/// bit15: Movement Direction
 class CrossTrainerParser extends FtmsDataParserBase {
   @override
   FtmsDeviceData parse(Uint8List data) {
@@ -33,14 +36,22 @@ class CrossTrainerParser extends FtmsDataParserBase {
     offset += 2;
 
     final moreData = !flagSet(flags, 0);
+
+    // 运动方向:旧项目在 Flags 后无条件读取第 1 字节
+    int? movementDirection;
+    if (hasData(data, offset, 1)) {
+      movementDirection = readUint8(bd, offset);
+      offset += 1;
+    }
+
     double? instSpeed;
     double? avgSpeed;
     int? totalDistance;
     int? stepsPerMin;
     int? avgStepRate;
     int? strideCountTotal;
-    int? elevationGainPos;
-    int? elevationGainNeg;
+    double? elevationGainPos;
+    double? elevationGainNeg;
     double? inclineAngle;
     double? rampAngle;
     double? resistanceLvl;
@@ -53,13 +64,6 @@ class CrossTrainerParser extends FtmsDataParserBase {
     double? met;
     int? elapsedTime;
     int? remainingTime;
-    int? movementDirection;
-
-    // Movement Direction(bit15, uint8)
-    if (flagSet(flags, 15) && hasData(data, offset, 1)) {
-      movementDirection = readUint8(bd, offset);
-      offset += 1;
-    }
 
     // 瞬时速度
     if (moreData && hasData(data, offset, 2)) {
@@ -95,9 +99,9 @@ class CrossTrainerParser extends FtmsDataParserBase {
 
     // 海拔增益(bit5, 各 uint16, 1 米)
     if (flagSet(flags, 5) && hasData(data, offset, 4)) {
-      elevationGainPos = readUint16(bd, offset);
+      elevationGainPos = readUint16(bd, offset).toDouble();
       offset += 2;
-      elevationGainNeg = readUint16(bd, offset);
+      elevationGainNeg = readUint16(bd, offset).toDouble();
       offset += 2;
     }
 

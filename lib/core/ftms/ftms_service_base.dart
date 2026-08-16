@@ -162,44 +162,44 @@ abstract class FtmsServiceBase {
 
   /// 开始/恢复运动。
   Future<void> startOrResume() {
-    debugPrint('[FTMS] >>> startOrResume (0x03)');
+    debugPrint('[FTMS] >>> startOrResume (0x07)');
     return _writeControl(FtmsCommandBuilder.startOrResume());
   }
 
   /// 停止运动。
   Future<void> stop() {
-    debugPrint('[FTMS] >>> stop (0x02)');
+    debugPrint('[FTMS] >>> stop (0x08, control=0x01)');
     return _writeControl(FtmsCommandBuilder.stop());
   }
 
   /// 暂停运动。
   Future<void> pause() {
-    debugPrint('[FTMS] >>> pause (0x04)');
+    debugPrint('[FTMS] >>> pause (0x08, control=0x02)');
     return _writeControl(FtmsCommandBuilder.pause());
   }
 
   /// 设置目标速度(km/h)。
   Future<void> setTargetSpeed(double speedKmPerH) {
-    debugPrint('[FTMS] >>> setTargetSpeed ${speedKmPerH}km/h (0x05)');
+    debugPrint('[FTMS] >>> setTargetSpeed ${speedKmPerH}km/h (0x02)');
     return _writeControl(FtmsCommandBuilder.setTargetSpeed(speedKmPerH));
   }
 
   /// 设置目标坡度(%)。
   Future<void> setTargetInclination(double inclinePercent) {
-    debugPrint('[FTMS] >>> setTargetInclination ${inclinePercent}% (0x07)');
+    debugPrint('[FTMS] >>> setTargetInclination ${inclinePercent}% (0x03)');
     return _writeControl(
         FtmsCommandBuilder.setTargetInclination(inclinePercent));
   }
 
   /// 设置目标阻力等级。
   Future<void> setTargetResistance(double level) {
-    debugPrint('[FTMS] >>> setTargetResistance level=$level (0x08)');
+    debugPrint('[FTMS] >>> setTargetResistance level=$level (0x04)');
     return _writeControl(FtmsCommandBuilder.setTargetResistance(level));
   }
 
   /// 设置目标功率(瓦)。
   Future<void> setTargetPower(int watts) {
-    debugPrint('[FTMS] >>> setTargetPower ${watts}W (0x09)');
+    debugPrint('[FTMS] >>> setTargetPower ${watts}W (0x05)');
     return _writeControl(FtmsCommandBuilder.setTargetPower(watts));
   }
 

@@ -47,6 +47,7 @@ class StorageKeys {
   static const String selectedAvatarIndex = 'selectedAvatarIndex';
   static const String customAvatarPath = 'customAvatarPath';
   static const String goalWeight = 'goalWeight';
+  static const String saveFile = 'saveFile'; // 裁剪后头像图片路径
 
   // ---- 大设备模块 ----
   static const String bikeMachine = 'bikeMachine';

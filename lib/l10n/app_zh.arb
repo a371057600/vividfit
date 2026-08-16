@@ -439,5 +439,15 @@
   "rankElliptical": "椭圆机",
   "@rankElliptical": {},
   "rankRower": "划船机",
-  "@rankRower": {}
+  "@rankRower": {},
+  "pictureCropping": "图片裁剪",
+  "@pictureCropping": {},
+  "uploading": "上传中",
+  "@uploading": {},
+  "pleaseWait": "请稍候",
+  "@pleaseWait": {},
+  "uploadSuccess": "上传成功",
+  "@uploadSuccess": {},
+  "uploadFailed": "上传失败,请检查网络",
+  "@uploadFailed": {}
 }

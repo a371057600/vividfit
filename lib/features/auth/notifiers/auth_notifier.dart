@@ -197,6 +197,17 @@ class AuthNotifier extends _$AuthNotifier {
         '🔐 [AuthNotifier._persistSession] userId=$userId '
         'isNewUser=$isNewUser token=${token.substring(0, token.length > 6 ? 6 : token.length)}...',
       );
+      // 登录成功后主动拉取完整个人信息并打印(对应旧项目进主页时 getUserInfo)
+      // token 完整打印便于调试,上线前可截断
+      print('🔐 [AuthNotifier._persistSession] FULL TOKEN = $token');
+      if (!isNewUser) {
+        try {
+          final fullInfo = await _repository.getUserInfo(userId);
+          print('🔐 [AuthNotifier] post-login getUserInfo: $fullInfo');
+        } catch (e) {
+          print('🔐 [AuthNotifier] post-login getUserInfo error: $e');
+        }
+      }
     }
   }
 
@@ -260,9 +271,12 @@ class AuthNotifier extends _$AuthNotifier {
   // ============ 发送验证码(带倒计时) ============
 
   Future<bool> sendEmailCaptcha() async {
-    if (!state.ishasInternet ||
-        state.emailAccount.isEmpty ||
-        !state.reGetCode2) {
+    // 倒计时防重点:倒计时中点击弹提示,不静默失败
+    if (!state.reGetCode2) {
+      final msg = state.languageNum == 0 || state.languageNum == 2
+          ? '请${state.countdown}秒后再试'
+          : 'Please wait ${state.countdown}s';
+      Fluttertoast.showToast(msg: msg);
       return false;
     }
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -293,7 +307,12 @@ class AuthNotifier extends _$AuthNotifier {
   }
 
   Future<bool> sendPhoneCaptcha() async {
-    if (!state.ishasInternet || state.phoneNumber == 0 || !state.reGetCode2) {
+    // 倒计时防重点:倒计时中点击弹提示,不静默失败
+    if (!state.reGetCode2) {
+      final msg = state.languageNum == 0 || state.languageNum == 2
+          ? '请${state.countdown}秒后再试'
+          : 'Please wait ${state.countdown}s';
+      Fluttertoast.showToast(msg: msg);
       return false;
     }
     state = state.copyWith(isLoading: true, errorMessage: null);

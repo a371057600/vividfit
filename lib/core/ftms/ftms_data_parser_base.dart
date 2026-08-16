@@ -35,13 +35,11 @@ abstract class FtmsDataParserBase {
         ((data[offset + 2] & 0xFF) << 16);
   }
 
-  /// 保留指定小数位精度。
+  /// 保留指定小数位精度(与旧项目 DataConvert.fixPrecision 保持一致)。
+  ///
+  /// 使用字符串转换实现,保证舍入行为与旧项目完全相同。
   double fixPrecision(double value, int fractionDigits) {
-    double mod = 1.0;
-    for (int i = 0; i < fractionDigits; i++) {
-      mod *= 10.0;
-    }
-    return (value * mod).round() / mod;
+    return double.parse(value.toStringAsFixed(fractionDigits));
   }
 
   /// 检查 Flags 的第 [bit] 位是否置 1。

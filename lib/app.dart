@@ -50,7 +50,22 @@ class VividFitApp extends ConsumerWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            locale: View.of(context).platformDispatcher.locale,
+            // 1:1 复刻旧 main.dart localeListResolutionCallback:
+            // 显式把系统 locale 映射到 supportedLocales 中的项,
+            // 避免 Flutter 默认 resolution 在 zh_Hans_CN 等带 script/country 的
+            // locale 下 fallback 到英文(en 是 supportedLocales 首项)。
+            localeListResolutionCallback: (locales, supportedLocales) {
+              if (locales == null || locales.isEmpty) {
+                return const Locale('en');
+              }
+              final lang = locales.first.languageCode;
+              if (lang == 'zh') {
+                // 简中/繁中统一命中 Locale('zh'),由 arb 内容区分
+                return const Locale('zh');
+              }
+              // 其它语言 fallback 英文(与旧项目一致)
+              return const Locale('en');
+            },
             routerConfig: router,
           ),
         );

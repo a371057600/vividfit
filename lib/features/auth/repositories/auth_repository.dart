@@ -1,8 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../../../core/constants/api_constants.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/models/login_response.dart';
+import '../../../data/models/user_info.dart';
 
 /// 认证仓储(仅国内服务器,无需 AWS 切换)。
 ///
@@ -29,7 +33,9 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    print('🔐 [AuthRepo.login] response code=${response.code} msg=${response.msg}');
+    print(
+      '🔐 [AuthRepo.login] response code=${response.code} msg=${response.msg}',
+    );
     return response;
   }
 
@@ -49,7 +55,9 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    print('🔐 [AuthRepo.emailLogin] response code=${response.code} msg=${response.msg}');
+    print(
+      '🔐 [AuthRepo.emailLogin] response code=${response.code} msg=${response.msg}',
+    );
     return response;
   }
 
@@ -71,7 +79,9 @@ class AuthRepository {
       options: _publicOptions,
       parser: (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
     );
-    print('🔐 [AuthRepo.phoneLogin] response code=${response.code} msg=${response.msg}');
+    print(
+      '🔐 [AuthRepo.phoneLogin] response code=${response.code} msg=${response.msg}',
+    );
     return response;
   }
 
@@ -100,7 +110,9 @@ class AuthRepository {
     required String phoneNumber,
   }) async {
     final isCn = areaCode == '86';
-    print('🔐 [AuthRepo.sendPhone] area=$areaCode phone=$phoneNumber isCn=$isCn');
+    print(
+      '🔐 [AuthRepo.sendPhone] area=$areaCode phone=$phoneNumber isCn=$isCn',
+    );
     final response = await _api.getRaw<Map<String, dynamic>>(
       ApiConstants.sendPhoneNumberUrl,
       queryParameters: {
@@ -178,7 +190,9 @@ class AuthRepository {
 
   /// 占位:微信第三方登录(后续接入 Fluwx SDK 后填充)。
   Future<LoginResponse> wechatLogin({required String code}) async {
-    print('🔐 [WeChat] wechatLogin PLACEHOLDER called, code=${code.substring(0, code.length > 6 ? 6 : code.length)}...');
+    print(
+      '🔐 [WeChat] wechatLogin PLACEHOLDER called, code=${code.substring(0, code.length > 6 ? 6 : code.length)}...',
+    );
     // TODO(wechat): 接入 Fluwx SDK 后改为真实 POST /api/public/login/thirdPart/weixin
     throw UnimplementedError('微信登录未上线');
   }
@@ -199,5 +213,137 @@ class AuthRepository {
     final ok = code == '200' || code == '0';
     print('📡 [AuthRepo.updateUserInfo] code=$code ok=$ok');
     return ok;
+  }
+
+  // ============ 用户信息获取 ============
+
+  /// 获取用户信息(GET /api/user/info?userId=xxx)。
+  /// 对应旧项目 controller_home/controller_body_data/controller_about_user_head
+  /// 的 getUserInfo 调用,返回解析后的 FitUserInfo。
+  Future<FitUserInfo?> getUserInfo(int userId) async {
+    print('🔐 [AuthRepo.getUserInfo] userId=$userId');
+    try {
+      final response = await _api.getRaw<Map<String, dynamic>>(
+        ApiConstants.userInfo,
+        queryParameters: {'userId': userId},
+        options: _publicOptions,
+        parser: (json) => json as Map<String, dynamic>,
+      );
+      // 打印服务器完整原始返回,便于确认字段格式(尤其 headImage)
+      print('🔐 [AuthRepo.getUserInfo] RAW RESPONSE = $response');
+      if (response['code']?.toString() != '200') {
+        print('🔐 [AuthRepo.getUserInfo] fail code=${response['code']}');
+        return null;
+      }
+      final data = response['data'];
+      if (data is Map && data['userInfo'] is Map) {
+        final userInfoMap = data['userInfo'] as Map<String, dynamic>;
+        print('🔐 [AuthRepo.getUserInfo] data.userInfo = $userInfoMap');
+        final info = FitUserInfo.fromJson(userInfoMap);
+        print(
+          '🔐 [AuthRepo.getUserInfo] parsed: '
+          'id=${info.id} nickName=${info.nickName} '
+          'sex=${info.sex} birthday=${info.birthday} '
+          'height=${info.height} weight=${info.weight} '
+          'headImage=${info.headImage} '
+          'mailAddress=${info.mailAddress} phoneNumber=${info.phoneNumber}',
+        );
+        return info;
+      }
+      print('🔐 [AuthRepo.getUserInfo] data format unexpected: $data');
+      return null;
+    } catch (e) {
+      print('🔐 [AuthRepo.getUserInfo] error: $e');
+      return null;
+    }
+  }
+
+  // ============ 头像上传 ============
+
+  /// 上传用户头像(PUT /api/user/headImg,FormData)。
+  /// 对应旧项目 controller_about_user_head.updateUserImage。
+  /// [imageFile] 裁剪后(已压缩)的图片文件;[userId] 用户 ID;[accessToken] 登录 token。
+  /// [onSendProgress] 上传进度回调(count已发送,total总大小)。
+  Future<bool> uploadHeadImage({
+    required File imageFile,
+    required int userId,
+    required String accessToken,
+    void Function(int sent, int total)? onSendProgress,
+  }) async {
+    final fileSize = await imageFile.length();
+    print(
+      '📤 [AuthRepo.uploadHeadImage] userId=$userId file=${imageFile.path} size=$fileSize bytes',
+    );
+    try {
+      final formData = FormData.fromMap({
+        'newHeadImg': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: 'userImage.jpg',
+        ),
+        'userId': userId,
+      });
+      final response = await _api.uploadFormData<Map<String, dynamic>>(
+        'PUT',
+        ApiConstants.updateHeadImg,
+        data: formData,
+        headers: {
+          ApiConstants.headerAppPass: ApiConstants.appPass,
+          ApiConstants.headerAccessToken: accessToken,
+        },
+        parser: (json) => json as Map<String, dynamic>,
+        onSendProgress: onSendProgress,
+      );
+      final code = response['code']?.toString();
+      final ok = code == '200';
+      print('📤 [AuthRepo.uploadHeadImage] code=$code ok=$ok');
+      return ok;
+    } catch (e) {
+      print('❌ [AuthRepo.uploadHeadImage] error: $e');
+      return false;
+    }
+  }
+
+  /// 上传默认头像(从 asset 加载 bytes 后上传)。
+  /// 对应旧项目 controller_about_user_head.saveImageLocal + updateInsetImage。
+  /// [onSendProgress] 上传进度回调。
+  Future<bool> uploadAssetHeadImage({
+    required ByteData assetBytes,
+    required String assetPath,
+    required int userId,
+    required String accessToken,
+    void Function(int sent, int total)? onSendProgress,
+  }) async {
+    print('📤 [AuthRepo.uploadAssetHeadImage] userId=$userId asset=$assetPath');
+    try {
+      final imageBytes = assetBytes.buffer.asUint8List();
+      print(
+        '📤 [AuthRepo.uploadAssetHeadImage] size=${imageBytes.length} bytes',
+      );
+      final formData = FormData.fromMap({
+        'newHeadImg': MultipartFile.fromBytes(
+          imageBytes,
+          filename: assetPath.split('/').last,
+        ),
+        'userId': userId,
+      });
+      final response = await _api.uploadFormData<Map<String, dynamic>>(
+        'PUT',
+        ApiConstants.updateHeadImg,
+        data: formData,
+        headers: {
+          ApiConstants.headerAppPass: ApiConstants.appPass,
+          ApiConstants.headerAccessToken: accessToken,
+        },
+        parser: (json) => json as Map<String, dynamic>,
+        onSendProgress: onSendProgress,
+      );
+      final code = response['code']?.toString();
+      final ok = code == '200';
+      print('📤 [AuthRepo.uploadAssetHeadImage] code=$code ok=$ok');
+      return ok;
+    } catch (e) {
+      print('❌ [AuthRepo.uploadAssetHeadImage] error: $e');
+      return false;
+    }
   }
 }

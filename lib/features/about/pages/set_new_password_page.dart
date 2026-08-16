@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
+import '../notifiers/account_security_notifier.dart';
 
 class SetNewPasswordPage extends ConsumerStatefulWidget {
   const SetNewPasswordPage({super.key});
@@ -75,6 +77,10 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
             children: [
               TextField(
                 controller: _passwordController,
+                // 输入同步到 Notifier（对应老代码 onChanged 写 changepassword）
+                onChanged: (value) => ref
+                    .read(accountSecurityProvider.notifier)
+                    .setChangepassword(value),
                 obscureText: _obscurePassword,
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
@@ -108,6 +114,10 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
               const SizedBox(height: 20),
               TextField(
                 controller: _confirmPasswordController,
+                // 输入同步到 Notifier（对应老代码 onChanged 写 changepassword2）
+                onChanged: (value) => ref
+                    .read(accountSecurityProvider.notifier)
+                    .setChangepassword2(value),
                 obscureText: _obscureConfirmPassword,
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
@@ -152,10 +162,33 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
                     l10n.confirm,
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () {
-                    if (_passwordController.text ==
+                  onPressed: () async {
+                    // 先缓存 notifier 与路由器，await 后不再使用 ref/context（async 安全）
+                    final notifier = ref.read(accountSecurityProvider.notifier);
+                    final router = GoRouter.of(context);
+                    // 两次密码不一致：居中 toast，不提交（老代码行为）
+                    if (_passwordController.text !=
                         _confirmPasswordController.text) {
-                      context.pop();
+                      Fluttertoast.showToast(
+                        msg: l10n.passwordMismatch,
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: FitTheme.backgroundColor,
+                        textColor: FitTheme.textColor,
+                      );
+                      return;
+                    }
+                    // 提交修改密码：PUT /api/public/password
+                    final ok = await notifier.updatePassword();
+                    if (!mounted) return;
+                    if (ok) {
+                      // 成功：底部 toast + 返回（对应老代码 Get.back + "success".tr）
+                      Fluttertoast.showToast(msg: l10n.success);
+                      router.pop();
+                    } else {
+                      // 失败：老代码 toast "It seems that there is no internet"
+                      Fluttertoast.showToast(msg: l10n.itSeemsNoInternet);
                     }
                   },
                 ),

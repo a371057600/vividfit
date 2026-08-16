@@ -8,6 +8,7 @@ import '../../../core/constants/them_change.dart';
 import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
+import '../widgets/privacy_agreement_check.dart';
 
 /// 邮箱登录(发送验证码→跳 GetCodePage)。对应旧项目 NewEmailLoginScreen。
 class EmailLoginPage extends ConsumerStatefulWidget {
@@ -47,8 +48,9 @@ class _EmailLoginPageState extends ConsumerState<EmailLoginPage> {
       return;
     }
     n.setEmailAccount(email);
-    if (!ref.read(authProvider).ishasInternet) {
-      Fluttertoast.showToast(msg: l10n.noInternetConnectionOrNoInput);
+    // 隐私协议前置校验
+    if (!ref.read(authProvider).agreedToPrivacy) {
+      Fluttertoast.showToast(msg: l10n.pleaseAgreePrivacy);
       return;
     }
     showLoadingDialog(context, message: l10n.getCaptcha);
@@ -136,6 +138,8 @@ class _EmailLoginPageState extends ConsumerState<EmailLoginPage> {
                   ),
                 ),
               ),
+              SizedBox(height: 40.r),
+              const PrivacyAgreementCheck(),
             ],
           ),
         ),

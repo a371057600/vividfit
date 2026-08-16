@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,7 +99,7 @@ class _UserSettingsPageState extends ConsumerState<UserSettingsPage> {
     notifier,
   ) {
     return Container(
-      alignment: Alignment.center,
+      alignment: Alignment.topCenter,
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
       child: SingleChildScrollView(
@@ -179,21 +180,35 @@ class _UserSettingsPageState extends ConsumerState<UserSettingsPage> {
   }
 
   Widget _buildAvatarWidget(UserSettingsState state) {
+    // headImage 为服务器返回的完整 URL,直接使用,无需拼接
+    final hasCustomAvatar = state.headImage.isNotEmpty;
+    print('🖼️ [UserSettings] render avatar headImage="${state.headImage}"');
+    final defaultAvatar = Image.asset(
+      "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          "images/newUIScreen/defaultheadimages/deheadImage1.jpg",
+          fit: BoxFit.cover,
+        );
+      },
+    );
     return Container(
       decoration: const BoxDecoration(shape: BoxShape.circle),
       height: 60.r,
       width: 60.r,
       clipBehavior: Clip.hardEdge,
-      child: Image.asset(
-        "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Image.asset(
-            "images/newUIScreen/defaultheadimages/deheadImage1.jpg",
-            fit: BoxFit.cover,
-          );
-        },
-      ),
+      child: hasCustomAvatar
+          ? CachedNetworkImage(
+              imageUrl: state.headImage,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => defaultAvatar,
+              errorWidget: (context, url, error) {
+                print('❌ [UserSettings] avatar load failed: $url error=$error');
+                return defaultAvatar;
+              },
+            )
+          : defaultAvatar,
     );
   }
 

@@ -260,8 +260,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
         color: Colors.black.withValues(alpha: 0.75),
         alignment: Alignment.center,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 40),
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 24),
+          margin: const EdgeInsets.symmetric(horizontal: 300, vertical: 30),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xFFFFFFFF),
             borderRadius: BorderRadius.circular(16),
@@ -298,7 +298,7 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                     ),
                   ),
                   onPressed: () {
-                    notifier.stopSportImmediate();
+                    notifier.stopAndClear();
                     print('🔍 [DeviceCheck] 用户点击发送停止指令');
                   },
                   child: const Text(
@@ -698,15 +698,14 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       child: InkWell(
         onTap: () {
           final notifier = ref.read(quickStartProvider.notifier);
-          // 任务4：先停后退（对齐旧版 clearData + stopSport → Get.back 顺序）
-          // 1. 若设备正在运行，立即下发停止指令（dispatchImmediate 不走 debounce，
-          //    确保 pop 前停止指令必达设备）
+          // 先停后退：若设备正在运行，立即下发停止指令并清零本地数据
+          // （dispatchImmediate 不走 debounce，确保 pop 前停止指令必达设备）
           if (state.isPlaying || state.sportSpeed > 0) {
-            notifier.stopSportImmediate();
+            notifier.stopAndClear();
+          } else {
+            notifier.clearData();
           }
-          // 2. 清理本地运动数据（quickStartProvider 为 keepAlive，跨页面常驻）
-          notifier.clearData();
-          // 3. 退出页面（停止指令已即时下发，无需延迟）
+          // 退出页面（停止指令已即时下发，无需延迟）
           Navigator.of(context).pop();
         },
         child: SizedBox(

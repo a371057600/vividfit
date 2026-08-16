@@ -47,7 +47,8 @@ class RowerParser extends FtmsDataParserBase {
     int? elapsedTime;
     int? remainingTime;
 
-    // 桨频 + 总桨次(moreData 存在时, strokeRate uint8 + strokeCount uint16)
+    // 桨频 + 总桨次(与旧项目一致:受 moreData 控制)
+    // Stroke Rate(uint8, 0.5 stroke/min) + Stroke Count(uint16, Unitless)
     if (moreData && hasData(data, offset, 3)) {
       strokesPerMin = readUint8(bd, offset) * 0.5;
       offset += 1;

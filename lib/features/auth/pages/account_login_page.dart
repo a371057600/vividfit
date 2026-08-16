@@ -8,6 +8,7 @@ import '../../../core/constants/them_change.dart';
 import '../../../core/utils/loading_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
+import '../widgets/privacy_agreement_check.dart';
 
 /// 账号密码登录页(对应旧项目 NewAccountLoginScreen)。
 ///
@@ -45,6 +46,11 @@ class _AccountLoginPageState extends ConsumerState<AccountLoginPage> {
     final pwd = _pwdCtrl.text.trim();
     if (account.isEmpty || pwd.isEmpty) {
       Fluttertoast.showToast(msg: l10n.pleaseEnterAccountAndPassword);
+      return;
+    }
+    // 隐私协议前置校验
+    if (!ref.read(authProvider).agreedToPrivacy) {
+      Fluttertoast.showToast(msg: l10n.pleaseAgreePrivacy);
       return;
     }
     n
@@ -107,8 +113,21 @@ class _AccountLoginPageState extends ConsumerState<AccountLoginPage> {
               _buildPasswordField(context, l10n, showPwd),
               SizedBox(height: 30.r),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  // 注册链接(对应旧项目 Register → NewEmailLoginScreen)
+                  // 账号密码登录无法注册新账号,引导用户用邮箱验证码方式注册
+                  // 邮箱验证码登录返回 201 → 自动进入注册流程
+                  InkWell(
+                    onTap: () => context.push('/email-login'),
+                    child: Text(
+                      l10n.register,
+                      style: TextStyle(
+                        color: FitTheme.textColor.withValues(alpha: 0.7),
+                        fontSize: 26.sp,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
                   InkWell(
                     onTap: () => context.push('/find-password'),
                     child: Text(
@@ -143,6 +162,8 @@ class _AccountLoginPageState extends ConsumerState<AccountLoginPage> {
                   ),
                 ),
               ),
+              SizedBox(height: 40.r),
+              const PrivacyAgreementCheck(),
             ],
           ),
         ),

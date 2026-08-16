@@ -66,7 +66,7 @@ final class DistanceUnitNotifierProvider
 }
 
 String _$distanceUnitNotifierHash() =>
-    r'033a57023b835dc0b13d24fc3136a453abc6d44c';
+    r'f730dfdaa71ea154c510082b516c3a57038cd351';
 
 /// 大设备距离单位偏好 Notifier（Riverpod 3.0 代码生成）。
 ///

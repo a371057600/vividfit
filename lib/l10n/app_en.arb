@@ -686,5 +686,15 @@
   "rankElliptical": "Elliptical",
   "@rankElliptical": {},
   "rankRower": "Rower",
-  "@rankRower": {}
+  "@rankRower": {},
+  "pictureCropping": "Picture Cropping",
+  "@pictureCropping": {},
+  "uploading": "Uploading",
+  "@uploading": {},
+  "pleaseWait": "Please Wait",
+  "@pleaseWait": {},
+  "uploadSuccess": "Upload Success",
+  "@uploadSuccess": {},
+  "uploadFailed": "Upload failed, please check network",
+  "@uploadFailed": {}
 }

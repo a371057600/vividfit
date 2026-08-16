@@ -17,6 +17,8 @@ class HomeNotifier extends _$HomeNotifier {
   HomeState build() {
     _repo = ref.watch(homeRepositoryProvider);
     _storage = ref.watch(storageServiceProvider);
+    // 进入主页时打印 token(便于调试)
+    print('🏠 [Home] enter, userId=${_storage.userId}, token=${_storage.accessToken}');
     final state = _buildInitialState();
     _initData();
     _animationTimer = Timer.periodic(

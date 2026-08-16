@@ -5,7 +5,7 @@ import '../ftms_device_data.dart';
 
 /// 跑步机数据解析器(对应 0x2ACD Treadmill Data)。
 ///
-/// Flags bit 定义(FTMS 协议 V2):
+/// Flags bit 定义(与旧项目 treadmill_blueTooth_data_tool.dart 保持一致):
 /// bit0: More Data(0=存在)
 /// bit1: Average Speed
 /// bit2: Total Distance
@@ -18,8 +18,8 @@ import '../ftms_device_data.dart';
 /// bit9: Metabolic Equivalent
 /// bit10: Elapsed Time
 /// bit11: Remaining Time
-/// bit12: Force on Belt and Power Output
-/// bit13: Steps
+/// bit12: Force on Belt(独立 sint16)
+/// bit13: Power Output(独立 sint16)
 class TreadmillParser extends FtmsDataParserBase {
   @override
   FtmsDeviceData parse(Uint8List data) {
@@ -36,8 +36,8 @@ class TreadmillParser extends FtmsDataParserBase {
     int? totalDistance;
     double? inclineAngle;
     double? rampAngle;
-    int? elevationGainPos;
-    int? elevationGainNeg;
+    double? elevationGainPos;
+    double? elevationGainNeg;
     double? instPace;
     double? avgPace;
     int? totalEnergy;
@@ -76,11 +76,11 @@ class TreadmillParser extends FtmsDataParserBase {
       offset += 2;
     }
 
-    // 海拔增益(bit4, 各 uint16, 0.1 米)
+    // 海拔增益(bit4, 各 uint16, 0.1 米, 保留1位小数)
     if (flagSet(flags, 4) && hasData(data, offset, 4)) {
-      elevationGainPos = (readUint16(bd, offset) * 0.1).round();
+      elevationGainPos = fixPrecision(readUint16(bd, offset) * 0.1, 1);
       offset += 2;
-      elevationGainNeg = (readUint16(bd, offset) * 0.1).round();
+      elevationGainNeg = fixPrecision(readUint16(bd, offset) * 0.1, 1);
       offset += 2;
     }
 
@@ -130,10 +130,14 @@ class TreadmillParser extends FtmsDataParserBase {
       offset += 2;
     }
 
-    // Force on Belt + Power Output(bit12, 各 sint16)
-    if (flagSet(flags, 12) && hasData(data, offset, 4)) {
+    // Force on Belt(bit12, 独立 sint16)
+    if (flagSet(flags, 12) && hasData(data, offset, 2)) {
       forceOnBelt = readInt16(bd, offset);
       offset += 2;
+    }
+
+    // Power Output(bit13, 独立 sint16)
+    if (flagSet(flags, 13) && hasData(data, offset, 2)) {
       instPower = readInt16(bd, offset);
       offset += 2;
     }

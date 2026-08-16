@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$FtmsDeviceData {
 
- double? get instSpeed; double? get avgSpeed; int? get distTotal; double? get instCadence; double? get avgCadence; int? get stepsPerMin; int? get avgStepRate; int? get strideCountTotal; double? get strokesPerMin; int? get strokeCountTotal; double? get avgStrokeRate; double? get resistanceLvl; double? get inclineAngle; double? get rampAngle; int? get elevationGainPos; int? get elevationGainNeg; int? get instPower; int? get avgPower; int? get forceOnBelt; int? get energyTotal; int? get energyPerHr; int? get energyPerMin; int? get hr; double? get met; int? get timeElapsed; int? get timeRemaining; double? get instPace; double? get avgPace; int? get movementDirection; int get machineState;
+ double? get instSpeed; double? get avgSpeed; int? get distTotal; double? get instCadence; double? get avgCadence; int? get stepsPerMin; int? get avgStepRate; int? get strideCountTotal; double? get strokesPerMin; int? get strokeCountTotal; double? get avgStrokeRate; double? get resistanceLvl; double? get inclineAngle; double? get rampAngle; double? get elevationGainPos; double? get elevationGainNeg; int? get instPower; int? get avgPower; int? get forceOnBelt; int? get energyTotal; int? get energyPerHr; int? get energyPerMin; int? get hr; double? get met; int? get timeElapsed; int? get timeRemaining; double? get instPace; double? get avgPace; int? get movementDirection; int get machineState;
 /// Create a copy of FtmsDeviceData
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -46,7 +46,7 @@ abstract mixin class $FtmsDeviceDataCopyWith<$Res>  {
   factory $FtmsDeviceDataCopyWith(FtmsDeviceData value, $Res Function(FtmsDeviceData) _then) = _$FtmsDeviceDataCopyWithImpl;
 @useResult
 $Res call({
- double? instSpeed, double? avgSpeed, int? distTotal, double? instCadence, double? avgCadence, int? stepsPerMin, int? avgStepRate, int? strideCountTotal, double? strokesPerMin, int? strokeCountTotal, double? avgStrokeRate, double? resistanceLvl, double? inclineAngle, double? rampAngle, int? elevationGainPos, int? elevationGainNeg, int? instPower, int? avgPower, int? forceOnBelt, int? energyTotal, int? energyPerHr, int? energyPerMin, int? hr, double? met, int? timeElapsed, int? timeRemaining, double? instPace, double? avgPace, int? movementDirection, int machineState
+ double? instSpeed, double? avgSpeed, int? distTotal, double? instCadence, double? avgCadence, int? stepsPerMin, int? avgStepRate, int? strideCountTotal, double? strokesPerMin, int? strokeCountTotal, double? avgStrokeRate, double? resistanceLvl, double? inclineAngle, double? rampAngle, double? elevationGainPos, double? elevationGainNeg, int? instPower, int? avgPower, int? forceOnBelt, int? energyTotal, int? energyPerHr, int? energyPerMin, int? hr, double? met, int? timeElapsed, int? timeRemaining, double? instPace, double? avgPace, int? movementDirection, int machineState
 });
 
 
@@ -80,8 +80,8 @@ as double?,resistanceLvl: freezed == resistanceLvl ? _self.resistanceLvl : resis
 as double?,inclineAngle: freezed == inclineAngle ? _self.inclineAngle : inclineAngle // ignore: cast_nullable_to_non_nullable
 as double?,rampAngle: freezed == rampAngle ? _self.rampAngle : rampAngle // ignore: cast_nullable_to_non_nullable
 as double?,elevationGainPos: freezed == elevationGainPos ? _self.elevationGainPos : elevationGainPos // ignore: cast_nullable_to_non_nullable
-as int?,elevationGainNeg: freezed == elevationGainNeg ? _self.elevationGainNeg : elevationGainNeg // ignore: cast_nullable_to_non_nullable
-as int?,instPower: freezed == instPower ? _self.instPower : instPower // ignore: cast_nullable_to_non_nullable
+as double?,elevationGainNeg: freezed == elevationGainNeg ? _self.elevationGainNeg : elevationGainNeg // ignore: cast_nullable_to_non_nullable
+as double?,instPower: freezed == instPower ? _self.instPower : instPower // ignore: cast_nullable_to_non_nullable
 as int?,avgPower: freezed == avgPower ? _self.avgPower : avgPower // ignore: cast_nullable_to_non_nullable
 as int?,forceOnBelt: freezed == forceOnBelt ? _self.forceOnBelt : forceOnBelt // ignore: cast_nullable_to_non_nullable
 as int?,energyTotal: freezed == energyTotal ? _self.energyTotal : energyTotal // ignore: cast_nullable_to_non_nullable
@@ -180,7 +180,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double? instSpeed,  double? avgSpeed,  int? distTotal,  double? instCadence,  double? avgCadence,  int? stepsPerMin,  int? avgStepRate,  int? strideCountTotal,  double? strokesPerMin,  int? strokeCountTotal,  double? avgStrokeRate,  double? resistanceLvl,  double? inclineAngle,  double? rampAngle,  int? elevationGainPos,  int? elevationGainNeg,  int? instPower,  int? avgPower,  int? forceOnBelt,  int? energyTotal,  int? energyPerHr,  int? energyPerMin,  int? hr,  double? met,  int? timeElapsed,  int? timeRemaining,  double? instPace,  double? avgPace,  int? movementDirection,  int machineState)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double? instSpeed,  double? avgSpeed,  int? distTotal,  double? instCadence,  double? avgCadence,  int? stepsPerMin,  int? avgStepRate,  int? strideCountTotal,  double? strokesPerMin,  int? strokeCountTotal,  double? avgStrokeRate,  double? resistanceLvl,  double? inclineAngle,  double? rampAngle,  double? elevationGainPos,  double? elevationGainNeg,  int? instPower,  int? avgPower,  int? forceOnBelt,  int? energyTotal,  int? energyPerHr,  int? energyPerMin,  int? hr,  double? met,  int? timeElapsed,  int? timeRemaining,  double? instPace,  double? avgPace,  int? movementDirection,  int machineState)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FtmsDeviceData() when $default != null:
 return $default(_that.instSpeed,_that.avgSpeed,_that.distTotal,_that.instCadence,_that.avgCadence,_that.stepsPerMin,_that.avgStepRate,_that.strideCountTotal,_that.strokesPerMin,_that.strokeCountTotal,_that.avgStrokeRate,_that.resistanceLvl,_that.inclineAngle,_that.rampAngle,_that.elevationGainPos,_that.elevationGainNeg,_that.instPower,_that.avgPower,_that.forceOnBelt,_that.energyTotal,_that.energyPerHr,_that.energyPerMin,_that.hr,_that.met,_that.timeElapsed,_that.timeRemaining,_that.instPace,_that.avgPace,_that.movementDirection,_that.machineState);case _:
@@ -201,7 +201,7 @@ return $default(_that.instSpeed,_that.avgSpeed,_that.distTotal,_that.instCadence
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double? instSpeed,  double? avgSpeed,  int? distTotal,  double? instCadence,  double? avgCadence,  int? stepsPerMin,  int? avgStepRate,  int? strideCountTotal,  double? strokesPerMin,  int? strokeCountTotal,  double? avgStrokeRate,  double? resistanceLvl,  double? inclineAngle,  double? rampAngle,  int? elevationGainPos,  int? elevationGainNeg,  int? instPower,  int? avgPower,  int? forceOnBelt,  int? energyTotal,  int? energyPerHr,  int? energyPerMin,  int? hr,  double? met,  int? timeElapsed,  int? timeRemaining,  double? instPace,  double? avgPace,  int? movementDirection,  int machineState)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double? instSpeed,  double? avgSpeed,  int? distTotal,  double? instCadence,  double? avgCadence,  int? stepsPerMin,  int? avgStepRate,  int? strideCountTotal,  double? strokesPerMin,  int? strokeCountTotal,  double? avgStrokeRate,  double? resistanceLvl,  double? inclineAngle,  double? rampAngle,  double? elevationGainPos,  double? elevationGainNeg,  int? instPower,  int? avgPower,  int? forceOnBelt,  int? energyTotal,  int? energyPerHr,  int? energyPerMin,  int? hr,  double? met,  int? timeElapsed,  int? timeRemaining,  double? instPace,  double? avgPace,  int? movementDirection,  int machineState)  $default,) {final _that = this;
 switch (_that) {
 case _FtmsDeviceData():
 return $default(_that.instSpeed,_that.avgSpeed,_that.distTotal,_that.instCadence,_that.avgCadence,_that.stepsPerMin,_that.avgStepRate,_that.strideCountTotal,_that.strokesPerMin,_that.strokeCountTotal,_that.avgStrokeRate,_that.resistanceLvl,_that.inclineAngle,_that.rampAngle,_that.elevationGainPos,_that.elevationGainNeg,_that.instPower,_that.avgPower,_that.forceOnBelt,_that.energyTotal,_that.energyPerHr,_that.energyPerMin,_that.hr,_that.met,_that.timeElapsed,_that.timeRemaining,_that.instPace,_that.avgPace,_that.movementDirection,_that.machineState);case _:
@@ -221,7 +221,7 @@ return $default(_that.instSpeed,_that.avgSpeed,_that.distTotal,_that.instCadence
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double? instSpeed,  double? avgSpeed,  int? distTotal,  double? instCadence,  double? avgCadence,  int? stepsPerMin,  int? avgStepRate,  int? strideCountTotal,  double? strokesPerMin,  int? strokeCountTotal,  double? avgStrokeRate,  double? resistanceLvl,  double? inclineAngle,  double? rampAngle,  int? elevationGainPos,  int? elevationGainNeg,  int? instPower,  int? avgPower,  int? forceOnBelt,  int? energyTotal,  int? energyPerHr,  int? energyPerMin,  int? hr,  double? met,  int? timeElapsed,  int? timeRemaining,  double? instPace,  double? avgPace,  int? movementDirection,  int machineState)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double? instSpeed,  double? avgSpeed,  int? distTotal,  double? instCadence,  double? avgCadence,  int? stepsPerMin,  int? avgStepRate,  int? strideCountTotal,  double? strokesPerMin,  int? strokeCountTotal,  double? avgStrokeRate,  double? resistanceLvl,  double? inclineAngle,  double? rampAngle,  double? elevationGainPos,  double? elevationGainNeg,  int? instPower,  int? avgPower,  int? forceOnBelt,  int? energyTotal,  int? energyPerHr,  int? energyPerMin,  int? hr,  double? met,  int? timeElapsed,  int? timeRemaining,  double? instPace,  double? avgPace,  int? movementDirection,  int machineState)?  $default,) {final _that = this;
 switch (_that) {
 case _FtmsDeviceData() when $default != null:
 return $default(_that.instSpeed,_that.avgSpeed,_that.distTotal,_that.instCadence,_that.avgCadence,_that.stepsPerMin,_that.avgStepRate,_that.strideCountTotal,_that.strokesPerMin,_that.strokeCountTotal,_that.avgStrokeRate,_that.resistanceLvl,_that.inclineAngle,_that.rampAngle,_that.elevationGainPos,_that.elevationGainNeg,_that.instPower,_that.avgPower,_that.forceOnBelt,_that.energyTotal,_that.energyPerHr,_that.energyPerMin,_that.hr,_that.met,_that.timeElapsed,_that.timeRemaining,_that.instPace,_that.avgPace,_that.movementDirection,_that.machineState);case _:
@@ -253,8 +253,8 @@ class _FtmsDeviceData implements FtmsDeviceData {
 @override final  double? resistanceLvl;
 @override final  double? inclineAngle;
 @override final  double? rampAngle;
-@override final  int? elevationGainPos;
-@override final  int? elevationGainNeg;
+@override final  double? elevationGainPos;
+@override final  double? elevationGainNeg;
 @override final  int? instPower;
 @override final  int? avgPower;
 @override final  int? forceOnBelt;
@@ -300,7 +300,7 @@ abstract mixin class _$FtmsDeviceDataCopyWith<$Res> implements $FtmsDeviceDataCo
   factory _$FtmsDeviceDataCopyWith(_FtmsDeviceData value, $Res Function(_FtmsDeviceData) _then) = __$FtmsDeviceDataCopyWithImpl;
 @override @useResult
 $Res call({
- double? instSpeed, double? avgSpeed, int? distTotal, double? instCadence, double? avgCadence, int? stepsPerMin, int? avgStepRate, int? strideCountTotal, double? strokesPerMin, int? strokeCountTotal, double? avgStrokeRate, double? resistanceLvl, double? inclineAngle, double? rampAngle, int? elevationGainPos, int? elevationGainNeg, int? instPower, int? avgPower, int? forceOnBelt, int? energyTotal, int? energyPerHr, int? energyPerMin, int? hr, double? met, int? timeElapsed, int? timeRemaining, double? instPace, double? avgPace, int? movementDirection, int machineState
+ double? instSpeed, double? avgSpeed, int? distTotal, double? instCadence, double? avgCadence, int? stepsPerMin, int? avgStepRate, int? strideCountTotal, double? strokesPerMin, int? strokeCountTotal, double? avgStrokeRate, double? resistanceLvl, double? inclineAngle, double? rampAngle, double? elevationGainPos, double? elevationGainNeg, int? instPower, int? avgPower, int? forceOnBelt, int? energyTotal, int? energyPerHr, int? energyPerMin, int? hr, double? met, int? timeElapsed, int? timeRemaining, double? instPace, double? avgPace, int? movementDirection, int machineState
 });
 
 
@@ -334,8 +334,8 @@ as double?,resistanceLvl: freezed == resistanceLvl ? _self.resistanceLvl : resis
 as double?,inclineAngle: freezed == inclineAngle ? _self.inclineAngle : inclineAngle // ignore: cast_nullable_to_non_nullable
 as double?,rampAngle: freezed == rampAngle ? _self.rampAngle : rampAngle // ignore: cast_nullable_to_non_nullable
 as double?,elevationGainPos: freezed == elevationGainPos ? _self.elevationGainPos : elevationGainPos // ignore: cast_nullable_to_non_nullable
-as int?,elevationGainNeg: freezed == elevationGainNeg ? _self.elevationGainNeg : elevationGainNeg // ignore: cast_nullable_to_non_nullable
-as int?,instPower: freezed == instPower ? _self.instPower : instPower // ignore: cast_nullable_to_non_nullable
+as double?,elevationGainNeg: freezed == elevationGainNeg ? _self.elevationGainNeg : elevationGainNeg // ignore: cast_nullable_to_non_nullable
+as double?,instPower: freezed == instPower ? _self.instPower : instPower // ignore: cast_nullable_to_non_nullable
 as int?,avgPower: freezed == avgPower ? _self.avgPower : avgPower // ignore: cast_nullable_to_non_nullable
 as int?,forceOnBelt: freezed == forceOnBelt ? _self.forceOnBelt : forceOnBelt // ignore: cast_nullable_to_non_nullable
 as int?,energyTotal: freezed == energyTotal ? _self.energyTotal : energyTotal // ignore: cast_nullable_to_non_nullable

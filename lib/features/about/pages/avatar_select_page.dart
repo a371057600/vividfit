@@ -1,12 +1,17 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-// import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/user_settings_notifier.dart';
+import '../widgets/upload_progress_dialog.dart';
 
 class AvatarSelectPage extends ConsumerWidget {
   const AvatarSelectPage({super.key});
@@ -71,7 +76,7 @@ class AvatarSelectPage extends ConsumerWidget {
         titleTextStyle: TextStyle(color: FitTheme.textColor),
       ),
       backgroundColor: FitTheme.backgroundColor,
-      body: _buildMainBody(context, ref, l10n, state),
+      body: _buildMainBody(context, ref, l10n, state, notifier),
     );
   }
 
@@ -80,6 +85,7 @@ class AvatarSelectPage extends ConsumerWidget {
     WidgetRef ref,
     AppLocalizations l10n,
     state,
+    UserSettingsNotifier notifier,
   ) {
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -88,17 +94,17 @@ class AvatarSelectPage extends ConsumerWidget {
       margin: const EdgeInsets.only(left: 25, right: 25, bottom: 60).r,
       child: Column(
         children: [
-          _buildHeadImageWidget(context, ref, l10n, state),
-          _buildSelectImageWidget(context, ref, state),
+          _buildHeadImageWidget(context, ref, l10n, state, notifier),
+          _buildSelectImageWidget(context, ref, state, notifier),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
                 width: MediaQuery.of(context).size.width / 2.5,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  onPressed: state.isUpdating
+                      ? null
+                      : () => _onConfirm(context, ref, l10n, notifier),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: FitTheme.buttonColor,
                     shape: RoundedRectangleBorder(
@@ -136,7 +142,48 @@ class AvatarSelectPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeadImageWidget(BuildContext context, WidgetRef ref, AppLocalizations l10n, state) {
+  /// 确认按钮(对照旧项目确认按钮 updateInsetImage)。
+  /// 上传自定义头像(拍照/相册裁剪后)或默认头像 asset,上传后刷新 headImage。
+  /// 显示上传进度条弹窗。
+  Future<void> _onConfirm(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    UserSettingsNotifier notifier,
+  ) async {
+    // 显示进度弹窗(共享组件)
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => UploadProgressDialog(
+        l10n: l10n,
+        onUpload: (onProgress) =>
+            notifier.confirmUpload(onSendProgress: onProgress),
+      ),
+    ).then((ok) {
+      if (ok == true) {
+        Fluttertoast.showToast(msg: l10n.uploadSuccess);
+        Navigator.of(context).pop();
+      } else if (ok == false) {
+        Fluttertoast.showToast(msg: l10n.uploadFailed);
+      }
+    });
+  }
+
+  Widget _buildHeadImageWidget(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    state,
+    UserSettingsNotifier notifier,
+  ) {
+    // 预览头像:优先显示裁剪后的自定义图片 > 服务器头像 > 默认头像
+    final hasCustomPick = state.imagePickFile.isNotEmpty;
+    final hasServerAvatar = state.headImage.isNotEmpty;
+    final defaultAvatar = Image.asset(
+      "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
+      fit: BoxFit.fill,
+    );
     return Container(
       alignment: Alignment.center,
       margin: const EdgeInsets.only(top: 45, bottom: 45).r,
@@ -150,10 +197,21 @@ class AvatarSelectPage extends ConsumerWidget {
                 color: FitTheme.secondbackGround,
                 borderRadius: BorderRadius.circular(75).r,
               ),
-              child: Image.asset(
-                "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
-                fit: BoxFit.fill,
-              ),
+              // 预览:裁剪后的本地图片 > 服务器头像 > 默认头像
+              child: hasCustomPick
+                  ? Image.file(
+                      File(state.imagePickFile),
+                      fit: BoxFit.fill,
+                      errorBuilder: (context, error, stack) => defaultAvatar,
+                    )
+                  : hasServerAvatar
+                  ? CachedNetworkImage(
+                      imageUrl: state.headImage,
+                      fit: BoxFit.fill,
+                      placeholder: (context, url) => defaultAvatar,
+                      errorWidget: (context, url, error) => defaultAvatar,
+                    )
+                  : defaultAvatar,
             ),
           ),
           SizedBox(height: 80.r),
@@ -162,10 +220,9 @@ class AvatarSelectPage extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // 拍照按钮
                 InkWell(
-                  onTap: () {
-                    // 占位:拍照功能
-                  },
+                  onTap: () => _takePhoto(context, ref, l10n, notifier),
                   child: Container(
                     width: 220.r,
                     height: 60.r,
@@ -178,10 +235,7 @@ class AvatarSelectPage extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: FitTheme.backgroundColor,
                       borderRadius: BorderRadius.circular(10).r,
-                      border: Border.all(
-                        color: FitTheme.textColor,
-                        width: 2.r,
-                      ),
+                      border: Border.all(color: FitTheme.textColor, width: 2.r),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -208,10 +262,9 @@ class AvatarSelectPage extends ConsumerWidget {
                   ),
                 ),
                 SizedBox(width: 40.r),
+                // 图片选择按钮
                 InkWell(
-                  onTap: () {
-                    // 占位:图片选择功能
-                  },
+                  onTap: () => _pickImage(context, ref, l10n, notifier),
                   child: Container(
                     width: 220.r,
                     height: 60.r,
@@ -224,10 +277,7 @@ class AvatarSelectPage extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: FitTheme.backgroundColor,
                       borderRadius: BorderRadius.circular(10).r,
-                      border: Border.all(
-                        color: FitTheme.textColor,
-                        width: 2.r,
-                      ),
+                      border: Border.all(color: FitTheme.textColor, width: 2.r),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -261,9 +311,58 @@ class AvatarSelectPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildSelectImageWidget(BuildContext context, WidgetRef ref, state) {
-    final notifier = ref.read(userSettingsProvider.notifier);
+  /// 拍照 → 裁剪页 → 回到本页预览(不立即上传,等点确认)
+  /// 对照旧项目: checkPermission → takePhoto → ImageTest → imagePickFile = saveFile → Get.back() 回本页
+  Future<void> _takePhoto(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    UserSettingsNotifier notifier,
+  ) async {
+    // 1. 拍照(含权限检查)
+    final imagePath = await notifier.takePhoto();
+    if (imagePath == null) return;
+    if (!context.mounted) return;
+    // 2. 跳裁剪页,等待返回裁剪后路径
+    final croppedPath = await context.push<String>(
+      '/image-crop',
+      extra: imagePath,
+    );
+    if (croppedPath == null) return;
+    // 3. 存为待上传路径,回本页预览(不立即上传)
+    notifier.setPendingUploadPath(croppedPath);
+    print('📷 [Avatar] takePhoto done, pending upload: $croppedPath');
+  }
 
+  /// 相册选图 → 裁剪页 → 回到本页预览(不立即上传,等点确认)
+  /// 对照旧项目: pickImage → ImageTest → imagePickFile = saveFile → Get.back() 回本页
+  Future<void> _pickImage(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    UserSettingsNotifier notifier,
+  ) async {
+    // 1. 相册选图(含权限检查)
+    final imagePath = await notifier.pickImageFromGallery();
+    if (imagePath == null) return;
+    if (!context.mounted) return;
+    // 2. 跳裁剪页,等待返回裁剪后路径
+    final croppedPath = await context.push<String>(
+      '/image-crop',
+      extra: imagePath,
+    );
+    if (croppedPath == null) return;
+    // 3. 存为待上传路径,回本页预览(不立即上传)
+    notifier.setPendingUploadPath(croppedPath);
+    print('📷 [Avatar] pickImage done, pending upload: $croppedPath');
+  }
+
+  Widget _buildSelectImageWidget(
+    BuildContext context,
+    WidgetRef ref,
+    state,
+    UserSettingsNotifier notifier,
+  ) {
     return Expanded(
       child: Container(
         width: MediaQuery.of(context).size.width,
@@ -279,6 +378,7 @@ class AvatarSelectPage extends ConsumerWidget {
           itemBuilder: (context, index) {
             return InkWell(
               onTap: () {
+                // 选默认头像时清除自定义图片路径
                 notifier.updateSelectedImageIndex(index);
               },
               child: Column(

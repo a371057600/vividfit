@@ -52,7 +52,8 @@ class LoginPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: SizedBox(
+      body: Container(
+        padding: EdgeInsets.only(top: 60).r,
         height: height,
         width: width,
         child: Stack(

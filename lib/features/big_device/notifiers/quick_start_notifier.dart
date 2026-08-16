@@ -313,17 +313,45 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 4. 检测设备运行状态（任务5）
   /// 5. 检查目标弹窗
   void _onDataReceived(FtmsDeviceData data) {
+    // 取本帧速度/踏频/桨频（null 时保留旧值），用于设备运行检测
+    final speed = data.instSpeed ?? state.sportSpeed;
+    final cadence = data.instCadence ?? state.sportCadence;
+    final strokeRate = data.strokesPerMin ?? state.sportStrokeRate;
+
+    // 任务5：检测设备运行状态（速度/踏频/桨频任一 > 0 即视为运行中）
+    // ⚠️ 此检测必须在停止态守卫之前执行：否则用户未点开始就蹬踏时，
+    // isDeviceRunningDetected 永远不会被置 true，阻塞层无法弹出，
+    // 用户就能带着未清零的数据进入下级界面（违反业务约束）。
+    //
+    // ⚠️ 用户主动开始（isPlaying=true）后，设备运行是预期行为，
+    // 不应触发阻塞弹窗；仅当用户未主动开始（isPlaying=false）时
+    // 才检测设备被动运行。
+    if (!state.isPlaying) {
+      final isRunning = speed > 0 || cadence > 0 || strokeRate > 0;
+      if (isRunning != state.isDeviceRunningDetected) {
+        state = state.copyWith(isDeviceRunningDetected: isRunning);
+        print(
+          '🔍 [DeviceCheck] data stream → running=$isRunning '
+          '(speed=$speed, cadence=$cadence, stroke=$strokeRate)',
+        );
+      }
+    }
+
+    // 停止态守卫：非播放态时，仅做运行检测，不更新运动数据、不校准计时器、
+    // 不检查目标弹窗。防止：
+    // 1. syncFromDevice → _calibrate 复活已停止的计时器（"停止后依旧计时"）
+    // 2. 残留/胡乱蹬踏数据帧污染已清零的运动数据
+    // 3. 停止态触发目标弹窗
+    if (!state.isPlaying) {
+      return;
+    }
+
     // 归一化设备时间（补偿 60 秒循环归零）
     final rawElapsed = data.timeElapsed ?? 0;
     final normalizedTime = _timeNormalizer!.normalize(rawElapsed);
 
     // 用归一化值校准本地计时器
     _sportTimer!.syncFromDevice(normalizedTime);
-
-    // 取本帧运动数据（null 时保留旧值）
-    final speed = data.instSpeed ?? state.sportSpeed;
-    final cadence = data.instCadence ?? state.sportCadence;
-    final strokeRate = data.strokesPerMin ?? state.sportStrokeRate;
 
     // 更新 state 中的运动数据
     state = state.copyWith(
@@ -339,16 +367,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       sportInclinationButton: data.inclineAngle ?? state.sportInclinationButton,
       npcTime: normalizedTime.toDouble(),
     );
-
-    // 任务5：检测设备运行状态（速度/踏频/桨频任一 > 0 即视为运行中）
-    final isRunning = speed > 0 || cadence > 0 || strokeRate > 0;
-    if (isRunning != state.isDeviceRunningDetected) {
-      state = state.copyWith(isDeviceRunningDetected: isRunning);
-      print(
-        '🔍 [DeviceCheck] data stream → running=$isRunning '
-        '(speed=$speed, cadence=$cadence, stroke=$strokeRate)',
-      );
-    }
 
     // 检查目标弹窗
     _checkAndTriggerGoalDialogs();
@@ -388,7 +406,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
         print('[DeviceStatus] opCode=0x04, action=start');
         _onReceiptReceived(0x07, true);
         if (!state.isPlaying) {
-          _startSportLocal();
+          // 设备自启动（用户未点开始就蹬踏）：不自动开始本地运动，
+          // 仅标记设备运行中，触发阻塞层要求用户先手动停止再重新开始。
+          // （若自动 _startSportLocal 会导致本地数据累积、阻塞层逻辑混乱）
+          state = state.copyWith(isDeviceRunningDetected: true);
+          print('🔍 [DeviceCheck] 设备自启动（0x04）但本地未播放 → 标记 running=true，触发阻塞层');
         }
         break;
 
@@ -485,17 +507,6 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   // ==================== 运动控制辅助方法 ====================
 
-  /// 开始运动的本地状态同步（不发送蓝牙指令，仅同步本地状态）。
-  /// 供设备主动通知开始运动（0x04）时调用。
-  void _startSportLocal() {
-    state = state.copyWith(
-      showPlayButton: false,
-      isInQuickPlay: true,
-      isPlaying: true,
-    );
-    _sportTimer?.start();
-  }
-
   /// 将目标值转换为 FTMS 指令字节序列（uint16 小端序）。
   /// TODO: 确认设备具体字节格式与缩放因子，暂时使用原始整数值。
   List<int> _buildValueBytes(double value) {
@@ -507,6 +518,8 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   /// 每次运动数据变化后调用：检查 3 个维度是否命中新目标档。
   void _checkAndTriggerGoalDialogs() {
+    // 非播放态不检查目标，避免停止后残留数据帧反复触发弹窗（根因 F）
+    if (!state.isPlaying) return;
     // 3 个维度互相独立并行，同时弹窗不互斥；enqueue 内已按类型判断是否该类型已显示。
     _checkTimeGoal();
     _checkDistanceGoal();
@@ -816,7 +829,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 开始运动（对应旧 cnfbd.startSport）。
   /// 1. 更新本地状态
   /// 2. 启动本地计时器
-  /// 3. 下发"开始运动"指令（0x07 + [0x01]）
+  /// 3. 下发"开始运动"指令（0x07 Start or Resume，无参数）
   void startSport() {
     state = state.copyWith(
       showPlayButton: false,
@@ -824,42 +837,63 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       isPlaying: true,
     );
     _sportTimer?.start();
-    _dispatcher?.dispatch(FtmsCommand(0x07, [0x01]));
-    print('[Notifier] startSport: sending 0x07, timer started');
+    _dispatcher?.dispatch(FtmsCommand(0x07, []));
+    print(
+      '[Notifier] startSport: sending 0x07 (Start or Resume), timer started',
+    );
   }
 
   /// 停止运动（对应旧 cnfbd.stopSport）。
   /// 1. 停止本地计时器
-  /// 2. 下发"停止运动"指令（0x07 + [0x00]）
+  /// 2. 下发"停止运动"指令（0x08 + [0x01] = Stop）
   /// 3. 更新本地状态
   void stopSport() {
     _sportTimer?.stop();
-    _dispatcher?.dispatch(FtmsCommand(0x07, [0x00]));
+    _dispatcher?.dispatch(FtmsCommand(0x08, [0x01]));
     state = state.copyWith(isPlaying: false);
-    print('[Notifier] stopSport: sending 0x07 stop, timer stopped');
+    print('[Notifier] stopSport: sending 0x08 0x01 (Stop), timer stopped');
   }
 
-  /// 即时停止运动（任务4：返回按钮专用）。
+  /// 即时停止运动（任务4：返回按钮 / 阻塞层"发送停止指令"专用）。
   ///
   /// 与 [stopSport] 区别：使用 `dispatchImmediate` 立即下发停止指令，
   /// 不走 debounce 合并，确保页面 pop 前停止指令必达设备。
-  /// 用于返回按钮「先停后退」流程，提升停止指令可靠性。
   void stopSportImmediate() {
     _sportTimer?.stop();
-    _dispatcher?.dispatchImmediate(FtmsCommand(0x07, [0x00]));
+    _dispatcher?.dispatchImmediate(FtmsCommand(0x08, [0x01]));
     state = state.copyWith(isPlaying: false);
-    print('[Notifier] stopSportImmediate: sending 0x07 stop (immediate)');
+    print('[Notifier] stopSportImmediate: sending 0x08 0x01 (Stop, immediate)');
   }
 
   /// 暂停运动（对应旧 cnfbd.pauseSport）。
+  /// 快速开始模块业务上不使用暂停（仅退出立即停止），保留方法以兼容协议完整性。
   /// 1. 暂停本地计时器
-  /// 2. 下发"暂停运动"指令（0x07 + [0x02]）
+  /// 2. 下发"暂停运动"指令（0x08 + [0x02] = Pause）
   /// 3. 更新本地状态
   void pauseSport() {
     _sportTimer?.pause();
-    _dispatcher?.dispatch(FtmsCommand(0x07, [0x02]));
+    _dispatcher?.dispatch(FtmsCommand(0x08, [0x02]));
     state = state.copyWith(isPlaying: false);
-    print('[Notifier] pauseSport: sending 0x07 pause, timer paused');
+    print('[Notifier] pauseSport: sending 0x08 0x02 (Pause), timer paused');
+  }
+
+  /// 停止运动并清零本地数据（阻塞层"发送停止指令"按钮 + 返回键专用）。
+  ///
+  /// 业务流：用户点击开始 → 设备开始；若检测到设备自启动 → 阻塞层要求用户
+  /// 手动停止 → 调用本方法下发停止指令并清零 → 用户再点开始。
+  /// 对齐旧项目 stopSport「停止即清零」的终端表现：
+  /// 1. dispatchImmediate 立即下发 0x08 0x01（Stop）
+  /// 2. 停止本地计时器并归零
+  /// 3. 重置设备时间归一化器
+  /// 4. 清空目标弹窗 Timer 与队列
+  /// 5. state 重置为初始态（运动数据全部归零）
+  void stopAndClear() {
+    _sportTimer?.stop();
+    _dispatcher?.dispatchImmediate(FtmsCommand(0x08, [0x01]));
+    disposeGoalTimers();
+    _timeNormalizer?.reset();
+    state = const QuickStartState();
+    print('[Notifier] stopAndClear: sending 0x08 0x01 (Stop) + 清零本地数据');
   }
 
   /// 清除数据（对应旧 cnfbd.clearData）。
@@ -871,8 +905,10 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   }
 
   /// 阻力 +（对应旧 cnfbd.resistanceAdd）。
-  /// 获取当前阻力值 + step，clamp 后下发阻力控制指令（0x07 + [0x0B, ...value]）。
-  /// 下发后进入加载态，等待设备 0x07 回执返回实际阻力值。
+  /// 获取当前阻力值 + step，clamp 后下发阻力控制指令（0x04 Set Target Resistance Level）。
+  ///
+  /// 注：旧项目用 isButtonallow 控制按钮可用性（设备连接+数据上报即允许），
+  /// 此处不检查 isPlaying，只要设备已连接即可调节，保证用户点击立即生效。
   @override
   void resistanceAdd() {
     final current = state.sportResistanceButton;
@@ -880,11 +916,8 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       _resistanceMin,
       _resistanceMax,
     );
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(0x04, [..._buildValueBytes(newValue)]));
     // 乐观更新本地值（保证边界检测准确）。
-    // 注：不再启动加载态，对齐旧版 resistanceAdd 行为（旧版点按后值立即显示）。
     state = state.copyWith(sportResistanceButton: newValue);
     print('[Notifier] resistanceAdd: $current → $newValue');
   }
@@ -897,22 +930,18 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       _resistanceMin,
       _resistanceMax,
     );
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(0x04, [..._buildValueBytes(newValue)]));
     state = state.copyWith(sportResistanceButton: newValue);
     print('[Notifier] resistanceDown: $current → $newValue');
   }
 
   /// 速度 +（对应旧 cnfbd.speedAdd）。
-  /// 下发速度控制指令（0x07 + [0x02, ...value]）。
+  /// 下发速度控制指令（0x02 Set Target Speed）。
   @override
   void speedAdd() {
     final current = state.sportSpeedButton;
     final newValue = (current + _speedStep).clamp(_speedMin, _speedMax);
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
     state = state.copyWith(sportSpeedButton: newValue);
     print('[Notifier] speedAdd: $current → $newValue');
   }
@@ -922,24 +951,20 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   void speedDown() {
     final current = state.sportSpeedButton;
     final newValue = (current - _speedStep).clamp(_speedMin, _speedMax);
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
     state = state.copyWith(sportSpeedButton: newValue);
     print('[Notifier] speedDown: $current → $newValue');
   }
 
   /// 坡度 +（对应旧 cnfbd.inclinationAdd）。
-  /// 下发坡度控制指令（0x07 + [0x03, ...value]）。
+  /// 下发坡度控制指令（0x03 Set Target Inclination）。
   void inclinationAdd() {
     final current = state.sportInclinationButton;
     final newValue = (current + _inclinationStep).clamp(
       _inclinationMin,
       _inclinationMax,
     );
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(0x03, [..._buildValueBytes(newValue)]));
     state = state.copyWith(sportInclinationButton: newValue);
     print('[Notifier] inclinationAdd: $current → $newValue');
   }
@@ -951,9 +976,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       _inclinationMin,
       _inclinationMax,
     );
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(0x03, [..._buildValueBytes(newValue)]));
     state = state.copyWith(sportInclinationButton: newValue);
     print('[Notifier] inclinationDown: $current → $newValue');
   }
@@ -994,7 +1017,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           return;
         }
         _dispatcher?.dispatch(
-          FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+          FtmsCommand(0x02, [..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportSpeedButton: newValue);
         print('[Notifier] longPress speed: $current → $newValue');
@@ -1011,7 +1034,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           return;
         }
         _dispatcher?.dispatch(
-          FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+          FtmsCommand(0x03, [..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportInclinationButton: newValue);
         print('[Notifier] longPress incline: $current → $newValue');
@@ -1028,7 +1051,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           return;
         }
         _dispatcher?.dispatch(
-          FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+          FtmsCommand(0x04, [..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportResistanceButton: newValue);
         print('[Notifier] longPress resistance: $current → $newValue');
@@ -1081,22 +1104,20 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   /// 数字按钮选择（对应旧 cnfbd.numberButton）。
   /// [type]: 0=速度, 1=坡度, 2=阻力。
-  /// 使用 debounce 模式下发目标值指令。
+  /// 使用 debounce 模式下发目标值指令（各自独立 OpCode）。
   void numberButton(double value, int type) {
-    // 根据类型选择子命令码
-    final subCommand = switch (type) {
-      0 => 0x02, // 速度
-      1 => 0x03, // 坡度
-      2 => 0x0B, // 阻力
+    // 根据类型选择 OpCode（FTMS 协议 §14.2，均为独立 OpCode）
+    final opCode = switch (type) {
+      0 => 0x02, // 速度 Set Target Speed
+      1 => 0x03, // 坡度 Set Target Inclination
+      2 => 0x04, // 阻力 Set Target Resistance Level
       _ => null,
     };
-    if (subCommand == null) {
+    if (opCode == null) {
       print('[Notifier] numberButton: 未知 type=$type');
       return;
     }
-    _dispatcher?.dispatch(
-      FtmsCommand(0x07, [subCommand, ..._buildValueBytes(value)]),
-    );
+    _dispatcher?.dispatch(FtmsCommand(opCode, [..._buildValueBytes(value)]));
     // 同步更新本地对应按钮值
     switch (type) {
       case 0:
@@ -1109,7 +1130,9 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
         state = state.copyWith(sportResistanceButton: value);
         break;
     }
-    print('[Notifier] numberButton: target=$value, type=$type');
+    print(
+      '[Notifier] numberButton: target=$value, type=$type, opCode=0x${opCode.toRadixString(16)}',
+    );
   }
 
   /// 更新音乐播放状态（对应旧 setState isMusicPlaying）。

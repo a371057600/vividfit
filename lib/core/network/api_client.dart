@@ -132,6 +132,46 @@ class ApiClient {
         parser: parser);
   }
 
+  /// 发送 FormData(文件上传)。支持 PUT/POST,返回原始响应。
+  /// 用于头像上传等 multipart 场景,headers 由调用方传入(app_pass + access_token)。
+  /// [onSendProgress] 上传进度回调(count已发送,sent总大小)。
+  Future<T> uploadFormData<T>(
+    String method,
+    String path, {
+    required FormData data,
+    Map<String, dynamic>? queryParameters,
+    required Map<String, String> headers,
+    required T Function(dynamic json) parser,
+    ProgressCallback? onSendProgress,
+  }) async {
+    final url = '${ApiConstants.baseUrl}$path';
+    print('📤 Upload: [$method] $url');
+    try {
+      final response = await _dio.fetch<dynamic>(
+        RequestOptions(
+          path: url,
+          method: method,
+          data: data,
+          queryParameters: queryParameters,
+          headers: headers,
+          onSendProgress: onSendProgress,
+        ),
+      );
+      print('📥 Upload Response [${response.statusCode}] $url');
+      print('📥 Body: ${response.data}');
+      return parser(response.data);
+    } on DioException catch (e) {
+      print('❌ Upload DioError: ${e.message}');
+      if (e.response != null) {
+        print('❌ Response: ${e.response!.data}');
+      }
+      rethrow;
+    } catch (e) {
+      print('❌ Upload UnknownError: $e');
+      rethrow;
+    }
+  }
+
   // ============ 内部实现 ============
 
   Future<T> _request<T>(

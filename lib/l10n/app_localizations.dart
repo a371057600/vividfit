@@ -2078,6 +2078,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rower'**
   String get rankRower;
+
+  /// No description provided for @pictureCropping.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture Cropping'**
+  String get pictureCropping;
+
+  /// No description provided for @uploading.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading'**
+  String get uploading;
+
+  /// No description provided for @pleaseWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Please Wait'**
+  String get pleaseWait;
+
+  /// No description provided for @uploadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Success'**
+  String get uploadSuccess;
+
+  /// No description provided for @uploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed, please check network'**
+  String get uploadFailed;
 }
 
 class _AppLocalizationsDelegate
