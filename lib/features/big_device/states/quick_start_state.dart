@@ -73,6 +73,10 @@ abstract class QuickStartState with _$QuickStartState {
     /// 是否支持坡度。
     @Default(false) bool hasInclinationSupport,
 
+    /// 设备运行状态检测：进入界面时设备是否正在被动运行
+    /// （速度/踏频/桨频任一 > 0 且用户未主动开始），用于触发阻塞层。
+    @Default(false) bool isDeviceRunningDetected,
+
     // ==================== 目标达成弹窗相关状态 ====================
     /// 已达成的时间目标档位索引（避免重复弹窗）。
     @Default(<int>[]) List<int> achievedTimeLevels,
@@ -100,15 +104,5 @@ abstract class QuickStartState with _$QuickStartState {
 
     /// 当前触发的卡路里目标值（千卡），供 UI 展示。
     @Default(0.0) double currentEnergyGoalKcal,
-
-    // ==================== 阻力加载状态（任务3） ====================
-    /// 阻力指令下发后是否正在等待设备回执实际阻力值。
-    /// true 时中心按钮显示「获取中」，收到 0x07 回执或超时后置 false。
-    @Default(false) bool isFetchingResistance,
-
-    // ==================== 设备运行状态检测（任务5） ====================
-    /// 进入界面时检测到设备是否正在运行（speed/cadence/strokeRate > 0）。
-    /// true 时弹出引导用户先停止设备的阻塞弹窗，设备停转后自动置 false。
-    @Default(false) bool isDeviceRunningDetected,
   }) = _QuickStartState;
 }

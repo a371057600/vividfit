@@ -11,7 +11,6 @@ import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/user_settings_notifier.dart';
-import '../widgets/upload_progress_dialog.dart';
 
 class AvatarSelectPage extends ConsumerWidget {
   const AvatarSelectPage({super.key});
@@ -144,30 +143,21 @@ class AvatarSelectPage extends ConsumerWidget {
 
   /// 确认按钮(对照旧项目确认按钮 updateInsetImage)。
   /// 上传自定义头像(拍照/相册裁剪后)或默认头像 asset,上传后刷新 headImage。
-  /// 显示上传进度条弹窗。
   Future<void> _onConfirm(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
     UserSettingsNotifier notifier,
   ) async {
-    // 显示进度弹窗(共享组件)
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => UploadProgressDialog(
-        l10n: l10n,
-        onUpload: (onProgress) =>
-            notifier.confirmUpload(onSendProgress: onProgress),
-      ),
-    ).then((ok) {
-      if (ok == true) {
-        Fluttertoast.showToast(msg: l10n.uploadSuccess);
-        Navigator.of(context).pop();
-      } else if (ok == false) {
-        Fluttertoast.showToast(msg: l10n.uploadFailed);
-      }
-    });
+    Fluttertoast.showToast(msg: l10n.uploading);
+    final ok = await notifier.confirmUpload();
+    if (!context.mounted) return;
+    if (ok) {
+      Fluttertoast.showToast(msg: l10n.uploadSuccess);
+      Navigator.of(context).pop();
+    } else {
+      Fluttertoast.showToast(msg: l10n.uploadFailed);
+    }
   }
 
   Widget _buildHeadImageWidget(

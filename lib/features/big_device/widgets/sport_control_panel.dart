@@ -63,6 +63,9 @@ class SportControlPanel extends StatelessWidget {
   }
 
   /// 根据 [deviceType] 过滤回调，避免渲染设备不支持的按钮组。
+  ///
+  /// 长按功能规则：**仅速度按钮支持长按**（速度步进 0.1，需长按快速调整），
+  /// 坡度 / 阻力的长按回调强制置 null，对应按钮不绑定长按手势。
   DeviceControlCallbacks? _filterCallbacks(DeviceControlCallbacks? cb) {
     if (cb == null) return null;
     final supportsSpeed = deviceType.supportsSpeedControl;
@@ -72,26 +75,24 @@ class SportControlPanel extends StatelessWidget {
     return DeviceControlCallbacks(
       onSpeedAdd: supportsSpeed ? cb.onSpeedAdd : null,
       onSpeedDown: supportsSpeed ? cb.onSpeedDown : null,
+      // 速度：保留长按（唯一支持长按的维度）
       onSpeedLongPressAdd: supportsSpeed ? cb.onSpeedLongPressAdd : null,
       onSpeedLongPressDown: supportsSpeed ? cb.onSpeedLongPressDown : null,
       onSpeedPreset: supportsSpeed ? cb.onSpeedPreset : null,
       onInclineAdd: supportsIncline ? cb.onInclineAdd : null,
       onInclineDown: supportsIncline ? cb.onInclineDown : null,
-      onInclineLongPressAdd: supportsIncline ? cb.onInclineLongPressAdd : null,
-      onInclineLongPressDown: supportsIncline
-          ? cb.onInclineLongPressDown
-          : null,
+      // 坡度：不支持长按
+      onInclineLongPressAdd: null,
+      onInclineLongPressDown: null,
       onInclinePreset: supportsIncline ? cb.onInclinePreset : null,
       onResistanceAdd: supportsResistance ? cb.onResistanceAdd : null,
       onResistanceDown: supportsResistance ? cb.onResistanceDown : null,
-      onResistanceLongPressAdd: supportsResistance
-          ? cb.onResistanceLongPressAdd
-          : null,
-      onResistanceLongPressDown: supportsResistance
-          ? cb.onResistanceLongPressDown
-          : null,
+      // 阻力：不支持长按
+      onResistanceLongPressAdd: null,
+      onResistanceLongPressDown: null,
       onResistancePreset: supportsResistance ? cb.onResistancePreset : null,
-      onLongPressEnd: cb.onLongPressEnd,
+      // 长按结束仅对速度维度有意义（坡度/阻力无长按）
+      onLongPressEnd: supportsSpeed ? cb.onLongPressEnd : null,
     );
   }
 
@@ -141,9 +142,10 @@ class SportControlPanel extends StatelessWidget {
             value: d.resistanceValue.toStringAsFixed(1),
             onAdd: cb?.onResistanceAdd,
             onDown: cb?.onResistanceDown,
-            onLongPressAdd: cb?.onResistanceLongPressAdd,
-            onLongPressDown: cb?.onResistanceLongPressDown,
-            onLongPressEnd: cb?.onLongPressEnd,
+            // 阻力：不支持长按
+            onLongPressAdd: null,
+            onLongPressDown: null,
+            onLongPressEnd: null,
           );
         }
         if (deviceType.supportsInclinationControl) {
@@ -152,9 +154,10 @@ class SportControlPanel extends StatelessWidget {
             value: d.inclineValue.toStringAsFixed(1),
             onAdd: cb?.onInclineAdd,
             onDown: cb?.onInclineDown,
-            onLongPressAdd: cb?.onInclineLongPressAdd,
-            onLongPressDown: cb?.onInclineLongPressDown,
-            onLongPressEnd: cb?.onLongPressEnd,
+            // 坡度：不支持长按
+            onLongPressAdd: null,
+            onLongPressDown: null,
+            onLongPressEnd: null,
           );
         }
         if (deviceType.supportsSpeedControl) {
@@ -163,6 +166,7 @@ class SportControlPanel extends StatelessWidget {
             value: d.speedValue.toStringAsFixed(1),
             onAdd: cb?.onSpeedAdd,
             onDown: cb?.onSpeedDown,
+            // 速度：保留长按（唯一支持长按的维度）
             onLongPressAdd: cb?.onSpeedLongPressAdd,
             onLongPressDown: cb?.onSpeedLongPressDown,
             onLongPressEnd: cb?.onLongPressEnd,

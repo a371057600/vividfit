@@ -113,21 +113,8 @@ class _AccountLoginPageState extends ConsumerState<AccountLoginPage> {
               _buildPasswordField(context, l10n, showPwd),
               SizedBox(height: 30.r),
               Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // 注册链接(对应旧项目 Register → NewEmailLoginScreen)
-                  // 账号密码登录无法注册新账号,引导用户用邮箱验证码方式注册
-                  // 邮箱验证码登录返回 201 → 自动进入注册流程
-                  InkWell(
-                    onTap: () => context.push('/email-login'),
-                    child: Text(
-                      l10n.register,
-                      style: TextStyle(
-                        color: FitTheme.textColor.withValues(alpha: 0.7),
-                        fontSize: 26.sp,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
                   InkWell(
                     onTap: () => context.push('/find-password'),
                     child: Text(

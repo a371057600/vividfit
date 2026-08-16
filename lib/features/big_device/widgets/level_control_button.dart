@@ -141,9 +141,7 @@ class LevelControlButton extends StatelessWidget {
         onPreset = cb.onInclinePreset;
         break;
       case _ControlGroupType.resistance:
-        // 任务3：阻力加载态时中心值显示「获取中」，等待设备回执实际值
-        currentValueText =
-            d.resistanceLoading ? '获取中' : d.resistanceValue.toStringAsFixed(1);
+        currentValueText = d.resistanceValue.toStringAsFixed(1);
         typeLabel = 'Resistance';
         presets = d.resistancePresets;
         onAdd = cb.onResistanceAdd;
@@ -174,18 +172,6 @@ class LevelControlButton extends StatelessWidget {
       fontFamily: AppFonts.bebas,
       color: Colors.white,
     );
-
-    // 任务3：阻力加载态时「获取中」为中文，需用非 Bebas 字体 + 缩小字号
-    final isResistanceLoading =
-        type == _ControlGroupType.resistance && d.resistanceLoading;
-    final valueStyle = isResistanceLoading
-        ? TextStyle(
-            fontSize: 11.sp * scaleFactor,
-            height: 0.8,
-            fontWeight: FontWeight.w500,
-            color: Colors.white70,
-          )
-        : textStyle;
 
     final innerMargin =
         EdgeInsets.only(top: 5, bottom: 5, right: 5, left: 5).r * scaleFactor;
@@ -238,11 +224,12 @@ class LevelControlButton extends StatelessWidget {
               decoration: buttonDecoration,
               child: Column(
                 children: [
-                  // 加号按钮（支持长按 + 长按结束）
+                  // 加号按钮（仅速度支持长按；长按回调为 null 时不绑定长按手势）
                   Expanded(
                     child: GestureDetector(
                       onLongPress: onLongPressAdd,
-                      onLongPressEnd: onLongPressEnd != null
+                      onLongPressEnd:
+                          (onLongPressAdd != null && onLongPressEnd != null)
                           ? (_) => onLongPressEnd()
                           : null,
                       onTap: onAdd,
@@ -263,7 +250,7 @@ class LevelControlButton extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(currentValueText, style: valueStyle),
+                          Text(currentValueText, style: textStyle),
                           SizedBox(height: 8.sp * scaleFactor),
                           Text(
                             typeLabel,
@@ -276,11 +263,12 @@ class LevelControlButton extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // 减号按钮（支持长按 + 长按结束）
+                  // 减号按钮（仅速度支持长按；长按回调为 null 时不绑定长按手势）
                   Expanded(
                     child: GestureDetector(
                       onLongPress: onLongPressDown,
-                      onLongPressEnd: onLongPressEnd != null
+                      onLongPressEnd:
+                          (onLongPressDown != null && onLongPressEnd != null)
                           ? (_) => onLongPressEnd()
                           : null,
                       onTap: onDown,

@@ -1,20 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
 import '../../../core/constants/them_change.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../about/widgets/upload_progress_dialog.dart';
 import '../notifiers/avatar_notifier.dart';
 
 /// 注册流程头像选择页(参照 about 模块 avatar_select_page 设计)。
 ///
-/// 功能:20 个默认头像网格选择 + 拍照/相册自定义头像 + 预览 + 确认上传 → 推送到 GoalSettingPage。
+/// 功能:20 个默认头像网格选择 + 预览 + 确认 → 推送到 GoalSettingPage。
 class AvatarSetupPage extends ConsumerStatefulWidget {
   const AvatarSetupPage({super.key, this.isRegistration = false});
 
@@ -28,7 +23,6 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
   @override
   Widget build(BuildContext context) {
     final notifier = ref.read(avatarProvider.notifier);
-    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: FitTheme.backgroundColor,
@@ -79,15 +73,11 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
         iconTheme: IconThemeData(color: FitTheme.textColor),
         titleTextStyle: TextStyle(color: FitTheme.textColor),
       ),
-      body: _buildMainBody(context, l10n, notifier),
+      body: _buildMainBody(context, notifier),
     );
   }
 
-  Widget _buildMainBody(
-    BuildContext context,
-    AppLocalizations l10n,
-    AvatarNotifier notifier,
-  ) {
+  Widget _buildMainBody(BuildContext context, AvatarNotifier notifier) {
     final state = ref.watch(avatarProvider);
     final isRegistration = widget.isRegistration;
     final buttonMargin = MediaQuery.of(context).size.width * 0.05;
@@ -98,7 +88,7 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
       margin: const EdgeInsets.only(left: 25, right: 25, bottom: 60).r,
       child: Column(
         children: [
-          _buildHeadImageWidget(context, l10n, notifier),
+          _buildHeadImageWidget(),
           _buildSelectImageWidget(notifier),
 
           if (isRegistration)
@@ -111,7 +101,14 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
                 ),
                 onPressed: state.isLoading
                     ? null
-                    : () => _onConfirmUpload(context, l10n, notifier),
+                    : () async {
+                        await notifier.confirmSelection();
+                        if (!context.mounted) return;
+                        context.push(
+                          '/goal-setting',
+                          extra: {'isRegistration': true},
+                        );
+                      },
                 child: Text(
                   // TODO(l10n): 待补充 next 文案
                   '下一步',
@@ -142,7 +139,8 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
                       ),
                     ),
                     child: Text(
-                      l10n.returnButton,
+                      // TODO(l10n): 待补充 returnButton 文案
+                      '返回',
                       style: TextStyle(color: Colors.white, fontSize: 35.sp),
                     ),
                   ),
@@ -152,7 +150,14 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
                   child: ElevatedButton(
                     onPressed: state.isLoading
                         ? null
-                        : () => _onConfirmUpload(context, l10n, notifier),
+                        : () async {
+                            await notifier.confirmSelection();
+                            if (!context.mounted) return;
+                            context.push(
+                              '/goal-setting',
+                              extra: {'isRegistration': true},
+                            );
+                          },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: FitTheme.buttonColor,
                       shape: RoundedRectangleBorder(
@@ -160,7 +165,8 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
                       ),
                     ),
                     child: Text(
-                      l10n.confirm,
+                      // TODO(l10n): 待补充 confirm 文案
+                      '确认',
                       style: TextStyle(color: Colors.white, fontSize: 35.sp),
                     ),
                   ),
@@ -172,19 +178,8 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
     );
   }
 
-  /// 预览区 + 拍照/相册按钮(参照 avatar_select_page._buildHeadImageWidget)。
-  /// 预览优先级:裁剪后的自定义本地图片 > 当前选中默认头像 asset。
-  Widget _buildHeadImageWidget(
-    BuildContext context,
-    AppLocalizations l10n,
-    AvatarNotifier notifier,
-  ) {
+  Widget _buildHeadImageWidget() {
     final state = ref.watch(avatarProvider);
-    final hasCustomPick = state.imagePickFile.isNotEmpty;
-    final defaultAvatar = Image.asset(
-      "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
-      fit: BoxFit.fill,
-    );
     return Container(
       alignment: Alignment.center,
       margin: const EdgeInsets.only(top: 45, bottom: 45).r,
@@ -198,185 +193,24 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
                 color: FitTheme.secondbackGround,
                 borderRadius: BorderRadius.circular(75).r,
               ),
-              // 预览:裁剪后的本地图片 > 默认头像
-              child: hasCustomPick
-                  ? Image.file(
-                      File(state.imagePickFile),
-                      fit: BoxFit.fill,
-                      errorBuilder: (context, error, stack) => defaultAvatar,
-                    )
-                  : defaultAvatar,
+              child: Image.asset(
+                "images/newUIScreen/defaultheadimages/deheadImage${state.selectedImageIndex + 1}.jpg",
+                fit: BoxFit.fill,
+              ),
             ),
           ),
-          SizedBox(height: 80.r),
-          // 拍照 + 相册选择按钮(样式与 about 模块完全一致)
-          Container(
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 拍照按钮
-                InkWell(
-                  onTap: () => _takePhoto(context, notifier),
-                  child: Container(
-                    width: 220.r,
-                    height: 60.r,
-                    padding: const EdgeInsets.only(
-                      top: 5,
-                      bottom: 5,
-                      left: 25,
-                      right: 25,
-                    ).r,
-                    decoration: BoxDecoration(
-                      color: FitTheme.backgroundColor,
-                      borderRadius: BorderRadius.circular(10).r,
-                      border: Border.all(
-                        color: FitTheme.textColor,
-                        width: 2.r,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Icon(
-                          Icons.camera_alt,
-                          color: FitTheme.textColor,
-                          size: 35.r,
-                        ),
-                        SizedBox(width: 20.r),
-                        Expanded(
-                          child: Text(
-                            l10n.takePhoto,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: FitTheme.textColor,
-                              fontSize: 20.sp,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(width: 40.r),
-                // 相册选择按钮
-                InkWell(
-                  onTap: () => _pickImage(context, notifier),
-                  child: Container(
-                    width: 220.r,
-                    height: 60.r,
-                    padding: const EdgeInsets.only(
-                      top: 5,
-                      bottom: 5,
-                      left: 25,
-                      right: 25,
-                    ).r,
-                    decoration: BoxDecoration(
-                      color: FitTheme.backgroundColor,
-                      borderRadius: BorderRadius.circular(10).r,
-                      border: Border.all(
-                        color: FitTheme.textColor,
-                        width: 2.r,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.image,
-                          color: FitTheme.textColor,
-                          size: 35.r,
-                        ),
-                        SizedBox(width: 20.r),
-                        Expanded(
-                          child: Text(
-                            l10n.pictureSelect,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: FitTheme.textColor,
-                              fontSize: 25.sp,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          SizedBox(height: 30.r),
+          Text(
+            // TODO(l10n): 待补充 chooseAvatarHint 文案
+            '选择一个你喜欢的头像',
+            style: TextStyle(
+              color: FitTheme.textColor.withValues(alpha: 0.7),
+              fontSize: 26.sp,
             ),
           ),
         ],
       ),
     );
-  }
-
-  /// 拍照 → 裁剪页 → 回到本页预览(不立即上传,等点确认/下一步)
-  /// 对照 about 模块 avatar_select_page._takePhoto。
-  Future<void> _takePhoto(
-    BuildContext context,
-    AvatarNotifier notifier,
-  ) async {
-    // 1. 拍照(含权限检查)
-    final imagePath = await notifier.takePhoto();
-    if (imagePath == null) return;
-    if (!context.mounted) return;
-    // 2. 跳裁剪页,等待返回裁剪后路径
-    final croppedPath = await context.push<String>(
-      '/image-crop',
-      extra: imagePath,
-    );
-    if (croppedPath == null) return;
-    // 3. 存为待上传路径,回本页预览(不立即上传)
-    notifier.setPendingUploadPath(croppedPath);
-    print('📷 [Avatar] takePhoto done, pending upload: $croppedPath');
-  }
-
-  /// 相册选图 → 裁剪页 → 回到本页预览(不立即上传,等点确认/下一步)
-  /// 对照 about 模块 avatar_select_page._pickImage。
-  Future<void> _pickImage(
-    BuildContext context,
-    AvatarNotifier notifier,
-  ) async {
-    // 1. 相册选图(含权限检查)
-    final imagePath = await notifier.pickImageFromGallery();
-    if (imagePath == null) return;
-    if (!context.mounted) return;
-    // 2. 跳裁剪页,等待返回裁剪后路径
-    final croppedPath = await context.push<String>(
-      '/image-crop',
-      extra: imagePath,
-    );
-    if (croppedPath == null) return;
-    // 3. 存为待上传路径,回本页预览(不立即上传)
-    notifier.setPendingUploadPath(croppedPath);
-    print('📷 [Avatar] pickImage done, pending upload: $croppedPath');
-  }
-
-  /// 确认上传(对照 about 模块 avatar_select_page._onConfirm)。
-  /// 弹上传进度弹窗 → 上传成功跳 goal-setting;失败弹 toast 留页。
-  Future<void> _onConfirmUpload(
-    BuildContext context,
-    AppLocalizations l10n,
-    AvatarNotifier notifier,
-  ) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => UploadProgressDialog(
-        l10n: l10n,
-        onUpload: (onProgress) =>
-            notifier.confirmUpload(onSendProgress: onProgress),
-      ),
-    );
-    if (ok == true) {
-      Fluttertoast.showToast(msg: l10n.uploadSuccess);
-      if (!context.mounted) return;
-      context.push('/goal-setting', extra: {'isRegistration': true});
-    } else if (ok == false) {
-      Fluttertoast.showToast(msg: l10n.uploadFailed);
-    }
   }
 
   Widget _buildSelectImageWidget(AvatarNotifier notifier) {
@@ -431,7 +265,7 @@ class _AvatarSetupPageState extends ConsumerState<AvatarSetupPage> {
                               isSelected:
                                   state.selectedImageIndex ==
                                       col + row * crossAxisCount &&
-                                  state.imagePickFile.isEmpty,
+                                  !state.isCustomImage,
                               onTap: () => notifier.selectDefaultAvatar(
                                 row * crossAxisCount + col,
                               ),

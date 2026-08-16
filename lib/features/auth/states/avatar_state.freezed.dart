@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$AvatarState {
 
- int get selectedImageIndex; String get customImagePath; bool get isCustomImage; String get imagePickFile; bool get isLoading;
+ int get selectedImageIndex; String get customImagePath; bool get isCustomImage; bool get isLoading;
 /// Create a copy of AvatarState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $AvatarStateCopyWith<AvatarState> get copyWith => _$AvatarStateCopyWithImpl<Avat
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AvatarState&&(identical(other.selectedImageIndex, selectedImageIndex) || other.selectedImageIndex == selectedImageIndex)&&(identical(other.customImagePath, customImagePath) || other.customImagePath == customImagePath)&&(identical(other.isCustomImage, isCustomImage) || other.isCustomImage == isCustomImage)&&(identical(other.imagePickFile, imagePickFile) || other.imagePickFile == imagePickFile)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AvatarState&&(identical(other.selectedImageIndex, selectedImageIndex) || other.selectedImageIndex == selectedImageIndex)&&(identical(other.customImagePath, customImagePath) || other.customImagePath == customImagePath)&&(identical(other.isCustomImage, isCustomImage) || other.isCustomImage == isCustomImage)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,selectedImageIndex,customImagePath,isCustomImage,imagePickFile,isLoading);
+int get hashCode => Object.hash(runtimeType,selectedImageIndex,customImagePath,isCustomImage,isLoading);
 
 @override
 String toString() {
-  return 'AvatarState(selectedImageIndex: $selectedImageIndex, customImagePath: $customImagePath, isCustomImage: $isCustomImage, imagePickFile: $imagePickFile, isLoading: $isLoading)';
+  return 'AvatarState(selectedImageIndex: $selectedImageIndex, customImagePath: $customImagePath, isCustomImage: $isCustomImage, isLoading: $isLoading)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $AvatarStateCopyWith<$Res>  {
   factory $AvatarStateCopyWith(AvatarState value, $Res Function(AvatarState) _then) = _$AvatarStateCopyWithImpl;
 @useResult
 $Res call({
- int selectedImageIndex, String customImagePath, bool isCustomImage, String imagePickFile, bool isLoading
+ int selectedImageIndex, String customImagePath, bool isCustomImage, bool isLoading
 });
 
 
@@ -63,13 +63,12 @@ class _$AvatarStateCopyWithImpl<$Res>
 
 /// Create a copy of AvatarState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? selectedImageIndex = null,Object? customImagePath = null,Object? isCustomImage = null,Object? imagePickFile = null,Object? isLoading = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? selectedImageIndex = null,Object? customImagePath = null,Object? isCustomImage = null,Object? isLoading = null,}) {
   return _then(AvatarState(
 selectedImageIndex: null == selectedImageIndex ? _self.selectedImageIndex : selectedImageIndex // ignore: cast_nullable_to_non_nullable
 as int,customImagePath: null == customImagePath ? _self.customImagePath : customImagePath // ignore: cast_nullable_to_non_nullable
 as String,isCustomImage: null == isCustomImage ? _self.isCustomImage : isCustomImage // ignore: cast_nullable_to_non_nullable
-as bool,imagePickFile: null == imagePickFile ? _self.imagePickFile : imagePickFile // ignore: cast_nullable_to_non_nullable
-as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -155,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int selectedImageIndex,  String customImagePath,  bool isCustomImage,  String imagePickFile,  bool isLoading)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int selectedImageIndex,  String customImagePath,  bool isCustomImage,  bool isLoading)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AvatarState() when $default != null:
-return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomImage,_that.imagePickFile,_that.isLoading);case _:
+return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomImage,_that.isLoading);case _:
   return orElse();
 
 }
@@ -176,10 +175,10 @@ return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomIma
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int selectedImageIndex,  String customImagePath,  bool isCustomImage,  String imagePickFile,  bool isLoading)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int selectedImageIndex,  String customImagePath,  bool isCustomImage,  bool isLoading)  $default,) {final _that = this;
 switch (_that) {
 case _AvatarState():
-return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomImage,_that.imagePickFile,_that.isLoading);case _:
+return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomImage,_that.isLoading);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -196,10 +195,10 @@ return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomIma
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int selectedImageIndex,  String customImagePath,  bool isCustomImage,  String imagePickFile,  bool isLoading)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int selectedImageIndex,  String customImagePath,  bool isCustomImage,  bool isLoading)?  $default,) {final _that = this;
 switch (_that) {
 case _AvatarState() when $default != null:
-return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomImage,_that.imagePickFile,_that.isLoading);case _:
+return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomImage,_that.isLoading);case _:
   return null;
 
 }
@@ -211,13 +210,12 @@ return $default(_that.selectedImageIndex,_that.customImagePath,_that.isCustomIma
 
 
 class _AvatarState implements AvatarState {
-  const _AvatarState({this.selectedImageIndex = 0, this.customImagePath = '', this.isCustomImage = false, this.imagePickFile = '', this.isLoading = false});
+  const _AvatarState({this.selectedImageIndex = 0, this.customImagePath = '', this.isCustomImage = false, this.isLoading = false});
   
 
 @override@JsonKey() final  int selectedImageIndex;
 @override@JsonKey() final  String customImagePath;
 @override@JsonKey() final  bool isCustomImage;
-@override@JsonKey() final  String imagePickFile;
 @override@JsonKey() final  bool isLoading;
 
 /// Create a copy of AvatarState
@@ -230,16 +228,16 @@ _$AvatarStateCopyWith<_AvatarState> get copyWith => __$AvatarStateCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AvatarState&&(identical(other.selectedImageIndex, selectedImageIndex) || other.selectedImageIndex == selectedImageIndex)&&(identical(other.customImagePath, customImagePath) || other.customImagePath == customImagePath)&&(identical(other.isCustomImage, isCustomImage) || other.isCustomImage == isCustomImage)&&(identical(other.imagePickFile, imagePickFile) || other.imagePickFile == imagePickFile)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AvatarState&&(identical(other.selectedImageIndex, selectedImageIndex) || other.selectedImageIndex == selectedImageIndex)&&(identical(other.customImagePath, customImagePath) || other.customImagePath == customImagePath)&&(identical(other.isCustomImage, isCustomImage) || other.isCustomImage == isCustomImage)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,selectedImageIndex,customImagePath,isCustomImage,imagePickFile,isLoading);
+int get hashCode => Object.hash(runtimeType,selectedImageIndex,customImagePath,isCustomImage,isLoading);
 
 @override
 String toString() {
-  return 'AvatarState(selectedImageIndex: $selectedImageIndex, customImagePath: $customImagePath, isCustomImage: $isCustomImage, imagePickFile: $imagePickFile, isLoading: $isLoading)';
+  return 'AvatarState(selectedImageIndex: $selectedImageIndex, customImagePath: $customImagePath, isCustomImage: $isCustomImage, isLoading: $isLoading)';
 }
 
 
@@ -250,7 +248,7 @@ abstract mixin class _$AvatarStateCopyWith<$Res> implements $AvatarStateCopyWith
   factory _$AvatarStateCopyWith(_AvatarState value, $Res Function(_AvatarState) _then) = __$AvatarStateCopyWithImpl;
 @override @useResult
 $Res call({
- int selectedImageIndex, String customImagePath, bool isCustomImage, String imagePickFile, bool isLoading
+ int selectedImageIndex, String customImagePath, bool isCustomImage, bool isLoading
 });
 
 
@@ -267,13 +265,12 @@ class __$AvatarStateCopyWithImpl<$Res>
 
 /// Create a copy of AvatarState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? selectedImageIndex = null,Object? customImagePath = null,Object? isCustomImage = null,Object? imagePickFile = null,Object? isLoading = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? selectedImageIndex = null,Object? customImagePath = null,Object? isCustomImage = null,Object? isLoading = null,}) {
   return _then(_AvatarState(
 selectedImageIndex: null == selectedImageIndex ? _self.selectedImageIndex : selectedImageIndex // ignore: cast_nullable_to_non_nullable
 as int,customImagePath: null == customImagePath ? _self.customImagePath : customImagePath // ignore: cast_nullable_to_non_nullable
 as String,isCustomImage: null == isCustomImage ? _self.isCustomImage : isCustomImage // ignore: cast_nullable_to_non_nullable
-as bool,imagePickFile: null == imagePickFile ? _self.imagePickFile : imagePickFile // ignore: cast_nullable_to_non_nullable
-as String,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

@@ -1,13 +1,9 @@
 import '../../../core/ftms/ftms_device_type.dart';
-import '../notifiers/distance_unit_notifier.dart';
 
 /// 设备字段可见性与单位转换工具。
 ///
 /// 根据设备类型统一判定运动数据各字段是否需要展示，
-/// 并提供速度/距离单位换算：
-/// - 速度：划船机 m/s → km/h（其余设备原始值已为 km/h）
-/// - 距离：所有设备原始值为**米**，统一 m → km（默认）或 m → mile（英制）
-///
+/// 并提供划船机特有的速度/距离单位换算（m/s → km/h、m → km）。
 /// UI 层应通过本类查询可见性，避免在多个 Widget 中重复硬编码判断。
 class DeviceFieldVisibility {
   /// 当前设备类型。
@@ -54,16 +50,11 @@ class DeviceFieldVisibility {
     return rawSpeed;
   }
 
-  /// 距离单位转换：原始值（米）→ km，固定公制。
+  /// 距离单位转换：划船机 m → km。
   ///
-  /// 对齐旧版 `big_device_quick_start_screen.dart` L639 的
-  /// `(sportDistance.value / 1000).toStringAsFixed(2)` 逻辑。
-  ///
-  /// 保留 [unit] 参数签名仅为 UI 调用处兼容（死参数），实际永远按 km 处理。
-  double convertDistance(
-    double rawMeters, {
-    DistanceUnit unit = DistanceUnit.km,
-  }) {
-    return rawMeters / 1000.0;
+  /// 其余设备原始值已为 km，直接返回。
+  double convertDistance(double rawDistance) {
+    if (deviceType.needsDistanceConversion) return rawDistance / 1000.0;
+    return rawDistance;
   }
 }

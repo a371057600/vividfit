@@ -34,10 +34,10 @@ class FtmsCommand {
 /// 防止设备 0x2ADA 回调覆盖本地刚写入的值。
 class FtmsCommandDispatcher {
   FtmsCommandDispatcher({
-    required FtmsServiceBase? Function() serviceGetter,
+    required this._serviceGetter,
     this.syncGuard,
     this.onCommandFailed,
-  }) : _serviceGetter = serviceGetter;
+  });
 
   /// FTMS 服务实例 getter(不缓存引用)。
   ///

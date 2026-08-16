@@ -61,29 +61,17 @@ class SportTimer {
   // 校准基准偏移量（秒），校准后 [Stopwatch] 归零，elapsed = 秒数 + _baseOffset
   int _baseOffset = 0;
 
-  // 预启动标志：start() 已调用但尚未收到设备首帧时间数据。
-  // 在此状态下 Stopwatch 不启动，避免本地计时领先于设备导致回跳。
-  bool _armed = false;
-
-  /// 预启动计时器。
-  ///
-  /// 不立即启动 [Stopwatch]，仅标记为预启动状态（[_armed]）。
-  /// 等待 [syncFromDevice] 收到设备首帧时间后，以设备时间为基准
-  /// 真正启动计时，避免本地计时领先于设备导致 UI 回跳。
+  /// 归零并开始计时
   void start() {
     _baseOffset = 0;
     _stopwatch.reset();
-    _stopwatch.stop();
-    _armed = true;
-    _syncStatus = TimeSyncStatus.noData;
-    // 预启动阶段不启动 ticker，避免本地 elapsed 从 0 开始递增
-    // 而设备尚未上报时间（设备上报有延迟），导致 drift 校准回 0 产生回跳。
-    debugPrint('[SportTimer] start: armed (waiting for first device time)');
+    _stopwatch.start();
+    _startTicker();
+    debugPrint('[SportTimer] start: stopwatch reset and started');
   }
 
   /// 暂停计时
   void pause() {
-    _armed = false;
     _stopwatch.stop();
     _ticker?.cancel();
     _ticker = null;
@@ -99,7 +87,6 @@ class SportTimer {
 
   /// 停止并归零
   void stop() {
-    _armed = false;
     _stopwatch.stop();
     _stopwatch.reset();
     _ticker?.cancel();
@@ -113,31 +100,11 @@ class SportTimer {
 
   /// 用设备归一化值校准本地计时
   ///
-  /// 首帧处理：若处于预启动状态（[_armed]），以设备时间直接校准并启动计时，
-  /// 使本地计时从设备时间开始递增，避免本地领先导致的回跳。
-  ///
-  /// 后续帧校准策略：
+  /// 校准策略：
   /// - |drift| <= 1s：视为同步，不校准。
   /// - 1 < |drift| <= 5s：进入 drifting 状态，需连续两次相同偏差才校准。
   /// - |drift| > 5s：立即校准。
   void syncFromDevice(int deviceElapsed) {
-    // 预启动状态：首帧设备时间到达，以此为准启动计时
-    if (_armed) {
-      _armed = false;
-      _baseOffset = deviceElapsed;
-      _stopwatch.reset();
-      _stopwatch.start();
-      _startTicker();
-      _syncStatus = TimeSyncStatus.synced;
-      _lastSyncTime = DateTime.now();
-      _lastDeviceElapsed = deviceElapsed;
-      debugPrint(
-        '[SportTimer] first sync (armed→running): device=${deviceElapsed}s, '
-        'timer started from device time',
-      );
-      return;
-    }
-
     final localElapsed = elapsed;
     final drift = deviceElapsed - localElapsed;
     _driftMs = drift * 1000;

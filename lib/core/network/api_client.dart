@@ -134,7 +134,6 @@ class ApiClient {
 
   /// 发送 FormData(文件上传)。支持 PUT/POST,返回原始响应。
   /// 用于头像上传等 multipart 场景,headers 由调用方传入(app_pass + access_token)。
-  /// [onSendProgress] 上传进度回调(count已发送,sent总大小)。
   Future<T> uploadFormData<T>(
     String method,
     String path, {
@@ -142,7 +141,6 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     required Map<String, String> headers,
     required T Function(dynamic json) parser,
-    ProgressCallback? onSendProgress,
   }) async {
     final url = '${ApiConstants.baseUrl}$path';
     print('📤 Upload: [$method] $url');
@@ -154,7 +152,6 @@ class ApiClient {
           data: data,
           queryParameters: queryParameters,
           headers: headers,
-          onSendProgress: onSendProgress,
         ),
       );
       print('📥 Upload Response [${response.statusCode}] $url');

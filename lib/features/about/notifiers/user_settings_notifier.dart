@@ -259,10 +259,7 @@ class UserSettingsNotifier extends _$UserSettingsNotifier {
   /// 优先上传裁剪后的自定义头像(imagePickFile 有值);
   /// 无自定义头像则上传当前选中的默认头像 asset。
   /// 上传成功后重新拉取用户信息刷新 headImage(对应旧项目 getData2)。
-  /// [onSendProgress] 上传进度回调(sent已发送,total总大小)。
-  Future<bool> confirmUpload({
-    void Function(int sent, int total)? onSendProgress,
-  }) async {
+  Future<bool> confirmUpload() async {
     final userId = _storage.userId;
     final token = _storage.accessToken;
     if (userId == null || token == null) {
@@ -280,7 +277,6 @@ class UserSettingsNotifier extends _$UserSettingsNotifier {
           imageFile: file,
           userId: userId,
           accessToken: token,
-          onSendProgress: onSendProgress,
         );
       } else {
         // 上传默认头像 asset(对照旧项目 saveImageLocal + updateInsetImage)
@@ -293,7 +289,6 @@ class UserSettingsNotifier extends _$UserSettingsNotifier {
           assetPath: assetPath,
           userId: userId,
           accessToken: token,
-          onSendProgress: onSendProgress,
         );
       }
       if (ok) {

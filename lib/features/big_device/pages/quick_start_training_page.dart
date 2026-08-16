@@ -15,7 +15,6 @@ import '../data/exercise_song_library.dart';
 import '../models/device_control_callbacks.dart';
 import '../models/device_control_data.dart';
 import '../models/sport_data_model.dart';
-import '../notifiers/distance_unit_notifier.dart';
 import '../notifiers/quick_start_notifier.dart';
 import '../states/goal_banner_display_state.dart';
 import '../states/quick_start_state.dart';
@@ -137,8 +136,6 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                     // Provider 可能仍然发了最后一次 state 更新，导致 Builder 再进一次。
                     // 此时 ConsumerState.ref 已经不安全，先检查 mounted 再做任何操作。
                     if (!mounted) return const SizedBox.shrink();
-                    // 任务1：距离 Banner 单位跟随用户偏好
-                    final distUnit = ref.watch(distanceUnitProvider);
                     debugPrint(
                       '🔲 [DialogLayer] rebuild → '
                       'distState=${state.distanceDialogDisplayState} '
@@ -172,7 +169,6 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
                                           );
                                           return _buildDistanceGoalBanner(
                                             state,
-                                            distUnit,
                                           );
                                         },
                                       ),
@@ -535,36 +531,30 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           inclinePresets: state.buttonInclinationList,
           resistancePresets: state.buttonResistanceList,
           hasInclinationSupport: state.hasInclinationSupport,
-          resistanceLoading: state.isFetchingResistance,
         ),
         callbacks: DeviceControlCallbacks(
           // ===== 速度回调（跑步机） =====
           onSpeedAdd: notifier.speedAdd,
           onSpeedDown: notifier.speedDown,
-          // 长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
+          // 速度长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
+          // 长按功能规则：仅速度支持长按（步进 0.1 需快速调整）
           onSpeedLongPressAdd: notifier.speedLongPressAdd,
           onSpeedLongPressDown: notifier.speedLongPressDown,
           onSpeedPreset: (v) => notifier.numberButton(v, 0),
 
-          // ===== 坡度回调 =====
+          // ===== 坡度回调（仅跑步机；无长按） =====
           // 注意：Notifier 方法名为 inclinationAdd/inclinationDown（与 mixin 的 inclineAdd/inclineDown 不同），
           // 这里通过方法引用直接绑定到 Notifier 的实际实现上。
           onInclineAdd: notifier.inclinationAdd,
           onInclineDown: notifier.inclinationDown,
-          // 长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
-          onInclineLongPressAdd: notifier.inclineLongPressAdd,
-          onInclineLongPressDown: notifier.inclineLongPressDown,
           onInclinePreset: (v) => notifier.numberButton(v, 1),
 
-          // ===== 阻力回调（单车 / 椭圆机 / 划船机） =====
+          // ===== 阻力回调（单车 / 椭圆机 / 划船机；无长按） =====
           onResistanceAdd: notifier.resistanceAdd,
           onResistanceDown: notifier.resistanceDown,
-          // 长按连续加减：Timer.periodic 500ms，步长 1.0（实现于 Notifier）
-          onResistanceLongPressAdd: notifier.resistanceLongPressAdd,
-          onResistanceLongPressDown: notifier.resistanceLongPressDown,
           onResistancePreset: (v) => notifier.numberButton(v, 2),
 
-          // ===== 长按结束（速度 / 坡度 / 阻力共用） =====
+          // ===== 长按结束（仅速度长按使用） =====
           onLongPressEnd: notifier.longPressEnd,
         ),
       ),
@@ -972,11 +962,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
 
   /// 距离目标 Banner（左位置，紫胶囊 + 跑鞋）。
   ///
-  /// [distUnit] 控制距离单位展示（km / mile），与顶部数据栏保持一致。
-  Widget _buildDistanceGoalBanner(
-    QuickStartState state,
-    DistanceUnit distUnit,
-  ) {
+  /// 距离单位固定为 KM（与顶部数据栏保持一致）。
+  Widget _buildDistanceGoalBanner(QuickStartState state) {
     const tag = 'DIST';
     _BannerDataStatus status = _BannerDataStatus.ready;
     String formatted = '';
@@ -991,10 +978,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           '(displayState=${state.distanceDialogDisplayState})',
         );
       } else {
-        // ② 按用户偏好转换单位（km 直接用，mile 则 km × 0.621371）
-        final num displayValue = distUnit == DistanceUnit.mile
-            ? km * 0.621371
-            : km;
+        // ② 固定 KM 单位展示（不做英里换算）
+        final num displayValue = km;
         // ③ 距离去零格式化：0.5→"0.5"，1→"1"，30→"30"，与 XML 表现一致
         formatted = (displayValue == displayValue.roundToDouble())
             ? displayValue.toInt().toString()
@@ -1010,8 +995,8 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       backgroundAsset: 'images/newUIScreen/device_icons/quick_distance.png',
       title: '运动距离',
       valueText: formatted,
-      // 单位文案跟随用户偏好（km / mile）
-      unitText: distUnit.label.toUpperCase(),
+      // 单位固定 KM
+      unitText: 'KM',
       status: status,
       bannerTag: tag,
     );

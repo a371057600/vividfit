@@ -253,15 +253,12 @@ class AuthRepository {
       print('🔐 [AuthRepo.getUserInfo] data format unexpected: $data');
       return null;
     } catch (e) {
-      print('🔐 [AuthRepo.getUserInfo] error: $e');
+      print('❌ [AuthRepo.getUserInfo] error: $e');
       return null;
     }
   }
 
-  // ============ 头像上传 ============
-
-  /// 上传用户头像(PUT /api/user/headImg,FormData)。
-  /// 对应旧项目 controller_about_user_head.updateUserImage。
+  /// 上传用户头像(裁剪压缩后的图片文件)。
   /// [imageFile] 裁剪后(已压缩)的图片文件;[userId] 用户 ID;[accessToken] 登录 token。
   /// [onSendProgress] 上传进度回调(count已发送,total总大小)。
   Future<bool> uploadHeadImage({
@@ -291,7 +288,6 @@ class AuthRepository {
           ApiConstants.headerAccessToken: accessToken,
         },
         parser: (json) => json as Map<String, dynamic>,
-        onSendProgress: onSendProgress,
       );
       final code = response['code']?.toString();
       final ok = code == '200';
@@ -304,7 +300,6 @@ class AuthRepository {
   }
 
   /// 上传默认头像(从 asset 加载 bytes 后上传)。
-  /// 对应旧项目 controller_about_user_head.saveImageLocal + updateInsetImage。
   /// [onSendProgress] 上传进度回调。
   Future<bool> uploadAssetHeadImage({
     required ByteData assetBytes,
@@ -335,7 +330,6 @@ class AuthRepository {
           ApiConstants.headerAccessToken: accessToken,
         },
         parser: (json) => json as Map<String, dynamic>,
-        onSendProgress: onSendProgress,
       );
       final code = response['code']?.toString();
       final ok = code == '200';

@@ -25,9 +25,6 @@ class DeviceControlData {
   /// 设备是否支持坡度（用于控制坡度相关 UI 是否展示）。
   final bool hasInclinationSupport;
 
-  /// 阻力是否正在等待设备回执（true 时中心值显示「获取中」）。
-  final bool resistanceLoading;
-
   /// 速度上限。
   final int? maxSpeed;
 
@@ -64,7 +61,6 @@ class DeviceControlData {
     required this.inclinePresets,
     required this.resistancePresets,
     required this.hasInclinationSupport,
-    this.resistanceLoading = false,
     this.maxSpeed,
     this.minSpeed,
     this.speedStep,
@@ -85,7 +81,6 @@ class DeviceControlData {
     List<double>? inclinePresets,
     List<double>? resistancePresets,
     bool? hasInclinationSupport,
-    bool? resistanceLoading,
     int? maxSpeed,
     int? minSpeed,
     int? speedStep,
@@ -105,7 +100,6 @@ class DeviceControlData {
       resistancePresets: resistancePresets ?? this.resistancePresets,
       hasInclinationSupport:
           hasInclinationSupport ?? this.hasInclinationSupport,
-      resistanceLoading: resistanceLoading ?? this.resistanceLoading,
       maxSpeed: maxSpeed ?? this.maxSpeed,
       minSpeed: minSpeed ?? this.minSpeed,
       speedStep: speedStep ?? this.speedStep,

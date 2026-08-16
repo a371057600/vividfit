@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/ftms/ftms_device_type.dart';
 import '../models/sport_data_model.dart';
-import '../notifiers/distance_unit_notifier.dart';
 import '../utils/device_field_visibility.dart';
 
 /// 运动数据展示布局。
@@ -23,10 +21,9 @@ enum DataDisplayLayout {
 ///
 /// 单位转换规则：
 ///   - 速度：划船机 m/s → km/h（[DeviceFieldVisibility.convertSpeed]）
-///   - 距离：所有设备原始值（米）→ km/mile（[DeviceFieldVisibility.convertDistance]，
-///     单位由 [distanceUnitProvider] 用户偏好决定）
+///   - 距离：划船机 m → km（[DeviceFieldVisibility.convertDistance]）
 ///   - 时间：秒数格式化为 MM:SS
-class SportDataDisplay extends ConsumerWidget {
+class SportDataDisplay extends StatelessWidget {
   const SportDataDisplay({
     super.key,
     required this.layout,
@@ -44,11 +41,9 @@ class SportDataDisplay extends ConsumerWidget {
   final SportDataModel data;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final visibility = DeviceFieldVisibility(deviceType);
-    // 读取距离单位偏好（km / mile），驱动距离数值与单位文案
-    final distanceUnit = ref.watch(distanceUnitProvider);
-    final items = _buildItems(visibility, distanceUnit);
+    final items = _buildItems(visibility);
 
     if (items.isEmpty) return const SizedBox.shrink();
 
@@ -72,10 +67,7 @@ class SportDataDisplay extends ConsumerWidget {
   }
 
   /// 根据可见性构建数据项列表（按常用展示顺序：时间 → 速度 → 距离 → 卡路里 → 心率 → 踏频 → 阻力 → 坡度 → 功率 → 桨频 → 桨数 → 剩余时间）。
-  List<Widget> _buildItems(
-    DeviceFieldVisibility visibility,
-    DistanceUnit distanceUnit,
-  ) {
+  List<Widget> _buildItems(DeviceFieldVisibility visibility) {
     final isHorizontal = layout == DataDisplayLayout.horizontal;
     final items = <Widget>[];
 
@@ -101,15 +93,13 @@ class SportDataDisplay extends ConsumerWidget {
         ),
       );
     }
-    // 距离（所有设备原始值=米，按用户偏好转 km/mile）
+    // 距离（划船机自动 m → km）
     if (visibility.shouldShowDistance && data.distance != null) {
       items.add(
         _buildItem(
           icon: Icons.place,
-          value: visibility
-              .convertDistance(data.distance!, unit: distanceUnit)
-              .toStringAsFixed(2),
-          unit: distanceUnit.label,
+          value: visibility.convertDistance(data.distance!).toStringAsFixed(2),
+          unit: 'km',
           isHorizontal: isHorizontal,
         ),
       );

@@ -73,10 +73,8 @@ extension FtmsDeviceTypeConfig on FtmsDeviceType {
   }
 
   /// 是否支持速度控制。
-  ///
-  /// 仅跑步机支持速度调节；单车（indoorBike）按用户需求移除速度调节控件，
-  /// 仅保留速度数据展示（顶部数据栏仍显示 sportSpeed）。
-  bool get supportsSpeedControl => this == FtmsDeviceType.treadmill;
+  bool get supportsSpeedControl =>
+      this == FtmsDeviceType.treadmill || this == FtmsDeviceType.indoorBike;
 
   /// 是否支持坡度控制。
   bool get supportsInclinationControl =>

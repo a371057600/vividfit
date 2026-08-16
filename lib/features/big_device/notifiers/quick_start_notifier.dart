@@ -175,12 +175,12 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           hasInclinationSupport: true,
         );
       case FtmsDeviceType.crossTrainer:
-        // 椭圆机：阻力 + 坡度各 4 档预设，支持坡度
+        // 椭圆机：仅阻力 4 档预设，无坡度（设备特性：只有阻力调节）
         return state.copyWith(
           buttonResistanceList: [6.0, 9.0, 15.0, 18.0],
           buttonSpeedList: [0.0, 0.0, 0.0, 0.0],
-          buttonInclinationList: [1.0, 3.0, 7.0, 9.0],
-          hasInclinationSupport: true,
+          buttonInclinationList: [0.0, 0.0, 0.0, 0.0],
+          hasInclinationSupport: false,
         );
       case FtmsDeviceType.rower:
         // 划船机：阻力预设 4 档，不支持坡度
@@ -432,40 +432,30 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
       case FtmsStatusTargetSpeedChanged(:final speedKmPerH):
         // 0x05：速度回调
+        // 设备优先级规则：设备返回值无条件覆盖本地按钮值（不设保护窗口阻塞）
         print('[DeviceStatus] opCode=0x05, action=speed, value=$speedKmPerH');
         _onReceiptReceived(0x05, true);
-        if (_syncGuard?.isInGuardWindow() ?? false) {
-          print('[DeviceStatus] 在保护窗口内，跳过速度更新');
-        } else {
-          state = state.copyWith(sportSpeedButton: speedKmPerH);
-        }
+        state = state.copyWith(sportSpeedButton: speedKmPerH);
         break;
 
       case FtmsStatusTargetInclineChanged(:final inclinePercent):
         // 0x06：坡度回调
+        // 设备优先级规则：设备返回值无条件覆盖本地按钮值（不设保护窗口阻塞）
         print(
           '[DeviceStatus] opCode=0x06, action=incline, value=$inclinePercent',
         );
         _onReceiptReceived(0x06, true);
-        if (_syncGuard?.isInGuardWindow() ?? false) {
-          print('[DeviceStatus] 在保护窗口内，跳过坡度更新');
-        } else {
-          state = state.copyWith(sportInclinationButton: inclinePercent);
-        }
+        state = state.copyWith(sportInclinationButton: inclinePercent);
         break;
 
       case FtmsStatusTargetResistanceChanged(:final resistanceLevel):
         // 0x07：阻力回调（含阻力指令隐式回执）
+        // 设备优先级规则：设备返回值无条件覆盖本地按钮值（不设保护窗口阻塞）
         print(
           '[DeviceStatus] opCode=0x07, action=resistance, value=$resistanceLevel',
         );
         _onReceiptReceived(0x07, true);
-        // 注：不再调用加载态清理（无加载态被设置），直接按保护窗口规则更新阻力值。
-        if (_syncGuard?.isInGuardWindow() ?? false) {
-          print('[DeviceStatus] 在保护窗口内，跳过阻力数值更新');
-        } else {
-          state = state.copyWith(sportResistanceButton: resistanceLevel);
-        }
+        state = state.copyWith(sportResistanceButton: resistanceLevel);
         break;
 
       case FtmsStatusReset():
@@ -906,11 +896,12 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   /// 阻力 +（对应旧 cnfbd.resistanceAdd）。
   /// 获取当前阻力值 + step，clamp 后下发阻力控制指令（0x04 Set Target Resistance Level）。
-  ///
-  /// 注：旧项目用 isButtonallow 控制按钮可用性（设备连接+数据上报即允许），
-  /// 此处不检查 isPlaying，只要设备已连接即可调节，保证用户点击立即生效。
   @override
   void resistanceAdd() {
+    if (!state.isPlaying) {
+      print('[Notifier] resistanceAdd skipped: not playing');
+      return;
+    }
     final current = state.sportResistanceButton;
     final newValue = (current + _resistanceStep).clamp(
       _resistanceMin,
@@ -925,6 +916,10 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 阻力 -（对应旧 cnfbd.resistanceDown）。
   @override
   void resistanceDown() {
+    if (!state.isPlaying) {
+      print('[Notifier] resistanceDown skipped: not playing');
+      return;
+    }
     final current = state.sportResistanceButton;
     final newValue = (current - _resistanceStep).clamp(
       _resistanceMin,
@@ -939,6 +934,10 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 下发速度控制指令（0x02 Set Target Speed）。
   @override
   void speedAdd() {
+    if (!state.isPlaying) {
+      print('[Notifier] speedAdd skipped: not playing');
+      return;
+    }
     final current = state.sportSpeedButton;
     final newValue = (current + _speedStep).clamp(_speedMin, _speedMax);
     _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
@@ -949,6 +948,10 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 速度 -（对应旧 cnfbd.speedDown）。
   @override
   void speedDown() {
+    if (!state.isPlaying) {
+      print('[Notifier] speedDown skipped: not playing');
+      return;
+    }
     final current = state.sportSpeedButton;
     final newValue = (current - _speedStep).clamp(_speedMin, _speedMax);
     _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
@@ -959,6 +962,10 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 坡度 +（对应旧 cnfbd.inclinationAdd）。
   /// 下发坡度控制指令（0x03 Set Target Inclination）。
   void inclinationAdd() {
+    if (!state.isPlaying) {
+      print('[Notifier] inclinationAdd skipped: not playing');
+      return;
+    }
     final current = state.sportInclinationButton;
     final newValue = (current + _inclinationStep).clamp(
       _inclinationMin,
@@ -971,6 +978,10 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   /// 坡度 -（对应旧 cnfbd.inclinationDown）。
   void inclinationDown() {
+    if (!state.isPlaying) {
+      print('[Notifier] inclinationDown skipped: not playing');
+      return;
+    }
     final current = state.sportInclinationButton;
     final newValue = (current - _inclinationStep).clamp(
       _inclinationMin,
@@ -989,6 +1000,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 2. 启动 Timer.periodic(500ms) 持续步进
   /// 3. 每个 tick 更新本地 state + dispatch（debounce 自动合并，松手后仅发最终值）
   void _startLongPress(_LongPressDimension dim, bool isAdd) {
+    // 停止态守卫：未播放时不响应长按调节，避免停止态下发参数指令
+    if (!state.isPlaying) {
+      print('[Notifier] longPress skipped: not playing (dim=$dim)');
+      return;
+    }
     _currentLongPressDimension = dim;
     print('[Notifier] longPress start: dim=$dim, isAdd=$isAdd');
     // 首 tick 立即执行
@@ -1001,9 +1017,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
     );
   }
 
-  /// 单次长按步进（更新 state + dispatch debounce 指令）。
+  /// 单次长按步进（更新 state + dispatchImmediate 即时指令）。
   ///
   /// 步长固定 1.0（与旧项目 _adjustValue 一致），达到边界时取消 Timer。
+  /// 步进指令使用 dispatchImmediate 即时下发（设备实时响应），
+  /// 松手后由 longPressEnd 以 debounce 模式发送最终值。
   void _applyLongPressStep(_LongPressDimension dim, bool isAdd) {
     final delta = isAdd ? _longPressStep : -_longPressStep;
     switch (dim) {
@@ -1016,7 +1034,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           print('[Notifier] longPress speed reached boundary: $newValue');
           return;
         }
-        _dispatcher?.dispatch(
+        _dispatcher?.dispatchImmediate(
           FtmsCommand(0x02, [..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportSpeedButton: newValue);
@@ -1033,7 +1051,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           print('[Notifier] longPress incline reached boundary: $newValue');
           return;
         }
-        _dispatcher?.dispatch(
+        _dispatcher?.dispatchImmediate(
           FtmsCommand(0x03, [..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportInclinationButton: newValue);
@@ -1050,7 +1068,7 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           print('[Notifier] longPress resistance reached boundary: $newValue');
           return;
         }
-        _dispatcher?.dispatch(
+        _dispatcher?.dispatchImmediate(
           FtmsCommand(0x04, [..._buildValueBytes(newValue)]),
         );
         state = state.copyWith(sportResistanceButton: newValue);
@@ -1089,23 +1107,48 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   /// 长按结束（对应旧 cnfbd.longPressEnd）。
   /// 1. 取消长按定时器
-  /// 2. 开启 1500ms 保护窗口，屏蔽设备 0x2ADA 回调对本地按钮值的覆盖
+  /// 2. 通过 debounce 模式下发最终值（合并长按过程指令为一条）
+  /// 3. 保护窗口仅作日志标记，不阻塞设备回调（设备优先级规则）
   @override
   void longPressEnd() {
     final dim = _currentLongPressDimension;
     _longPressTimer?.cancel();
     _longPressTimer = null;
     _currentLongPressDimension = null;
-    _syncGuard?.beginGuardWindow(const Duration(milliseconds: 1500));
+    // 长按最终值立即下发（debounce 模式，与其他 pending 指令合并）
+    if (dim != null) {
+      _dispatchFinalLongPressValue(dim);
+    }
     print(
-      '[Notifier] longPressEnd: dim=$dim, timer cancelled, guard window started',
+      '[Notifier] longPressEnd: dim=$dim, timer cancelled, final value dispatched',
     );
+  }
+
+  /// 长按结束后下发当前维度的最终值（debounce 模式）。
+  void _dispatchFinalLongPressValue(_LongPressDimension dim) {
+    final FtmsCommand command = switch (dim) {
+      _LongPressDimension.speed => FtmsCommand(0x02, [
+        ..._buildValueBytes(state.sportSpeedButton),
+      ]),
+      _LongPressDimension.incline => FtmsCommand(0x03, [
+        ..._buildValueBytes(state.sportInclinationButton),
+      ]),
+      _LongPressDimension.resistance => FtmsCommand(0x04, [
+        ..._buildValueBytes(state.sportResistanceButton),
+      ]),
+    };
+    _dispatcher?.dispatch(command);
   }
 
   /// 数字按钮选择（对应旧 cnfbd.numberButton）。
   /// [type]: 0=速度, 1=坡度, 2=阻力。
   /// 使用 debounce 模式下发目标值指令（各自独立 OpCode）。
   void numberButton(double value, int type) {
+    // 停止态守卫：未播放时不响应数字按钮调节
+    if (!state.isPlaying) {
+      print('[Notifier] numberButton skipped: not playing (type=$type)');
+      return;
+    }
     // 根据类型选择 OpCode（FTMS 协议 §14.2，均为独立 OpCode）
     final opCode = switch (type) {
       0 => 0x02, // 速度 Set Target Speed

@@ -1058,8 +1058,8 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // ══════════════════════════════════════════════════════════
 
   /// 动作切换时调用，根据设备类型下发参数到设备。
-  /// - 单车/椭圆机/划船机：下发阻力 (0x04 Set Target Resistance Level)
-  /// - 跑步机：下发速度 (0x02 Set Target Speed)
+  /// - 单车/椭圆机/划船机：下发阻力 (0x07 + [0x0B, ...value])
+  /// - 跑步机：下发速度 (0x07 + [0x02, ...value])
   /// 若 _dispatcher 为 null（无蓝牙连接），仅更新本地 state（降级模式）。
   void _applyActionParameters(ActionItemState action) {
     if (_dispatcher == null) {
@@ -1074,20 +1074,13 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       );
       return;
     }
-    // 停止态守卫：非播放态（暂停/结算/结束）不下发动作参数，
-    // 避免停止后仍向设备发送速度/阻力指令
-    if (!state.isPlaying) {
-      debugPrint(
-        '🎯 [Action] _applyActionParameters skipped: not playing (name=${action.name})',
-      );
-      return;
-    }
 
     final FtmsCommand command;
     switch (_deviceType) {
       case FtmsDeviceType.treadmill:
-        // 跑步机：下发速度 (0x02 Set Target Speed)
-        command = FtmsCommand(0x02, [
+        // 跑步机：下发速度 (0x02)
+        command = FtmsCommand(0x07, [
+          0x02,
           ..._buildValueBytes(action.cadence.toDouble()),
         ]);
         state = state.copyWith(sportSpeedButton: action.cadence.toDouble());
@@ -1096,8 +1089,9 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       case FtmsDeviceType.crossTrainer:
       case FtmsDeviceType.rower:
       case FtmsDeviceType.strengthStation:
-        // 单车/椭圆机/划船机/力量站：下发阻力 (0x04 Set Target Resistance Level)
-        command = FtmsCommand(0x04, [
+        // 单车/椭圆机/划船机/力量站：下发阻力 (0x0B)
+        command = FtmsCommand(0x07, [
+          0x0B,
           ..._buildValueBytes(action.resistance.toDouble()),
         ]);
         state = state.copyWith(
@@ -1675,82 +1669,70 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // ─── 单次点击版本 ───
 
   void speedAdd() {
-    if (!state.isPlaying) {
-      debugPrint('📤 [CourseControl] speedAdd skipped: not playing');
-      return;
-    }
     final current = state.sportSpeedButton;
     final v = (current + 0.5).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    // 通过 dispatcher 下发速度指令 (0x02 Set Target Speed)
-    _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
+    // Task 12: 通过 dispatcher 下发速度指令 (0x07 + [0x02, ...value])
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportSpeedButton: newValue);
     debugPrint('📤 [CourseControl] speedAdd: $current → $newValue');
   }
 
   void speedDown() {
-    if (!state.isPlaying) {
-      debugPrint('📤 [CourseControl] speedDown skipped: not playing');
-      return;
-    }
     final current = state.sportSpeedButton;
     final v = (current - 0.5).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportSpeedButton: newValue);
     debugPrint('📤 [CourseControl] speedDown: $current → $newValue');
   }
 
   void inclinationAdd() {
-    if (!state.isPlaying) {
-      debugPrint('📤 [CourseControl] inclinationAdd skipped: not playing');
-      return;
-    }
     final current = state.sportInclinationButton;
     final v = (current + 1.0).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    // 通过 dispatcher 下发坡度指令 (0x03 Set Target Inclination)
-    _dispatcher?.dispatch(FtmsCommand(0x03, [..._buildValueBytes(newValue)]));
+    // Task 12: 通过 dispatcher 下发坡度指令 (0x07 + [0x03, ...value])
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportInclinationButton: newValue);
     debugPrint('📤 [CourseControl] inclinationAdd: $current → $newValue');
   }
 
   void inclinationDown() {
-    if (!state.isPlaying) {
-      debugPrint('📤 [CourseControl] inclinationDown skipped: not playing');
-      return;
-    }
     final current = state.sportInclinationButton;
     final v = (current - 1.0).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x03, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportInclinationButton: newValue);
     debugPrint('📤 [CourseControl] inclinationDown: $current → $newValue');
   }
 
   void resistanceAdd() {
-    if (!state.isPlaying) {
-      debugPrint('📤 [CourseControl] resistanceAdd skipped: not playing');
-      return;
-    }
     final current = state.sportResistanceButton;
     final v = (current + 1.0).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    // 通过 dispatcher 下发阻力指令 (0x04 Set Target Resistance Level)
-    _dispatcher?.dispatch(FtmsCommand(0x04, [..._buildValueBytes(newValue)]));
+    // Task 12: 通过 dispatcher 下发阻力指令 (0x07 + [0x0B, ...value])
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportResistanceButton: newValue);
     debugPrint('📤 [CourseControl] resistanceAdd: $current → $newValue');
   }
 
   void resistanceDown() {
-    if (!state.isPlaying) {
-      debugPrint('📤 [CourseControl] resistanceDown skipped: not playing');
-      return;
-    }
     final current = state.sportResistanceButton;
     final v = (current - 1.0).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x04, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportResistanceButton: newValue);
     debugPrint('📤 [CourseControl] resistanceDown: $current → $newValue');
   }
@@ -1758,50 +1740,56 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // ─── 长按版本（步进更小，连续触发，使用 debounce 模式） ───
 
   void speedAddLongPress() {
-    if (!state.isPlaying) return;
     final v = (state.sportSpeedButton + 0.2).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportSpeedButton: newValue);
   }
 
   void speedDownLongPress() {
-    if (!state.isPlaying) return;
     final v = (state.sportSpeedButton - 0.2).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x02, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportSpeedButton: newValue);
   }
 
   void inclinationAddLongPress() {
-    if (!state.isPlaying) return;
     final v = (state.sportInclinationButton + 0.5).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x03, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportInclinationButton: newValue);
   }
 
   void inclinationDownLongPress() {
-    if (!state.isPlaying) return;
     final v = (state.sportInclinationButton - 0.5).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x03, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportInclinationButton: newValue);
   }
 
   void resistanceAddLongPress() {
-    if (!state.isPlaying) return;
     final v = (state.sportResistanceButton + 0.5).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x04, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportResistanceButton: newValue);
   }
 
   void resistanceDownLongPress() {
-    if (!state.isPlaying) return;
     final v = (state.sportResistanceButton - 0.5).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    _dispatcher?.dispatch(FtmsCommand(0x04, [..._buildValueBytes(newValue)]));
+    _dispatcher?.dispatch(
+      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+    );
     state = state.copyWith(sportResistanceButton: newValue);
   }
 
