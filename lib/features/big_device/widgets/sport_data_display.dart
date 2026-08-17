@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/ftms/ftms_device_type.dart';
@@ -93,8 +94,13 @@ class SportDataDisplay extends StatelessWidget {
         ),
       );
     }
-    // 距离（划船机自动 m → km）
+    // 距离（所有设备统一 m → km，保留 2 位小数）
     if (visibility.shouldShowDistance && data.distance != null) {
+      // 观测日志：确认换算链路（state 存米 → ÷1000 → km 显示）
+      debugPrint(
+        '[DataBar] 距离换算: 原始=${data.distance}m → '
+        '${visibility.convertDistance(data.distance!).toStringAsFixed(2)}km',
+      );
       items.add(
         _buildItem(
           icon: Icons.place,
@@ -228,8 +234,9 @@ class SportDataDisplay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            Text(
-              value,
+            // 数值变化时 3D 翻转过渡（平顺观感，字号/颜色不变）
+            _FlipValueText(
+              text: value,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: valueFontSize,
@@ -257,5 +264,50 @@ class SportDataDisplay extends StatelessWidget {
     final m = (seconds ~/ 60).toString().padLeft(2, '0');
     final s = (seconds % 60).toString().padLeft(2, '0');
     return '$m:$s';
+  }
+}
+
+/// 数值翻转文本：数值变化时以 3D 翻转（透视 rotateY）过渡。
+///
+/// - 新值从侧向翻入、旧值翻出并淡出，观感平顺
+/// - 静态样式（字号/颜色/字重）完全沿用原 Text，仅变化时有过渡
+/// - 300ms 时长兼容每秒刷新的时间字段（不会出现动画堆叠）
+class _FlipValueText extends StatelessWidget {
+  const _FlipValueText({required this.text, required this.style});
+
+  /// 当前数值文本。
+  final String text;
+
+  /// 数值文字样式（与原 Text 保持一致）。
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      // 翻转过渡：进入时从 ~69° 翻到 0°，退出时反向翻出
+      transitionBuilder: (child, animation) {
+        final flip = Tween<double>(begin: 1.0, end: 0.0).animate(animation);
+        return FadeTransition(
+          opacity: animation,
+          child: AnimatedBuilder(
+            animation: flip,
+            child: child,
+            builder: (context, c) {
+              return Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.0015) // 透视，增强 3D 翻转感
+                  ..rotateY(flip.value * 1.2),
+                child: c,
+              );
+            },
+          ),
+        );
+      },
+      child: Text(text, key: ValueKey(text), style: style),
+    );
   }
 }

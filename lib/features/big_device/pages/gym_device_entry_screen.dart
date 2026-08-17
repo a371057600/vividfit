@@ -373,6 +373,30 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     }
     // === 守卫结束 ===
 
+    // === 任务9.3：设备就绪四级校验（进入设备操作二级页前拦截） ===
+    // 快速开始/课程训练/实景/游戏选择页均依赖设备实时数据接收与控制指令下发，
+    // 故跳转前逐级校验（蓝牙连接→FTMS服务→首包数据→参数初始态）；
+    // cityAdventure(index=3) 旧项目未实现跳转、不进入任何二级页，因此不走校验。
+    // 注意：校验必须放在 clearData() 之前——clearData 会把 state 全量清零，
+    // 若先清零，第 4 级「参数初始态」检查将读不到真实值而恒通过。
+    bool checkDeviceReadyBeforeEnter() {
+      final ready = ref
+          .read(quickStartProvider.notifier)
+          .validateDeviceReady();
+      print(
+        '[DeviceCheck] 入口校验: ready=${ready.isReady}, step=${ready.failedStep}',
+      );
+      if (!ready.isReady) {
+        // 未就绪：Toast 提示并阻止跳转（复用现有 Toast，不新造 UI）
+        Fluttertoast.showToast(
+          msg: '设备未就绪：${ready.reason}，请先完成设备同步',
+          toastLength: Toast.LENGTH_LONG,
+        );
+        return false;
+      }
+      return true;
+    }
+
     // === 进入子页面前清除共享运动数据 ===
     // quickStartProvider 为 keepAlive，跨页面常驻（快速开始页与游戏页共用）。
     // 若残留脏数据（isPlaying / 计时器 / 目标弹窗状态），重新进入会导致功能冲突，
@@ -383,12 +407,18 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     // 使用 push 而非 go,保留入口页在栈底,避免返回时"popped last page"错误
     switch (data.index) {
       case 0: // quickStart
+        // 快速开始页需直接下发设备控制指令（速度/坡度/阻力），依赖设备就绪，先校验再放行
+        if (!checkDeviceReadyBeforeEnter()) return;
         context.push('/gym-quick-start', extra: deviceType);
         break;
       case 1: // courseTraining
+        // 课程训练页按课程进度下发设备控制指令，依赖设备就绪，先校验再放行
+        if (!checkDeviceReadyBeforeEnter()) return;
         context.push('/gym-course-list', extra: deviceType);
         break;
       case 2: // realScene
+        // 实景页依赖设备实时数据（速度/踏频）驱动场景渲染，需设备就绪，先校验再放行
+        if (!checkDeviceReadyBeforeEnter()) return;
         final realsceneRoute = switch (deviceType) {
           FtmsDeviceType.indoorBike => '/gym-bike-realscene',
           FtmsDeviceType.treadmill => '/gym-treadmill-realscene',
@@ -402,6 +432,8 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
         // 旧项目未实现跳转,暂不处理
         break;
       case 4: // recreationalFitness
+        // 游戏选择页 START/STOP 直接控制设备启停，依赖设备就绪，先校验再放行
+        if (!checkDeviceReadyBeforeEnter()) return;
         context.push('/gym-game-select', extra: deviceType);
         break;
       default:

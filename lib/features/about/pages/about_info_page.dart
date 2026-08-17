@@ -63,7 +63,7 @@ class AboutInfoPage extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          "v1.0.0",
+                          "v1.0.1",
                           style: TextStyle(color: FitTheme.textColor),
                         ),
                         SizedBox(height: 40),
@@ -93,7 +93,7 @@ class AboutInfoPage extends ConsumerWidget {
                           ),
                           Spacer(),
                           Text(
-                            "400-083-1718",
+                            "400-880-7510",
                             style: TextStyle(color: FitTheme.textColor),
                           ),
                           SizedBox(width: 10.r),
@@ -134,7 +134,7 @@ class AboutInfoPage extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          "粤ICP备19140274号-4A",
+                          "粤ICP备2026099533号-1A",
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey,

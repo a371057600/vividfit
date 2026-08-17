@@ -80,6 +80,10 @@
   "daily": "打卡",
   "fitnessAi": "AI健身",
   "medal": "勋章",
+  "medalsTitle": "勋章",
+  "medalTotal": "累计",
+  "pleaseTryToGetMedal": "请努力获得奖牌",
+  "medalDetails": "勋章详情",
   "game": "游戏",
   "spinBike": "动感单车",
   "treadmillMachine": "跑步机",
@@ -268,7 +272,7 @@
   "coachJack": "杰克",
   "coachCarol": "卡罗尔",
 
-  "copyrightInfo": "东莞全创光电实业有限公司 版权所有 @2022-2024",
+  "copyrightInfo": "广州力动体育科技发展有限公司 版权所有 @2026-2027",
 
   "networkError": "网络错误: {message}",
   "@networkError": {

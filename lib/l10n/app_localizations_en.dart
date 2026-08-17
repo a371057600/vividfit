@@ -235,6 +235,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get medal => 'Medal';
 
   @override
+  String get medalsTitle => 'Medals';
+
+  @override
+  String get medalTotal => 'total';
+
+  @override
+  String get pleaseTryToGetMedal => 'Please try to get a medal';
+
+  @override
+  String get medalDetails => 'Medal details';
+
+  @override
   String get game => 'Game';
 
   @override

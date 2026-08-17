@@ -50,11 +50,11 @@ class DeviceFieldVisibility {
     return rawSpeed;
   }
 
-  /// 距离单位转换：划船机 m → km。
+  /// 距离单位转换：设备原始米 → km。
   ///
-  /// 其余设备原始值已为 km，直接返回。
+  /// FTMS 协议所有设备（跑步机/单车/椭圆机/划船机）的 Total Distance
+  /// 均为 uint24、单位米；与旧项目统一 ÷1000 后以 km 展示。
   double convertDistance(double rawDistance) {
-    if (deviceType.needsDistanceConversion) return rawDistance / 1000.0;
-    return rawDistance;
+    return rawDistance / 1000.0;
   }
 }

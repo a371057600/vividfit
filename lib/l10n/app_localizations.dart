@@ -536,6 +536,30 @@ abstract class AppLocalizations {
   /// **'Medal'**
   String get medal;
 
+  /// No description provided for @medalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Medals'**
+  String get medalsTitle;
+
+  /// No description provided for @medalTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'total'**
+  String get medalTotal;
+
+  /// No description provided for @pleaseTryToGetMedal.
+  ///
+  /// In en, this message translates to:
+  /// **'Please try to get a medal'**
+  String get pleaseTryToGetMedal;
+
+  /// No description provided for @medalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Medal details'**
+  String get medalDetails;
+
   /// No description provided for @game.
   ///
   /// In en, this message translates to:

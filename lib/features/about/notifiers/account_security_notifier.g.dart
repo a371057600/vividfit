@@ -51,7 +51,7 @@ final class AccountSecurityNotifierProvider
 }
 
 String _$accountSecurityNotifierHash() =>
-    r'1667a89657c120bb61178da7a513aec8fdb506d5';
+    r'04bc6867c510d6ce889fbca1117103d25498ad8c';
 
 /// 账号安全 Notifier（对应旧 AccountSecurityPage 的 GetX Controller 逻辑）。
 ///

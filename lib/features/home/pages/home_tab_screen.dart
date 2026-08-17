@@ -90,7 +90,7 @@ class HomeTabScreen extends ConsumerWidget {
       key: 'medal',
       labelBuilder: (l10n) => l10n.medal,
       imagePath: 'images/newUIScreen/icons/icon_second_button1.png',
-      route: '/placeholder',
+      route: '/medal-display',
     ),
     HomeFuncEntryConfig(
       key: 'ranks',

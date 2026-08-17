@@ -5,9 +5,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_fonts.dart';
-import '../../../core/services/privacy_service_provider.dart';
+// 【上架隐藏】以下两个 import 仅测试入口使用,随测试入口一同注释
+// import '../../../core/services/privacy_service_provider.dart';
 import '../../../core/utils/policy_urls.dart';
-import '../../../core/utils/privacy_policy_dialog.dart';
+// import '../../../core/utils/privacy_policy_dialog.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/auth_notifier.dart';
 import 'auth_video_background.dart';
@@ -215,6 +216,11 @@ class LoginPage extends ConsumerWidget {
                         SizedBox(height: 20.r),
                         _buildPrivacy(context, ref, l10n, languageNum, agreed),
                         SizedBox(height: 10.r),
+                        // ============================================================
+                        // 【上架隐藏】以下为调试/测试入口,上架 App Store 前统一注释
+                        // 恢复调试时取消下方块注释即可
+                        // ============================================================
+                        /*
                         Wrap(
                           alignment: WrapAlignment.center,
                           spacing: 16.r,
@@ -315,6 +321,8 @@ class LoginPage extends ConsumerWidget {
                             // ),
                           ],
                         ),
+                        */
+                        // 【上架隐藏】测试入口结束
                       ],
                     ),
                   ),

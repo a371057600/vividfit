@@ -74,7 +74,7 @@ extension FtmsDeviceTypeConfig on FtmsDeviceType {
 
   /// 是否支持速度控制。
   bool get supportsSpeedControl =>
-      this == FtmsDeviceType.treadmill || this == FtmsDeviceType.indoorBike;
+      this == FtmsDeviceType.treadmill;
 
   /// 是否支持坡度控制。
   bool get supportsInclinationControl =>

@@ -228,6 +228,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get medal => '勋章';
 
   @override
+  String get medalsTitle => '勋章';
+
+  @override
+  String get medalTotal => '累计';
+
+  @override
+  String get pleaseTryToGetMedal => '请努力获得奖牌';
+
+  @override
+  String get medalDetails => '勋章详情';
+
+  @override
   String get game => '游戏';
 
   @override
@@ -753,7 +765,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get coachCarol => '卡罗尔';
 
   @override
-  String get copyrightInfo => '东莞全创光电实业有限公司 版权所有 @2022-2024';
+  String get copyrightInfo => '广州力动体育科技发展有限公司 版权所有 @2026-2027';
 
   @override
   String networkError(String message) {

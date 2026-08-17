@@ -24,9 +24,9 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
 
   /// 与 AuthRepository 保持一致的 50s 超时配置。
   Options get _options => Options(
-        sendTimeout: const Duration(seconds: 50),
-        receiveTimeout: const Duration(seconds: 50),
-      );
+    sendTimeout: const Duration(seconds: 50),
+    receiveTimeout: const Duration(seconds: 50),
+  );
 
   @override
   AccountSecurityState build() {
@@ -155,7 +155,9 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
   Future<bool> sendCheckVerCode(int type) async {
     final isCn = _storage.languageNum == 0; // 0=简中，等价老代码 !isEnglish
     final target = type == 0 ? state.phoneNumber : state.emailAddress;
-    print('[AccountSecurity] sendCheckVerCode type=$type target=$target isCn=$isCn');
+    print(
+      '[AccountSecurity] sendCheckVerCode type=$type target=$target isCn=$isCn',
+    );
     // 老逻辑：发码前先启动倒计时
     _startCountdown();
     try {
@@ -175,7 +177,9 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
         };
       }
       final response = await _api.getRaw<Map<String, dynamic>>(
-        type == 0 ? ApiConstants.sendPhoneNumberUrl : ApiConstants.sendMailNumberUrl,
+        type == 0
+            ? ApiConstants.sendPhoneNumberUrl
+            : ApiConstants.sendMailNumberUrl,
         queryParameters: params,
         options: _options,
         parser: (json) => json as Map<String, dynamic>,
@@ -185,7 +189,9 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
         print('[AccountSecurity] sendCheckVerCode code=405 该账号已被绑定');
       }
       final ok = code == '200';
-      print('[AccountSecurity] sendCheckVerCode code=${response['code']} ok=$ok');
+      print(
+        '[AccountSecurity] sendCheckVerCode code=${response['code']} ok=$ok',
+      );
       return ok;
     } catch (e) {
       print('❌ [AccountSecurity.sendCheckVerCode] error=$e');
@@ -218,7 +224,9 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
         parser: (json) => json as Map<String, dynamic>,
       );
       final ok = response['code']?.toString() == '200';
-      print('[AccountSecurity] verifyCheckVerCode code=${response['code']} ok=$ok');
+      print(
+        '[AccountSecurity] verifyCheckVerCode code=${response['code']} ok=$ok',
+      );
       if (ok) _stopCountdown(); // 老逻辑：校验通过后重置倒计时
       return ok;
     } catch (e) {
@@ -236,7 +244,8 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
     final isCn = _storage.languageNum == 0; // 0=简中，等价老代码 !isEnglish
     final target = state.bindAccount;
     print(
-        '[AccountSecurity] sendBindVerCode type=$type target=$target isCn=$isCn');
+      '[AccountSecurity] sendBindVerCode type=$type target=$target isCn=$isCn',
+    );
     // 老逻辑：发码前先启动倒计时
     _startCountdown();
     try {
@@ -257,7 +266,9 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
         };
       }
       final response = await _api.getRaw<Map<String, dynamic>>(
-        type == 0 ? ApiConstants.sendPhoneVerCode : ApiConstants.sendMailVerCode,
+        type == 0
+            ? ApiConstants.sendPhoneVerCode
+            : ApiConstants.sendMailVerCode,
         queryParameters: params,
         options: _options,
         parser: (json) => json as Map<String, dynamic>,
@@ -283,7 +294,8 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
   Future<String> bindAccount(int type) async {
     final userId = _storage.userId;
     print(
-        '[AccountSecurity] bindAccount type=$type userId=$userId bindAccount=${state.bindAccount}');
+      '[AccountSecurity] bindAccount type=$type userId=$userId bindAccount=${state.bindAccount}',
+    );
     try {
       final Map<String, dynamic> params;
       if (type == 0) {
@@ -369,7 +381,10 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
   /// code=200 时写入本地 hasPassword 标记并返回 true。
   Future<bool> updatePassword() async {
     final userId = _storage.userId;
-    print('[AccountSecurity] updatePassword userId=$userId');
+    print(
+      '[AccountSecurity] updatePassword userId=$userId '
+      'newPwdLen=${state.changepassword.length}',
+    );
     try {
       final response = await _api.putRaw<Map<String, dynamic>>(
         ApiConstants.updatePwdUrl,
@@ -380,6 +395,7 @@ class AccountSecurityNotifier extends _$AccountSecurityNotifier {
         options: _options,
         parser: (json) => json as Map<String, dynamic>,
       );
+      print('🔑 [AccountSecurity.updatePassword] RAW RESPONSE = $response');
       final ok = response['code']?.toString() == '200';
       if (ok) {
         await _storage.setHasPassword(true);

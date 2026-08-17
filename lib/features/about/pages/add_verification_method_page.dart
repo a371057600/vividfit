@@ -1,3 +1,4 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -49,11 +50,7 @@ class _AddVerificationMethodPageState
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 const SizedBox(width: 10),
-                Icon(
-                  Icons.arrow_back_ios,
-                  color: FitTheme.textColor,
-                  size: 20,
-                ),
+                Icon(Icons.arrow_back_ios, color: FitTheme.textColor, size: 20),
                 Text(
                   isPhone ? l10n.bindNewPhone : l10n.bindNewEmail,
                   style: TextStyle(
@@ -99,8 +96,8 @@ class _AddVerificationMethodPageState
               },
               child: Container(
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFF4B22),
+                decoration: BoxDecoration(
+                  color: FitTheme.buttonColor,
                   borderRadius: BorderRadius.all(Radius.circular(20)),
                 ),
                 height: 40,
@@ -108,7 +105,7 @@ class _AddVerificationMethodPageState
                 child: Text(
                   l10n.confirm,
                   style: TextStyle(
-                    color: FitTheme.textColor,
+                    color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
@@ -166,9 +163,7 @@ class _AddVerificationMethodPageState
           ),
           onChanged: (value) {
             // 输入同步到 Notifier（对应老 asc.bindAccount）
-            ref
-                .read(accountSecurityProvider.notifier)
-                .setBindAccount(value);
+            ref.read(accountSecurityProvider.notifier).setBindAccount(value);
           },
         ),
       );
@@ -207,10 +202,9 @@ class _AddVerificationMethodPageState
             onTap: () {
               // 发送绑定验证码：倒计时中不可重复发送（对应老 sendverCode）
               if (!state.isCounting) {
-                final code =
-                    ref
-                        .read(accountSecurityProvider.notifier)
-                        .sendBindVerCode(widget.accountAddType);
+                final code = ref
+                    .read(accountSecurityProvider.notifier)
+                    .sendBindVerCode(widget.accountAddType);
                 // 405 提示已被绑定（请求失败信息由日志输出）
                 code.then((value) {
                   if (value == '405' && mounted) {

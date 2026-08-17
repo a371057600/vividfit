@@ -73,6 +73,23 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       });
     });
 
+    // 任务8.2：首帧后执行四级启动验证（避免在 build 周期内修改 provider state）
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final result = _quickStartNotifier.validateDeviceReady();
+      print(
+        '[DeviceCheck] 训练页启动验证: ready=${result.isReady}, '
+        'failedStep=${result.failedStep}, reason=${result.reason}',
+      );
+      if (!result.isReady) {
+        // 未就绪：提示用户先完成设备同步（复用 Toast，不新造 UI）
+        Fluttertoast.showToast(
+          msg: '设备未就绪：${result.reason}，请先完成设备同步',
+          toastLength: Toast.LENGTH_LONG,
+        );
+      }
+    });
+
     _audioPlayer.setLoopMode(LoopMode.one);
     _controller = AnimationController(
       duration: const Duration(seconds: 10),
@@ -109,6 +126,27 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // 任务9.2：断连自动退出——设备断开后提示并返回上一级
+    ref.listen(quickStartProvider.select((s) => s.isDeviceConnectionLost), (
+      prev,
+      next,
+    ) {
+      if (next && prev != true) {
+        print('[DeviceCheck] 检测到断连标志，自动退出训练页');
+        Fluttertoast.showToast(msg: '设备已断开', toastLength: Toast.LENGTH_LONG);
+        Navigator.of(context).pop();
+      }
+    });
+    // 任务9.2：指令重发耗尽——消费失败标志并复位（Toast 已由 Notifier 弹出）
+    ref.listen(quickStartProvider.select((s) => s.lastParamSyncFailed), (
+      prev,
+      next,
+    ) {
+      if (next && prev != true) {
+        ref.read(quickStartProvider.notifier).markParamSyncFailedConsumed();
+      }
+    });
+
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -118,11 +156,11 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
               <Widget>[_buildMainWidget(state, screenWidth, screenHeight)] +
               _buildTopDataBarByDevice(state, screenWidth) +
               [
-                _buildControllerButtonByDevice(state),
                 _buildRealtimeChartByDevice(state, screenWidth, screenHeight),
                 if (!state.isPaused) _buildPlayButton(state, tr),
                 if (state.isPaused)
                   _buildPauseWidget(tr, screenHeight, screenWidth),
+                _buildControllerButtonByDevice(state),
                 _buildBackButton(state),
                 Positioned(
                   left: 40.w,
@@ -618,8 +656,12 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           ? Center(
               child: GestureDetector(
                 onTap: () {
+                  print('👆 [Button] 点击: 播放按钮');
                   // 检查设备是否已在运动中
                   if (state.isPlaying || state.sportSpeed > 0) {
+                    print(
+                      '👆 [Button] 播放被拦截: 设备运动中(isPlaying=${state.isPlaying}, speed=${state.sportSpeed})',
+                    );
                     Fluttertoast.showToast(
                       msg: tr.deviceInMotionPleaseStop,
                       toastLength: Toast.LENGTH_LONG,
@@ -687,6 +729,9 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
       top: 80.h,
       child: InkWell(
         onTap: () {
+          print(
+            '👆 [Button] 点击: 返回按钮(isPlaying=${state.isPlaying}, speed=${state.sportSpeed})',
+          );
           final notifier = ref.read(quickStartProvider.notifier);
           // 先停后退：若设备正在运行，立即下发停止指令并清零本地数据
           // （dispatchImmediate 不走 debounce，确保 pop 前停止指令必达设备）

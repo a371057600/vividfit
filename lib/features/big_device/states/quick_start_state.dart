@@ -61,6 +61,61 @@ abstract class QuickStartState with _$QuickStartState {
     /// 坡度按钮当前值。
     @Default(0.0) double sportInclinationButton,
 
+    /// 速度实际值（设备数据通道实时值，内部验证用，不直接驱动按钮）。
+    @Default(0.0) double sportSpeedActual,
+
+    /// 阻力实际值（设备数据通道实时值）。
+    @Default(0.0) double sportResistanceActual,
+
+    /// 坡度实际值（设备数据通道实时值）。
+    @Default(0.0) double sportInclinationActual,
+
+    /// 速度命令锁窗口标志（锁定期间数据流不得覆盖按钮值）。
+    @Default(false) bool isSpeedLocked,
+
+    /// 阻力命令锁窗口标志。
+    @Default(false) bool isResistanceLocked,
+
+    /// 坡度命令锁窗口标志。
+    @Default(false) bool isInclinationLocked,
+
+    /// 设备断连标志（驱动训练页自动退出）。
+    @Default(false) bool isDeviceConnectionLost,
+
+    /// 指令重发耗尽标志（驱动页面 Toast 提示）。
+    @Default(false) bool lastParamSyncFailed,
+
+    // ==================== 设备能力范围（0x2AD4/0x2AD5/0x2AD6 动态读取） ====================
+    // 数值已换算为物理值：速度 km/h（÷100）、坡度 %（÷10）、阻力 level（÷10）。
+    // 0 表示尚未读到设备范围（回退默认常量）。
+
+    /// 速度下限（km/h），0 表示未读到。
+    @Default(0.0) double speedRangeMin,
+
+    /// 速度上限（km/h），0 表示未读到。
+    @Default(0.0) double speedRangeMax,
+
+    /// 速度步长（km/h），0 表示未读到。
+    @Default(0.0) double speedRangeStep,
+
+    /// 坡度下限（%），0 表示未读到。
+    @Default(0.0) double inclinationRangeMin,
+
+    /// 坡度上限（%），0 表示未读到。
+    @Default(0.0) double inclinationRangeMax,
+
+    /// 坡度步长（%），0 表示未读到。
+    @Default(0.0) double inclinationRangeStep,
+
+    /// 阻力下限（level），0 表示未读到。
+    @Default(0.0) double resistanceRangeMin,
+
+    /// 阻力上限（level），0 表示未读到。
+    @Default(0.0) double resistanceRangeMax,
+
+    /// 阻力步长（level），0 表示未读到。
+    @Default(0.0) double resistanceRangeStep,
+
     /// 阻力档位列表。
     @Default(<double>[0, 0, 0, 0]) List<double> buttonResistanceList,
 

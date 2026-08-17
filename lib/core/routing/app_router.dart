@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -21,6 +21,7 @@ import '../../features/about/pages/account_security_page.dart';
 import '../../features/about/pages/add_verification_method_page.dart';
 import '../../features/about/pages/avatar_select_page.dart';
 import '../../features/about/pages/image_crop_page.dart';
+import '../../features/about/pages/medal_detail_page.dart';
 import '../../features/about/pages/medal_display_page.dart';
 import '../../features/about/pages/set_new_password_page.dart';
 import '../../features/about/pages/sport_setting_page.dart';
@@ -36,7 +37,8 @@ import '../../features/big_device/pages/gym_game_select_screen.dart';
 import '../../features/big_device/pages/quick_start_training_page.dart';
 import '../../l10n/app_localizations.dart';
 import '../../features/big_device/pages/gym_device_games.dart';
-import '../../features/dev/api_test_page.dart';
+// 【上架隐藏】API 测试页,随 /api-test 路由一同注释
+// import '../../features/dev/api_test_page.dart';
 import '../../core/ftms/ftms_device_type.dart';
 import '../../data/models/network/sport_history.dart';
 import '../../features/record/models/record_equipment_type.dart';
@@ -60,9 +62,14 @@ const _loginFlowRoutes = {
 // 测试用免登录路由
 const _testRoutes = {'/gym-device-play', '/gym-course-detail'};
 
+/// 全局路由观察者：页面可实现 RouteAware.didPopNext 感知子页返回，
+/// 用于账号安全页等需要在返回时刷新数据的场景。
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   return GoRouter(
+    observers: [routeObserver],
     initialLocation: '/splash',
     refreshListenable: _AuthRefreshListenable(ref),
     redirect: (context, state) {
@@ -87,19 +94,21 @@ GoRouter appRouter(Ref ref) {
       final inLoginFlow = _loginFlowRoutes.contains(location);
       final inRegisterFlow = registerFlowRoutes.contains(location);
 
-      // 已登录 + 新用户:强制走注册流程(但如果在跳首页,允许通过)
-      if (isLoggedIn && isNewUser && location != '/home-shell') {
-        if (!inRegisterFlow) {
+      // 已登录 + 新用户:强制走注册流程;
+      // 登录流程页放行,由页面自行跳转(nickname-setup),
+      // 避免 redirect 与页面 pop/go 双重导航竞态导致黑屏
+      if (isLoggedIn && isNewUser) {
+        if (!inRegisterFlow && !inLoginFlow && location != '/home-shell') {
           return '/nickname-setup';
         }
         return null;
       }
 
-      // 已登录 + 老用户:跳主页(但如果在 home-shell,允许通过)
+      // 已登录 + 老用户:登录流程页放行,
+      // 登录成功后由页面(关闭 Loading 后)自行 go /home-shell。
+      // 若在此处主动跳转会与页面代码的 pop() 竞态,
+      // pop 会误弹新栈顶主页 → 栈空黑屏 + !_debugLocked 断言
       if (isLoggedIn && !isNewUser) {
-        if (inLoginFlow && location != '/home-shell') {
-          return '/home-shell';
-        }
         return null;
       }
 
@@ -246,6 +255,13 @@ GoRouter appRouter(Ref ref) {
         path: '/medal-display',
         name: 'medal-display',
         builder: (context, state) => const MedalDisplayPage(),
+      ),
+      // 勋章详情页（extra 传 MedalDetailArgs 区分来源：轮播/分组网格）
+      GoRoute(
+        path: '/medal-detail',
+        name: 'medal-detail',
+        builder: (context, state) =>
+            MedalDetailPage(args: state.extra as MedalDetailArgs),
       ),
       GoRoute(
         path: '/course-list',
@@ -442,11 +458,12 @@ GoRouter appRouter(Ref ref) {
           return GymRowerRealsceneScreen(deviceType: deviceType);
         },
       ),
-      GoRoute(
-        path: '/api-test',
-        name: 'api-test',
-        builder: (context, state) => const ApiTestPage(),
-      ),
+      // 【上架隐藏】API 测试页路由,上架 App Store 前注释
+      // GoRoute(
+      //   path: '/api-test',
+      //   name: 'api-test',
+      //   builder: (context, state) => const ApiTestPage(),
+      // ),
       // 隐私政策 / 用户协议 在线 WebView 页
       // 使用: context.push('/policy-webview', extra: {'url': xxx, 'title': xxx})
       GoRoute(

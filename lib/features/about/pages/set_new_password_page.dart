@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
+import '../notifiers/account_security_notifier.dart';
 
 class SetNewPasswordPage extends ConsumerStatefulWidget {
   const SetNewPasswordPage({super.key});
@@ -24,6 +26,41 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  /// 确认按钮：提交新密码（对应旧 find_password_set_new 的 bindingAccount case 1）。
+  ///
+  /// 1. 两次密码不一致 → toast 提示并留在当前页
+  /// 2. 一致 → 写入 Notifier 状态后调用 updatePassword() 发起 PUT updatePwdUrl
+  /// 3. 成功 → toast success 并返回；失败 → toast 密码不符合规定
+  Future<void> _submitPassword(AppLocalizations l10n) async {
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+    print('🔑 [SetNewPassword] submit pwdLen=${password.length} '
+        'confirmLen=${confirmPassword.length}');
+
+    if (password != confirmPassword) {
+      // 与旧项目一致：不一致仅 toast，不跳转
+      Fluttertoast.showToast(msg: l10n.passwordMismatch);
+      return;
+    }
+
+    // 先把输入写入状态，updatePassword() 读取 state.changepassword
+    final notifier = ref.read(accountSecurityProvider.notifier);
+    notifier.setChangepassword(password);
+    notifier.setChangepassword2(confirmPassword);
+
+    final ok = await notifier.updatePassword();
+    print('🔑 [SetNewPassword] updatePassword ok=$ok');
+    if (!mounted) return;
+
+    if (ok) {
+      Fluttertoast.showToast(msg: l10n.success);
+      context.pop();
+    } else {
+      // 旧项目：code != 200 → "密码不符合规定"
+      Fluttertoast.showToast(msg: '密码不符合规定');
+    }
   }
 
   @override
@@ -79,6 +116,8 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                 ],
+                // 全局为 dark 主题，不显式指定则输入文字为白色，浅色背景下不可见
+                style: TextStyle(color: FitTheme.textColor),
                 decoration: InputDecoration(
                   suffixIcon: GestureDetector(
                     onTap: () {
@@ -91,6 +130,7 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
                           ? Icons.visibility
                           : Icons.visibility_off,
                       size: 20.0,
+                      color: FitTheme.textColor,
                     ),
                   ),
                   contentPadding: const EdgeInsets.only(top: 15),
@@ -112,6 +152,8 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
                 ],
+                // 全局为 dark 主题，不显式指定则输入文字为白色，浅色背景下不可见
+                style: TextStyle(color: FitTheme.textColor),
                 decoration: InputDecoration(
                   suffixIcon: GestureDetector(
                     onTap: () {
@@ -124,6 +166,7 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
                           ? Icons.visibility
                           : Icons.visibility_off,
                       size: 20.0,
+                      color: FitTheme.textColor,
                     ),
                   ),
                   contentPadding: const EdgeInsets.only(top: 15),
@@ -152,12 +195,7 @@ class _SetNewPasswordPageState extends ConsumerState<SetNewPasswordPage> {
                     l10n.confirm,
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () {
-                    if (_passwordController.text ==
-                        _confirmPasswordController.text) {
-                      context.pop();
-                    }
-                  },
+                  onPressed: () => _submitPassword(l10n),
                 ),
               ),
             ],

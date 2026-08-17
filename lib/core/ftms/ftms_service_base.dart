@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 import 'ftms_command_builder.dart';
+import 'ftms_control_response.dart';
 import 'ftms_data_parser_base.dart';
 import 'ftms_device_data.dart';
 import 'ftms_device_type.dart';
@@ -40,15 +40,30 @@ abstract class FtmsServiceBase {
 
   StreamSubscription<List<int>>? _dataSubscription;
   StreamSubscription<List<int>>? _statusSubscription;
+  StreamSubscription<List<int>>? _responseSubscription;
+  StreamSubscription<BluetoothConnectionState>? _connectionStateSubscription;
 
   final _dataController = StreamController<FtmsDeviceData>.broadcast();
   final _statusController = StreamController<FtmsStatusEvent>.broadcast();
+  final _responseController = StreamController<FtmsControlResponse>.broadcast();
 
   /// 解析后的实时数据流。
   Stream<FtmsDeviceData> get dataStream => _dataController.stream;
 
   /// 设备状态事件流(0x2ADA)。
   Stream<FtmsStatusEvent> get statusStream => _statusController.stream;
+
+  /// 控制点回执流(0x2AD9 Response)。
+  Stream<FtmsControlResponse> get responseStream => _responseController.stream;
+
+  /// 设备连接状态流(断连监听用)。
+  ///
+  /// 未连接设备时返回空流,调用方无需判空。
+  Stream<BluetoothConnectionState> get connectionStateStream {
+    final device = _device;
+    if (device == null) return const Stream.empty();
+    return device.connectionState;
+  }
 
   /// 当前是否已连接并发现服务。
   bool get isReady =>
@@ -105,6 +120,8 @@ abstract class FtmsServiceBase {
       await _subscribeStatus();
       debugPrint('[FTMS] status subscription enabled');
 
+      await _subscribeControlResponse();
+
       debugPrint('[FTMS] === FTMS CONNECTED & READY ===');
       return true;
     } catch (e) {
@@ -121,8 +138,12 @@ abstract class FtmsServiceBase {
 
     await _dataSubscription?.cancel();
     await _statusSubscription?.cancel();
+    await _responseSubscription?.cancel();
+    await _connectionStateSubscription?.cancel();
     _dataSubscription = null;
     _statusSubscription = null;
+    _responseSubscription = null;
+    _connectionStateSubscription = null;
     debugPrint('[FTMS] ✅ subscriptions cancelled');
 
     try {
@@ -135,6 +156,7 @@ abstract class FtmsServiceBase {
 
     await _dataController.close();
     await _statusController.close();
+    await _responseController.close();
 
     // 清空所有特征值与服务引用,确保 dispose 后 isReady 返回 false。
     // 防止持有旧引用的调用方(如未刷新的 dispatcher)误判为可用而写入失效特征值。
@@ -284,6 +306,37 @@ abstract class FtmsServiceBase {
     _device?.cancelWhenDisconnected(_statusSubscription!);
     await _statusCharacteristic!.setNotifyValue(true);
     debugPrint('[FTMS] ✅ status subscription enabled');
+  }
+
+  /// 订阅控制点回执(0x2AD9 Indicate)。
+  ///
+  /// 设备对控制指令的执行结果会通过 Indicate 回执:
+  /// 格式为 `[0x80, requestOpCode, resultCode]`,由
+  /// [FtmsControlResponse.tryParse] 解析后广播到 [responseStream]。
+  ///
+  /// 设备不支持 Indicate 时不抛异常,由 0x2ADA 状态事件兜底。
+  Future<void> _subscribeControlResponse() async {
+    if (_controlCharacteristic == null) {
+      debugPrint('[FTMS] _subscribeControlResponse: controlCharacteristic is null, skip');
+      return;
+    }
+
+    // 控制点回执依赖 Indicate 属性,不支持时降级处理(不抛异常)
+    if (!_controlCharacteristic!.properties.indicate) {
+      debugPrint('[FTMS] ⚠️ control point 不支持 Indicate，回执监听降级（由 0x2ADA 事件兜底）');
+      return;
+    }
+
+    debugPrint('[FTMS] subscribing control response: ${FtmsUuids.controlPoint}');
+    _responseSubscription = _controlCharacteristic!.lastValueStream.listen((data) {
+      final response = FtmsControlResponse.tryParse(Uint8List.fromList(data));
+      if (response == null) return;
+      debugPrint('[FTMS] 📩 control response: request=0x${response.requestOpCode.toRadixString(16)}, result=${response.resultCode}');
+      if (!_responseController.isClosed) _responseController.add(response);
+    });
+    _device?.cancelWhenDisconnected(_responseSubscription!);
+    await _controlCharacteristic!.setNotifyValue(true);
+    debugPrint('[FTMS] ✅ control response subscription enabled');
   }
 
   Future<void> _writeControl(List<int> data) async {

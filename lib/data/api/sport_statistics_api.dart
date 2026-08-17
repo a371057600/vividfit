@@ -23,8 +23,11 @@ class SportStatisticsApi {
         'timeArea': timeArea,
       },
       parser: (json) => (json as List<dynamic>)
-          .map((e) =>
-              SportStatisticsDataResultDto.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => SportStatisticsDataResultDto.fromJson(
+              e as Map<String, dynamic>,
+            ),
+          )
           .toList(),
     );
   }
@@ -44,7 +47,8 @@ class SportStatisticsApi {
         'startTime': startTime,
         'endTime': endTime,
       },
-      parser: (json) => (json as List<dynamic>).map((e) => e.toString()).toList(),
+      parser: (json) =>
+          (json as List<dynamic>).map((e) => e.toString()).toList(),
     );
   }
 
@@ -55,10 +59,7 @@ class SportStatisticsApi {
   }) async {
     return _client.get<Map<String, dynamic>>(
       ApiConstants.caloriesLeaderboard,
-      queryParameters: {
-        'equipmentType': equipmentType,
-        'timeType': timeType,
-      },
+      queryParameters: {'equipmentType': equipmentType, 'timeType': timeType},
       parser: (json) => json as Map<String, dynamic>,
     );
   }
@@ -83,40 +84,42 @@ class SportStatisticsApi {
         'zone': zone,
       },
       parser: (json) => (json as List<dynamic>)
-          .map((e) =>
-              SportStatisticsDataResultDto.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => SportStatisticsDataResultDto.fromJson(
+              e as Map<String, dynamic>,
+            ),
+          )
           .toList(),
     );
   }
 
-  /// 获取新勋章
+  /// 获取新勋章（/medal/new 独立接口，返回未读新勋章列表）
+  /// 注意：lang 仅支持 zh，禁止传 en（服务端新规则）
+  /// 响应为标准包装格式 {code, msg, data: array<MedalMsg>}
   Future<List<MedalMsg>> getNewMedal({
     required int userId,
     required String lang,
   }) async {
-    return _client.getRaw<List<MedalMsg>>(
+    return _client.get<List<MedalMsg>>(
       ApiConstants.newMedal,
-      queryParameters: {
-        'userId': userId,
-        'lang': lang,
-      },
+      queryParameters: {'userId': userId, 'lang': lang},
       parser: (json) => (json as List<dynamic>)
           .map((e) => MedalMsg.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
 
-  /// 获取勋章面板
+  /// 获取勋章面板（/medal/panel，勋章页面数据源）
+  /// 注意：lang 仅支持 zh，禁止传 en（服务端 zh 直返中文 describe/groupName）
+  /// 响应为标准包装格式 {code, msg, data: array<MedalGroup>}，
+  /// image 字段为完整 OSS URL（无需客户端拼接）
   Future<List<MedalGroup>> getMedalPanel({
     required int userId,
     required String lang,
   }) async {
-    return _client.getRaw<List<MedalGroup>>(
+    return _client.get<List<MedalGroup>>(
       ApiConstants.medalPanel,
-      queryParameters: {
-        'userId': userId,
-        'lang': lang,
-      },
+      queryParameters: {'userId': userId, 'lang': lang},
       parser: (json) => (json as List<dynamic>)
           .map((e) => MedalGroup.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -136,9 +139,7 @@ class SportStatisticsApi {
   }
 
   /// 获取勋章总数
-  Future<int> getMedalTotalCount({
-    required int userId,
-  }) async {
+  Future<int> getMedalTotalCount({required int userId}) async {
     return _client.getRaw<int>(
       ApiConstants.medalTotalCount,
       queryParameters: {'userId': userId},

@@ -188,7 +188,13 @@ class LevelControlButton extends StatelessWidget {
       return Expanded(
         flex: 1,
         child: InkWell(
-          onTap: onTapCallback,
+          // 点击日志：确认手势已触达按钮（与 Notifier 层日志形成链路对照）
+          onTap: onTapCallback != null
+              ? () {
+                  print('👆 [Button] 点击: $typeLabel 预设档位=$value');
+                  onTapCallback();
+                }
+              : null,
           child: Container(
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: innerBottomPadding),
@@ -227,12 +233,25 @@ class LevelControlButton extends StatelessWidget {
                   // 加号按钮（仅速度支持长按；长按回调为 null 时不绑定长按手势）
                   Expanded(
                     child: GestureDetector(
-                      onLongPress: onLongPressAdd,
+                      onLongPress: onLongPressAdd != null
+                          ? () {
+                              print('👆 [Button] 长按开始: $typeLabel +');
+                              onLongPressAdd!();
+                            }
+                          : null,
                       onLongPressEnd:
                           (onLongPressAdd != null && onLongPressEnd != null)
-                          ? (_) => onLongPressEnd()
+                          ? (_) {
+                              print('👆 [Button] 长按结束: $typeLabel +');
+                              onLongPressEnd();
+                            }
                           : null,
-                      onTap: onAdd,
+                      onTap: onAdd != null
+                          ? () {
+                              print('👆 [Button] 点击: $typeLabel +');
+                              onAdd!();
+                            }
+                          : null,
                       child: Container(
                         alignment: Alignment.center,
                         child: Icon(
@@ -266,12 +285,25 @@ class LevelControlButton extends StatelessWidget {
                   // 减号按钮（仅速度支持长按；长按回调为 null 时不绑定长按手势）
                   Expanded(
                     child: GestureDetector(
-                      onLongPress: onLongPressDown,
+                      onLongPress: onLongPressDown != null
+                          ? () {
+                              print('👆 [Button] 长按开始: $typeLabel -');
+                              onLongPressDown!();
+                            }
+                          : null,
                       onLongPressEnd:
                           (onLongPressDown != null && onLongPressEnd != null)
-                          ? (_) => onLongPressEnd()
+                          ? (_) {
+                              print('👆 [Button] 长按结束: $typeLabel -');
+                              onLongPressEnd();
+                            }
                           : null,
-                      onTap: onDown,
+                      onTap: onDown != null
+                          ? () {
+                              print('👆 [Button] 点击: $typeLabel -');
+                              onDown!();
+                            }
+                          : null,
                       child: Container(
                         alignment: Alignment.center,
                         child: Icon(

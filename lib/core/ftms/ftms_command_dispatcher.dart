@@ -37,6 +37,7 @@ class FtmsCommandDispatcher {
     required this._serviceGetter,
     this.syncGuard,
     this.onCommandFailed,
+    this.onRetryExhausted,
   });
 
   /// FTMS 服务实例 getter(不缓存引用)。
@@ -57,17 +58,34 @@ class FtmsCommandDispatcher {
   /// 供上层(Notifier)提示用户重启蓝牙或重新连接设备。
   final void Function(String error)? onCommandFailed;
 
+  /// 指令重发耗尽回调(可选)。
+  ///
+  /// 触发时机:dispatchTracked 下发的指令在达到最大重试次数后仍未确认。
+  /// 参数为该指令的 OpCode,供上层提示用户。
+  final void Function(int opCode)? onRetryExhausted;
+
   /// debounce 计时器。
   Timer? _debounceTimer;
 
   /// debounce 期间暂存的待发送指令。
   FtmsCommand? _pendingCommand;
 
+  /// 跟踪中的指令任务表(按 OpCode 索引)。
+  ///
+  /// 同 OpCode 新指令进入时重置旧任务,以新指令重新计数。
+  final Map<int, _RetryTask> _trackedTasks = {};
+
   /// debounce 延迟时长。
   static const Duration _debounceDelay = Duration(milliseconds: 500);
 
   /// 保护窗口时长。
   static const Duration _guardWindowDuration = Duration(milliseconds: 1500);
+
+  /// 参数指令(速度/坡度/阻力)确认超时(覆盖电机物理调整 + 匹配窗口)。
+  static const Duration paramAckTimeout = Duration(seconds: 4);
+
+  /// 开始/停止等二值指令确认超时。
+  static const Duration binaryAckTimeout = Duration(seconds: 3);
 
   /// debounce 模式下发指令。
   ///
@@ -106,11 +124,60 @@ class FtmsCommandDispatcher {
     }
   }
 
+  /// 带跟踪下发指令:超时未确认自动重发,最多 [maxRetries] 次。
+  ///
+  /// 与 [dispatch]/[dispatchImmediate] 的区别:
+  /// - 记录指令并启动确认超时计时器
+  /// - 同 OpCode 新指令进入时取消旧跟踪,以新指令重新计数
+  /// - 确认来源:上层收到设备回执/数据匹配后调用 [confirmReceipt]
+  /// - 重试耗尽触发 [onRetryExhausted],按钮值保持用户输入不回滚
+  void dispatchTracked(FtmsCommand command,
+      {Duration? timeout, int maxRetries = 3}) {
+    final effectiveTimeout = timeout ?? paramAckTimeout;
+    // 取消同 OpCode 旧跟踪任务
+    _removeTask(command.opCode);
+    final task = _RetryTask(command: command, timeout: effectiveTimeout);
+    _trackedTasks[command.opCode] = task;
+    debugPrint(
+      '[Dispatcher] dispatchTracked: ${_formatCommand(command)}, '
+      'timeout=${effectiveTimeout.inSeconds}s, maxRetries=$maxRetries',
+    );
+    _executeCommand(command);
+    _startAckTimer(task, maxRetries);
+  }
+
+  /// 确认指令已被设备接受(收到成功回执或数据匹配)。
+  ///
+  /// 取消该 OpCode 的超时计时器并移除跟踪任务。
+  void confirmReceipt(int opCode) {
+    final task = _trackedTasks.remove(opCode);
+    if (task == null) return;
+    task.confirmed = true;
+    task.timer?.cancel();
+    debugPrint(
+      '[Dispatcher] ✅ receipt confirmed: opCode=${_formatOpCode(opCode)}'
+      '（第 ${task.sentCount} 次发送后确认）',
+    );
+  }
+
+  /// 主动放弃跟踪(如停止运动、页面退出场景)。
+  void cancelTracking(int opCode) {
+    final task = _trackedTasks.remove(opCode);
+    if (task == null) return;
+    task.timer?.cancel();
+    debugPrint('[Dispatcher] cancelTracking: opCode=${_formatOpCode(opCode)}');
+  }
+
   /// 释放资源,取消所有待发送指令。
   void dispose() {
     _debounceTimer?.cancel();
     _debounceTimer = null;
     _pendingCommand = null;
+    // 取消所有跟踪任务的超时计时器,防止 dispose 后仍触发重发
+    for (final task in _trackedTasks.values) {
+      task.timer?.cancel();
+    }
+    _trackedTasks.clear();
     debugPrint('[Dispatcher] dispose');
   }
 
@@ -160,6 +227,44 @@ class FtmsCommandDispatcher {
     }
   }
 
+  /// 启动(或重启)确认超时计时器。
+  void _startAckTimer(_RetryTask task, int maxRetries) {
+    task.timer?.cancel();
+    task.timer = Timer(task.timeout, () => _onAckTimeout(task, maxRetries));
+  }
+
+  /// 确认超时处理:未达上限则重发,耗尽则通知上层。
+  void _onAckTimeout(_RetryTask task, int maxRetries) {
+    // 已确认或任务已被替换/移除(如同 OpCode 新指令重置跟踪)则直接返回
+    if (task.confirmed || _trackedTasks[task.command.opCode] != task) return;
+    if (task.sentCount >= maxRetries) {
+      debugPrint(
+        '[Dispatcher] ❌ retry exhausted: '
+        'opCode=${_formatOpCode(task.command.opCode)}, '
+        'sent=${task.sentCount}/$maxRetries → 通知上层',
+      );
+      _removeTask(task.command.opCode, silent: true);
+      onRetryExhausted?.call(task.command.opCode);
+      return;
+    }
+    task.sentCount++;
+    debugPrint(
+      '[Dispatcher] ⏰ ack timeout, retry: ${task.sentCount}/$maxRetries, '
+      'opCode=${_formatOpCode(task.command.opCode)}',
+    );
+    _executeCommand(task.command);
+    _startAckTimer(task, maxRetries);
+  }
+
+  /// 移除跟踪任务并取消其计时器。
+  void _removeTask(int opCode, {bool silent = false}) {
+    final task = _trackedTasks.remove(opCode);
+    task?.timer?.cancel();
+    if (!silent && task != null) {
+      debugPrint('[Dispatcher] tracking removed: opCode=${_formatOpCode(opCode)}');
+    }
+  }
+
   /// 格式化 OpCode 为 0x 形式(如 0x04)。
   String _formatOpCode(int opCode) =>
       '0x${opCode.toRadixString(16).padLeft(2, '0')}';
@@ -174,4 +279,24 @@ class FtmsCommandDispatcher {
     }
     return '$opCodeStr, value=${command.data.first}';
   }
+}
+
+/// 指令跟踪任务:超时未确认则重发,重试次数耗尽触发回调。
+class _RetryTask {
+  _RetryTask({required this.command, required this.timeout});
+
+  /// 被跟踪的指令。
+  final FtmsCommand command;
+
+  /// 确认超时时长。
+  final Duration timeout;
+
+  /// 已发送次数(含首次)。
+  int sentCount = 1;
+
+  /// 确认超时计时器。
+  Timer? timer;
+
+  /// 是否已收到设备确认。
+  bool confirmed = false;
 }

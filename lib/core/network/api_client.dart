@@ -255,7 +255,17 @@ class ApiClient {
 
       print('📥 Raw Response [${response.statusCode}] ${response.requestOptions.uri}');
       print('📥 Body: ${response.data}');
-      return parser(response.data);
+      // 业务错误包拦截：直返型接口正常返回纯数据（List/Map），
+      // 若返回 {code: 非200, msg, data} 包装格式则为服务端业务错误
+      // （如勋章接口 lang 非法时返回 HTTP 200 + code 504）
+      final body = response.data;
+      if (body is Map && body['code'] != null) {
+        final code = body['code'];
+        if (code != 200 && code != '200') {
+          throw Exception('服务端业务错误 code=$code, msg=${body['msg']}');
+        }
+      }
+      return parser(body);
     } on DioException catch (e) {
       print('❌ DioError: ${e.message}');
       if (e.response != null) {
