@@ -92,9 +92,9 @@ class RowerParser extends FtmsDataParserBase {
       offset += 2;
     }
 
-    // 阻力等级(bit7, sint16)
+    // 阻力等级(bit7, sint16, 分辨率 0.1)
     if (flagSet(flags, 7) && hasData(data, offset, 2)) {
-      resistanceLvl = readInt16(bd, offset).toDouble();
+      resistanceLvl = readInt16(bd, offset) * 0.1;
       offset += 2;
     }
 

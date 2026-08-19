@@ -1058,8 +1058,8 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   // ══════════════════════════════════════════════════════════
 
   /// 动作切换时调用，根据设备类型下发参数到设备。
-  /// - 单车/椭圆机/划船机：下发阻力 (0x07 + [0x0B, ...value])
-  /// - 跑步机：下发速度 (0x07 + [0x02, ...value])
+  /// - 单车/椭圆机/划船机：下发阻力 (0x04 Set Target Resistance Level, uint8 ×10)
+  /// - 跑步机：下发速度 (0x02 Set Target Speed, uint16 LE ×100)
   /// 若 _dispatcher 为 null（无蓝牙连接），仅更新本地 state（降级模式）。
   void _applyActionParameters(ActionItemState action) {
     if (_dispatcher == null) {
@@ -1741,7 +1741,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (current - 1.0).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
     state = state.copyWith(sportResistanceButton: newValue);
     debugPrint('📤 [CourseControl] resistanceDown: $current → $newValue');
@@ -1753,7 +1753,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (state.sportSpeedButton + 0.2).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x02, _buildValueBytes(0x02, newValue)),
     );
     state = state.copyWith(sportSpeedButton: newValue);
   }
@@ -1762,7 +1762,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (state.sportSpeedButton - 0.2).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x02, _buildValueBytes(0x02, newValue)),
     );
     state = state.copyWith(sportSpeedButton: newValue);
   }
@@ -1771,7 +1771,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (state.sportInclinationButton + 0.5).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x03, _buildValueBytes(0x03, newValue)),
     );
     state = state.copyWith(sportInclinationButton: newValue);
   }
@@ -1780,7 +1780,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (state.sportInclinationButton - 0.5).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x03, _buildValueBytes(0x03, newValue)),
     );
     state = state.copyWith(sportInclinationButton: newValue);
   }
@@ -1789,7 +1789,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (state.sportResistanceButton + 0.5).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
     state = state.copyWith(sportResistanceButton: newValue);
   }
@@ -1798,7 +1798,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (state.sportResistanceButton - 0.5).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
     state = state.copyWith(sportResistanceButton: newValue);
   }
