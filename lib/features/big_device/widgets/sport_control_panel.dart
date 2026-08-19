@@ -139,7 +139,7 @@ class SportControlPanel extends StatelessWidget {
         if (deviceType.supportsResistanceControl) {
           addBtn(
             title: '阻力',
-            value: d.resistanceValue.toStringAsFixed(1),
+            value: d.resistanceValue.toStringAsFixed(0),
             onAdd: cb?.onResistanceAdd,
             onDown: cb?.onResistanceDown,
             // 阻力：不支持长按

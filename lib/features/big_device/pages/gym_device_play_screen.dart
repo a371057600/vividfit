@@ -775,7 +775,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
             top: firstTop,
             child: PillControlButton(
               title: '阻力',
-              value: state.sportResistanceButton.toStringAsFixed(1),
+              value: state.sportResistanceButton.toStringAsFixed(0),
               onAdd: notifier.resistanceAdd,
               onDown: notifier.resistanceDown,
             ),

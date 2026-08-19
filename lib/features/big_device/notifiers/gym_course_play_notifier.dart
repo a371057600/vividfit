@@ -1016,14 +1016,15 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
         break;
 
       case FtmsStatusTargetResistanceChanged(:final resistanceLevel):
-        // 0x07：阻力回调
+        // 0x07：阻力回调（取整保持按钮值为整数）
+        final intLevel = resistanceLevel.round().toDouble();
         debugPrint(
-          '📡 [CoursePlay] 设备状态: opCode=0x07, action=resistance, value=$resistanceLevel',
+          '📡 [CoursePlay] 设备状态: opCode=0x07, action=resistance, value=$intLevel',
         );
         if (_syncGuard?.isInGuardWindow() ?? false) {
           debugPrint('📡 [CoursePlay] 在保护窗口内，跳过阻力更新');
         } else {
-          state = state.copyWith(sportResistanceButton: resistanceLevel);
+          state = state.copyWith(sportResistanceButton: intLevel);
         }
         break;
 
@@ -1069,7 +1070,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
         'resistance=${action.resistance}, cadence=${action.cadence}',
       );
       state = state.copyWith(
-        sportResistanceButton: action.resistance.toDouble(),
+        sportResistanceButton: action.resistance.round().toDouble(),
         sportSpeedButton: action.cadence.toDouble(),
       );
       return;
@@ -1087,9 +1088,10 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
       case FtmsDeviceType.rower:
       case FtmsDeviceType.strengthStation:
         // 单车/椭圆机/划船机/力量站：下发阻力 (0x04 Set Target Resistance Level, uint8 ×10)
-        command = FtmsCommand(0x04, _buildValueBytes(0x04, action.resistance.toDouble()));
+        final resInt = action.resistance.round().toDouble();
+        command = FtmsCommand(0x04, _buildValueBytes(0x04, resInt));
         state = state.copyWith(
-          sportResistanceButton: action.resistance.toDouble(),
+          sportResistanceButton: resInt,
         );
         break;
     }
@@ -1118,7 +1120,9 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
         return [clamped & 0xFF, (clamped >> 8) & 0xFF];
       case 0x04:
         // Set Target Resistance Level: uint8, 0.1 unitless
-        final raw = (value * 10).round().clamp(0, 255);
+        // 阻力按钮值必须为整数(如 8)，发送时 ×10 → 字节 80
+        final intValue = value.round();
+        final raw = (intValue * 10).clamp(0, 255);
         return [raw];
       default:
         final raw = value.round();
@@ -1728,7 +1732,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   void resistanceAdd() {
     final current = state.sportResistanceButton;
     final v = (current + 1.0).clamp(1.0, 20.0);
-    final newValue = double.parse(v.toStringAsFixed(1));
+    final newValue = v.round().toDouble();
     _dispatcher?.dispatch(
       FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
@@ -1739,7 +1743,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
   void resistanceDown() {
     final current = state.sportResistanceButton;
     final v = (current - 1.0).clamp(1.0, 20.0);
-    final newValue = double.parse(v.toStringAsFixed(1));
+    final newValue = v.round().toDouble();
     _dispatcher?.dispatch(
       FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
@@ -1787,7 +1791,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
   void resistanceAddLongPress() {
     final v = (state.sportResistanceButton + 0.5).clamp(1.0, 20.0);
-    final newValue = double.parse(v.toStringAsFixed(1));
+    final newValue = v.round().toDouble();
     _dispatcher?.dispatch(
       FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
@@ -1796,7 +1800,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
 
   void resistanceDownLongPress() {
     final v = (state.sportResistanceButton - 0.5).clamp(1.0, 20.0);
-    final newValue = double.parse(v.toStringAsFixed(1));
+    final newValue = v.round().toDouble();
     _dispatcher?.dispatch(
       FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
