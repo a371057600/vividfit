@@ -1069,22 +1069,35 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   // ==================== 运动控制辅助方法 ====================
 
-  /// 按 FTMS 协议编码参数字节（uint16/sint16 小端序）。
-  /// - 0x02 速度：km/h × 100 → uint16
-  /// - 0x03 坡度：% × 10 → sint16（负值二补码）
-  /// - 0x04 阻力：等级取整 → uint16
+  /// 按 FTMS 协议编码参数字节。
+  /// - 0x02 速度：km/h × 100 → uint16 LE (2 字节)
+  /// - 0x03 坡度：% × 10 → sint16 LE (2 字节,负值二补码)
+  /// - 0x04 阻力：level × 10 → uint8 (1 字节)
+  ///
+  /// FTMS 协议规定:
+  /// - Set Target Speed (0x02):   uint16, 分辨率 0.01 km/h
+  /// - Set Target Inclination (0x03): sint16, 分辨率 0.1 %
+  /// - Set Target Resistance (0x04): uint8, 分辨率 0.1 unitless
   List<int> _buildValueBytes(int opCode, double value) {
-    int raw;
     switch (opCode) {
       case 0x02:
-        raw = (value * 100).round();
+        final raw = (value * 100).round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
       case 0x03:
-        raw = (value * 10).round();
+        final raw = (value * 10).round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
+      case 0x04:
+        // Set Target Resistance Level: uint8, 0.1 unitless
+        // 阻力值 8.5 → raw=85, 单字节发送
+        final raw = (value * 10).round().clamp(0, 255);
+        return [raw];
       default:
-        raw = value.round();
+        final raw = value.round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
     }
-    final clamped = raw & 0xFFFF; // sint16 负数自动转为二补码
-    return [clamped & 0xFF, (clamped >> 8) & 0xFF];
   }
 
   // ==================== 目标达成弹窗：判定与队列 ====================

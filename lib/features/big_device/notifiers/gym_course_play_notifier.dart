@@ -1078,22 +1078,16 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final FtmsCommand command;
     switch (_deviceType) {
       case FtmsDeviceType.treadmill:
-        // 跑步机：下发速度 (0x02)
-        command = FtmsCommand(0x07, [
-          0x02,
-          ..._buildValueBytes(action.cadence.toDouble()),
-        ]);
+        // 跑步机：下发速度 (0x02 Set Target Speed, uint16 LE ×100)
+        command = FtmsCommand(0x02, _buildValueBytes(0x02, action.cadence.toDouble()));
         state = state.copyWith(sportSpeedButton: action.cadence.toDouble());
         break;
       case FtmsDeviceType.indoorBike:
       case FtmsDeviceType.crossTrainer:
       case FtmsDeviceType.rower:
       case FtmsDeviceType.strengthStation:
-        // 单车/椭圆机/划船机/力量站：下发阻力 (0x0B)
-        command = FtmsCommand(0x07, [
-          0x0B,
-          ..._buildValueBytes(action.resistance.toDouble()),
-        ]);
+        // 单车/椭圆机/划船机/力量站：下发阻力 (0x04 Set Target Resistance Level, uint8 ×10)
+        command = FtmsCommand(0x04, _buildValueBytes(0x04, action.resistance.toDouble()));
         state = state.copyWith(
           sportResistanceButton: action.resistance.toDouble(),
         );
@@ -1108,10 +1102,29 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     );
   }
 
-  /// 将 double 值转为 2 字节小端序列（uint16 LE）。
-  List<int> _buildValueBytes(double value) {
-    final raw = value.round().clamp(0, 65535);
-    return [raw & 0xFF, (raw >> 8) & 0xFF];
+  /// 按 FTMS 协议编码参数字节。
+  /// - 0x02 速度：km/h × 100 → uint16 LE (2 字节)
+  /// - 0x03 坡度：% × 10 → sint16 LE (2 字节)
+  /// - 0x04 阻力：level × 10 → uint8 (1 字节)
+  List<int> _buildValueBytes(int opCode, double value) {
+    switch (opCode) {
+      case 0x02:
+        final raw = (value * 100).round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
+      case 0x03:
+        final raw = (value * 10).round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
+      case 0x04:
+        // Set Target Resistance Level: uint8, 0.1 unitless
+        final raw = (value * 10).round().clamp(0, 255);
+        return [raw];
+      default:
+        final raw = value.round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
+    }
   }
 
   // ══════════════════════════════════════════════════════════
@@ -1672,9 +1685,8 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final current = state.sportSpeedButton;
     final v = (current + 0.5).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    // Task 12: 通过 dispatcher 下发速度指令 (0x07 + [0x02, ...value])
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x02, _buildValueBytes(0x02, newValue)),
     );
     state = state.copyWith(sportSpeedButton: newValue);
     debugPrint('📤 [CourseControl] speedAdd: $current → $newValue');
@@ -1685,7 +1697,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (current - 0.5).clamp(0.0, 50.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x02, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x02, _buildValueBytes(0x02, newValue)),
     );
     state = state.copyWith(sportSpeedButton: newValue);
     debugPrint('📤 [CourseControl] speedDown: $current → $newValue');
@@ -1695,9 +1707,8 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final current = state.sportInclinationButton;
     final v = (current + 1.0).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    // Task 12: 通过 dispatcher 下发坡度指令 (0x07 + [0x03, ...value])
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x03, _buildValueBytes(0x03, newValue)),
     );
     state = state.copyWith(sportInclinationButton: newValue);
     debugPrint('📤 [CourseControl] inclinationAdd: $current → $newValue');
@@ -1708,7 +1719,7 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final v = (current - 1.0).clamp(-5.0, 15.0);
     final newValue = double.parse(v.toStringAsFixed(1));
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x03, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x03, _buildValueBytes(0x03, newValue)),
     );
     state = state.copyWith(sportInclinationButton: newValue);
     debugPrint('📤 [CourseControl] inclinationDown: $current → $newValue');
@@ -1718,9 +1729,8 @@ class GymCoursePlayNotifier extends _$GymCoursePlayNotifier {
     final current = state.sportResistanceButton;
     final v = (current + 1.0).clamp(1.0, 20.0);
     final newValue = double.parse(v.toStringAsFixed(1));
-    // Task 12: 通过 dispatcher 下发阻力指令 (0x07 + [0x0B, ...value])
     _dispatcher?.dispatch(
-      FtmsCommand(0x07, [0x0B, ..._buildValueBytes(newValue)]),
+      FtmsCommand(0x04, _buildValueBytes(0x04, newValue)),
     );
     state = state.copyWith(sportResistanceButton: newValue);
     debugPrint('📤 [CourseControl] resistanceAdd: $current → $newValue');
