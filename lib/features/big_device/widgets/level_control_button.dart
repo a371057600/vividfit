@@ -141,7 +141,7 @@ class LevelControlButton extends StatelessWidget {
         onPreset = cb.onInclinePreset;
         break;
       case _ControlGroupType.resistance:
-        currentValueText = d.resistanceValue.toStringAsFixed(1);
+        currentValueText = d.resistanceValue.toStringAsFixed(0);
         typeLabel = 'Resistance';
         presets = d.resistancePresets;
         onAdd = cb.onResistanceAdd;

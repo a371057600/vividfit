@@ -644,13 +644,17 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// - lockTimeout：解除锁定标志，走 dispatcher 超时重发轨道
   /// - stableIdle：未锁定时设备端稳定值同步按钮（设备优先级）
   void _processParamSync(ParamDimension dim, double actual, int opCode) {
-    final decision = _syncEngine.onActualUpdate(dim, actual);
+    // 阻力维度：设备回传值取整，保持按钮值为整数
+    final roundedActual = dim == ParamDimension.resistance
+        ? actual.round().toDouble()
+        : actual;
+    final decision = _syncEngine.onActualUpdate(dim, roundedActual);
     switch (decision) {
       case ParamSyncMatched():
         // 匹配成功：确认指令跟踪 + 解锁 + 按钮写实际值
         _dispatcher?.confirmReceipt(opCode);
-        state = _copyWithDimState(dim, buttonValue: actual, locked: false);
-        print('[Notifier] ✅ 参数同步成功: dim=${dim.name}, value=$actual');
+        state = _copyWithDimState(dim, buttonValue: roundedActual, locked: false);
+        print('[Notifier] ✅ 参数同步成功: dim=${dim.name}, value=$roundedActual');
       case ParamSyncLockTimeout():
         // 锁超时：仅解锁标志，按钮保持用户输入，等待指令重发轨道
         state = _copyWithDimState(dim, locked: false);
@@ -658,8 +662,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       case ParamSyncStableIdle(:final value):
         // 设备端自行调整后稳定：未锁定时同步按钮（设备优先级）
         if (!_syncEngine.isLocked(dim)) {
-          state = _copyWithDimState(dim, buttonValue: value);
-          print('[Notifier] 📡 设备端稳定值同步按钮: dim=${dim.name}, value=$value');
+          final roundedValue = dim == ParamDimension.resistance
+              ? value.round().toDouble()
+              : value;
+          state = _copyWithDimState(dim, buttonValue: roundedValue);
+          print('[Notifier] 📡 设备端稳定值同步按钮: dim=${dim.name}, value=$roundedValue');
         }
       case ParamSyncWaiting():
         // 中间值/渐变中：不改按钮（实际值已在主 copyWith 中更新）
@@ -1013,19 +1020,19 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
         break;
 
       case FtmsStatusTargetResistanceChanged(:final resistanceLevel):
-        // 0x07：阻力回调（设备主动变更目标，含阻力指令隐式回执）
-        // 设备优先级规则：设备返回值无条件覆盖本地按钮值（不设保护窗口阻塞）
+        // 0x07：阻力回调（取整保持按钮值为整数）
+        final intLevel = resistanceLevel.round().toDouble();
         print(
-          '[DeviceStatus] opCode=0x07, action=resistance, value=$resistanceLevel',
+          '[DeviceStatus] opCode=0x07, action=resistance, value=$intLevel',
         );
         _onReceiptReceived(0x07, true);
         _syncEngine.notifyDeviceTargetChanged(
           ParamDimension.resistance,
-          resistanceLevel,
+          intLevel,
         );
         _dispatcher?.confirmReceipt(0x04);
         state = state.copyWith(
-          sportResistanceButton: resistanceLevel,
+          sportResistanceButton: intLevel,
           isResistanceLocked: false,
         );
         break;
@@ -1069,22 +1076,37 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   // ==================== 运动控制辅助方法 ====================
 
-  /// 按 FTMS 协议编码参数字节（uint16/sint16 小端序）。
-  /// - 0x02 速度：km/h × 100 → uint16
-  /// - 0x03 坡度：% × 10 → sint16（负值二补码）
-  /// - 0x04 阻力：等级取整 → uint16
+  /// 按 FTMS 协议编码参数字节。
+  /// - 0x02 速度：km/h × 100 → uint16 LE (2 字节)
+  /// - 0x03 坡度：% × 10 → sint16 LE (2 字节,负值二补码)
+  /// - 0x04 阻力：level × 10 → uint8 (1 字节)
+  ///
+  /// FTMS 协议规定:
+  /// - Set Target Speed (0x02):   uint16, 分辨率 0.01 km/h
+  /// - Set Target Inclination (0x03): sint16, 分辨率 0.1 %
+  /// - Set Target Resistance (0x04): uint8, 分辨率 0.1 unitless
   List<int> _buildValueBytes(int opCode, double value) {
-    int raw;
     switch (opCode) {
       case 0x02:
-        raw = (value * 100).round();
+        final raw = (value * 100).round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
       case 0x03:
-        raw = (value * 10).round();
+        final raw = (value * 10).round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
+      case 0x04:
+        // Set Target Resistance Level: uint8, 0.1 unitless
+        // 阻力按钮值必须为整数(如 8)，发送时 ×10 → 字节 80
+        // 整数 8 → raw=80, 单字节发送
+        final intValue = value.round();
+        final raw = (intValue * 10).clamp(0, 255);
+        return [raw];
       default:
-        raw = value.round();
+        final raw = value.round();
+        final clamped = raw & 0xFFFF;
+        return [clamped & 0xFF, (clamped >> 8) & 0xFF];
     }
-    final clamped = raw & 0xFFFF; // sint16 负数自动转为二补码
-    return [clamped & 0xFF, (clamped >> 8) & 0xFF];
   }
 
   // ==================== 目标达成弹窗：判定与队列 ====================
@@ -1520,14 +1542,15 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   }
 
   /// 阻力 +（对应旧 cnfbd.resistanceAdd）。
-  /// 获取当前阻力值 + step，clamp 后下发阻力控制指令（0x04 Set Target Resistance Level）。
+  /// 获取当前阻力值 + step，clamp 后取整，下发阻力控制指令（0x04 Set Target Resistance Level）。
   @override
   void resistanceAdd() {
     final current = state.sportResistanceButton;
-    final newValue = (current + _resistanceStepEff).clamp(
+    final rawValue = (current + _resistanceStepEff).clamp(
       _resistanceMinEff,
       _resistanceMaxEff,
     );
+    final newValue = rawValue.round().toDouble();
     // 乐观更新按钮 + 命令锁 + 带跟踪下发（4 秒超时，重发上限 3 次）
     _syncEngine.lock(ParamDimension.resistance, newValue, current);
     _dispatcher?.dispatchTracked(
@@ -1544,10 +1567,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   @override
   void resistanceDown() {
     final current = state.sportResistanceButton;
-    final newValue = (current - _resistanceStepEff).clamp(
+    final rawValue = (current - _resistanceStepEff).clamp(
       _resistanceMinEff,
       _resistanceMaxEff,
     );
+    final newValue = rawValue.round().toDouble();
     // 乐观更新按钮 + 命令锁 + 带跟踪下发（4 秒超时，重发上限 3 次）
     _syncEngine.lock(ParamDimension.resistance, newValue, current);
     _dispatcher?.dispatchTracked(
@@ -1702,10 +1726,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
         print('[Notifier] longPress incline: $current → $newValue');
       case _LongPressDimension.resistance:
         final current = state.sportResistanceButton;
-        final newValue = (current + delta).clamp(
+        final rawValue = (current + delta).clamp(
           _resistanceMinEff,
           _resistanceMaxEff,
         );
+        final newValue = rawValue.round().toDouble();
         if (newValue == current) {
           _longPressTimer?.cancel();
           _longPressTimer = null;
@@ -1844,16 +1869,17 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
         );
         break;
       case 2:
+        final intValue = clampedValue.round().toDouble();
         _syncEngine.lock(
           ParamDimension.resistance,
-          clampedValue,
+          intValue,
           state.sportResistanceButton,
         );
         _dispatcher?.dispatchTracked(
-          FtmsCommand(opCode, _buildValueBytes(opCode, clampedValue)),
+          FtmsCommand(opCode, _buildValueBytes(opCode, intValue)),
         );
         state = state.copyWith(
-          sportResistanceButton: clampedValue,
+          sportResistanceButton: intValue,
           isResistanceLocked: true,
         );
         break;

@@ -61,9 +61,10 @@ class FtmsCommandBuilder {
 
   /// 设置目标阻力等级(0x04, uint8,单位 0.1 unitless)。
   ///
-  /// [resistanceLevel] 阻力等级,如 8.5 表示 8.5 级。
+  /// [resistanceLevel] 阻力等级,整数如 8 表示 8 级,发送时 ×10 → 字节 80。
   static Uint8List setTargetResistance(double resistanceLevel) {
-    final raw = (resistanceLevel * 10).round().clamp(0, 255); // uint8
+    final intLevel = resistanceLevel.round();
+    final raw = (intLevel * 10).clamp(0, 255); // uint8
     return Uint8List.fromList([0x04, raw]);
   }
 

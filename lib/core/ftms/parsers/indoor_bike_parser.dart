@@ -77,9 +77,9 @@ class IndoorBikeParser extends FtmsDataParserBase {
       offset += 3;
     }
 
-    // 阻力等级(bit5, sint16)
+    // 阻力等级(bit5, sint16, 分辨率 0.1)
     if (flagSet(flags, 5) && hasData(data, offset, 2)) {
-      resistanceLvl = readInt16(bd, offset).toDouble();
+      resistanceLvl = readInt16(bd, offset) * 0.1;
       offset += 2;
     }
 
