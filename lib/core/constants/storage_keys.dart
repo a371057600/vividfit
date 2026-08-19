@@ -58,4 +58,8 @@ class StorageKeys {
 
   /// 大设备距离单位偏好（0=km 公制，1=mile 英制），默认公制与旧版一致。
   static const String bigDeviceDistanceUnit = 'bigDeviceDistanceUnit';
+
+  // ---- 运动记录 ----
+  /// 运动记录本地存储键（JSON 数组，最多保留最近 200 条）
+  static const String sportRecords = 'sportRecords';
 }

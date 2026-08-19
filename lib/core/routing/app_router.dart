@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -30,6 +31,7 @@ import '../../features/course/pages/course_list_page.dart';
 import '../../features/course/pages/course_detail_page.dart';
 import '../../features/course/pages/course_play_page.dart';
 import '../../features/big_device/pages/gym_device_entry_screen.dart';
+import '../../features/big_device/notifiers/gym_course_home_notifier.dart';
 import '../../features/big_device/pages/gym_course_detail_screen.dart';
 import '../../features/big_device/pages/course_page_list.dart';
 import '../../features/big_device/pages/gym_device_play_screen.dart';
@@ -283,9 +285,27 @@ GoRouter appRouter(Ref ref) {
         name: 'big-device-entry',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final deviceCategoryIndex =
-              extra?['deviceCategoryIndex'] as int? ?? 0;
-          return GymDeviceEntryScreen(deviceCategoryIndex: deviceCategoryIndex);
+          final extraIndex = extra?['deviceCategoryIndex'] as int?;
+          // 🔧 extra 缺失时回退单一事实源 selectedDeviceCategory，
+          // 不再静默回退 0（单车）：防止路由栈重建/go 跳转丢参后
+          // 把用户当前设备类型错误重置为单车（「阻力 0-255」现象元凶之一）。
+          return Consumer(
+            builder: (context, ref, _) {
+              final selected = ref
+                  .watch(gymCourseHomeProvider)
+                  .selectedDeviceCategory;
+              final deviceCategoryIndex = extraIndex ?? selected.value;
+              if (extraIndex == null) {
+                debugPrint(
+                  '[Router] ⚠️ /big-device-entry extra 缺失，'
+                  '回退 selectedDeviceCategory=$selected(index=$deviceCategoryIndex)',
+                );
+              }
+              return GymDeviceEntryScreen(
+                deviceCategoryIndex: deviceCategoryIndex,
+              );
+            },
+          );
         },
       ),
       // Big Device - Course
@@ -341,9 +361,25 @@ GoRouter appRouter(Ref ref) {
         path: '/gym-quick-start',
         name: 'gym-quick-start',
         builder: (context, state) {
-          final deviceType =
-              state.extra as FtmsDeviceType? ?? FtmsDeviceType.indoorBike;
-          return QuickStartTrainingPage(deviceType: deviceType);
+          final extraType = state.extra as FtmsDeviceType?;
+          // 🔧 extra 缺失时回退单一事实源 selectedDeviceCategory，
+          // 不再静默回退单车：跑步机页面若被错误渲染为单车形态，
+          // 会显示阻力组（0x2AD6 被跑步机原始值污染成 0-255 档）。
+          return Consumer(
+            builder: (context, ref, _) {
+              final selected = ref
+                  .watch(gymCourseHomeProvider)
+                  .selectedDeviceCategory;
+              final deviceType = extraType ?? selected;
+              if (extraType == null) {
+                debugPrint(
+                  '[Router] ⚠️ /gym-quick-start extra 缺失，'
+                  '回退 selectedDeviceCategory=$deviceType',
+                );
+              }
+              return QuickStartTrainingPage(deviceType: deviceType);
+            },
+          );
         },
       ),
       // Big Device - Bike Games

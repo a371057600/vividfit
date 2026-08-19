@@ -22,13 +22,41 @@ class FtmsCommand {
   Uint8List toBytes() => Uint8List.fromList([opCode, ...data]);
 }
 
+/// 指令来源枚举（用于优先级仲裁）。
+///
+/// - [user]: 用户手动操作（按钮点击/长按），优先级最高，立即执行
+/// - [course]: 课程自动下发（动作阶段切换参数），可被用户指令覆盖
+enum CommandSource {
+  user,
+  course,
+}
+
+/// 指令下发失败类型（供上层区分提示策略）。
+///
+/// - [serviceUnavailable]: FTMS 服务实例不可用（蓝牙未连接 / provider 未就绪），
+///   连接建立期常见，上层应静默（有就绪等待/重试兜底），不弹 Toast。
+/// - [serviceNotReady]: 服务实例已存在但特征值未发现完毕（isReady=false），
+///   同样属连接建立期正常现象，上层应静默。
+/// - [writeError]: 写入特征值抛出真实异常（如 GATT 错误、`primary service not found`），
+///   上层需提示用户重启蓝牙或重连。
+enum FtmsCommandFailure {
+  serviceUnavailable,
+  serviceNotReady,
+  writeError,
+}
+
 /// FTMS 蓝牙指令统一调度器。
 ///
-/// 提供两种下发模式:
+/// 提供三种下发模式:
 /// - [dispatch]: debounce 模式,500ms 内仅保留最后一条指令,
 ///   适合连续调节场景(如长按调速/调坡度)。
 /// - [dispatchImmediate]: 即时模式,立即下发,
 ///   适合离散动作(如开始/暂停/停止)。
+/// - [dispatchTracked]: 跟踪模式,超时未确认自动重发,保证最终值必达。
+///
+/// 另提供 [dispatchWithPriority] 优先级仲裁:
+/// 用户指令立即执行并丢弃 pending 中的课程指令;
+/// 课程指令走 debounce,可被任何后发指令覆盖。
 ///
 /// 下发成功后通过 [syncGuard] 开启保护窗口,
 /// 防止设备 0x2ADA 回调覆盖本地刚写入的值。
@@ -51,12 +79,13 @@ class FtmsCommandDispatcher {
 
   /// 指令下发失败回调(可选)。
   ///
-  /// 触发时机:
-  /// - 服务未就绪(isReady=false)时跳过写入
-  /// - 写入过程抛出异常(如 `primary service not found '1826'`)
+  /// 触发时机(按 [FtmsCommandFailure] 分类):
+  /// - [FtmsCommandFailure.serviceUnavailable]: 服务实例不可用(provider 未就绪)
+  /// - [FtmsCommandFailure.serviceNotReady]: 服务未就绪(isReady=false)
+  /// - [FtmsCommandFailure.writeError]: 写入特征值异常(如 `primary service not found '1826'`)
   ///
-  /// 供上层(Notifier)提示用户重启蓝牙或重新连接设备。
-  final void Function(String error)? onCommandFailed;
+  /// 供上层(Notifier)按类型决定是否提示用户。
+  final void Function(FtmsCommandFailure type, String error)? onCommandFailed;
 
   /// 指令重发耗尽回调(可选)。
   ///
@@ -107,6 +136,39 @@ class FtmsCommandDispatcher {
   void dispatchImmediate(FtmsCommand command) {
     debugPrint('[Dispatcher] dispatchImmediate: ${_formatCommand(command)}');
     _executeCommand(command);
+  }
+
+  /// 带来源优先级仲裁的下发（课程 vs 用户指令冲突核心）。
+  ///
+  /// 优先级规则：
+  /// 1. **用户指令**（[CommandSource.user]）：
+  ///    - 立即丢弃 debounce 中 pending 的课程指令（`cancelPending`）
+  ///    - 立即执行（不走 debounce 等待）
+  ///    - 带跟踪重发（4s 超时确认，最多 3 次），保证用户操作必达
+  /// 2. **课程指令**（[CommandSource.course]）：
+  ///    - 走 debounce 模式，500ms 内被任何新指令（用户/课程）覆盖
+  ///
+  /// 典型时序：课程发 0.6 → 用户发 2.0（立即执行 2.0，丢弃 0.6）
+  /// → 课程切阶段发 1.0（500ms 后执行 1.0）✅ 以后发为准。
+  void dispatchWithPriority(
+    FtmsCommand command, {
+    required CommandSource source,
+  }) {
+    switch (source) {
+      case CommandSource.user:
+        debugPrint(
+          '[Dispatcher] 🎯 user command (priority): '
+          '${_formatCommand(command)} → 丢弃pending + 立即跟踪下发',
+        );
+        cancelPending();
+        dispatchTracked(command);
+      case CommandSource.course:
+        debugPrint(
+          '[Dispatcher] 📖 course command: '
+          '${_formatCommand(command)} → debounce 模式（可被覆盖）',
+        );
+        dispatch(command);
+    }
   }
 
   /// 取消 debounce 中尚未发送的指令。
@@ -203,7 +265,7 @@ class FtmsCommandDispatcher {
         '[Dispatcher] ⚠️ ftmsService is null (provider not ready), skip: '
         '${_formatCommand(command)}',
       );
-      onCommandFailed?.call('ftmsService is null');
+      onCommandFailed?.call(FtmsCommandFailure.serviceUnavailable, 'ftmsService is null');
       return;
     }
     if (!ftmsService.isReady) {
@@ -211,7 +273,7 @@ class FtmsCommandDispatcher {
         '[Dispatcher] ⚠️ ftmsService not ready (isReady=false), skip: '
         '${_formatCommand(command)}',
       );
-      onCommandFailed?.call('ftmsService not ready');
+      onCommandFailed?.call(FtmsCommandFailure.serviceNotReady, 'ftmsService not ready');
       return;
     }
     debugPrint('[Dispatcher] ✅ executing: ${_formatCommand(command)}');
@@ -223,7 +285,7 @@ class FtmsCommandDispatcher {
       );
     } catch (e) {
       debugPrint('[Dispatcher] ❌ execute error: $e');
-      onCommandFailed?.call(e.toString());
+      onCommandFailed?.call(FtmsCommandFailure.writeError, e.toString());
     }
   }
 

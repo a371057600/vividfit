@@ -138,7 +138,12 @@ class _CoursePageListState extends ConsumerState<CoursePageList> {
               if (context.canPop()) {
                 context.pop();
               } else {
-                context.go('/big-device-entry');
+                // 🔧 兜底 go 补传 deviceCategoryIndex：不带参数会把入口页
+                // 设备类型重置为 0（单车），导致后续页面设备类型错位
+                context.go(
+                  '/big-device-entry',
+                  extra: {'deviceCategoryIndex': widget.deviceType.value},
+                );
               }
             },
             child: Icon(Icons.arrow_back_ios, color: FitTheme.textColor),

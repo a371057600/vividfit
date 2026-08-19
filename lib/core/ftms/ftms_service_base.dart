@@ -274,7 +274,9 @@ abstract class FtmsServiceBase {
       return;
     }
     debugPrint('[FTMS] subscribing data characteristic: ${deviceType.dataCharacteristicUuid}');
-    _dataSubscription = _dataCharacteristic!.lastValueStream.listen((data) {
+    // 使用 onValueReceived：仅接收订阅后真实到达的帧，
+    // 避免 lastValueStream 缓存重放旧帧导致「假就绪」（Layer 2 误触发）
+    _dataSubscription = _dataCharacteristic!.onValueReceived.listen((data) {
       final parsed = _parser.parse(Uint8List.fromList(data));
       debugPrint('[FTMS] 📊 data: speed=${parsed.instSpeed}km/h, cadence=${parsed.instCadence}rpm, hr=${parsed.hr}bpm, distance=${parsed.distTotal}m, energy=${parsed.energyTotal}kcal');
       
@@ -298,7 +300,8 @@ abstract class FtmsServiceBase {
       return;
     }
     debugPrint('[FTMS] subscribing status characteristic: ${FtmsUuids.machineStatus}');
-    _statusSubscription = _statusCharacteristic!.lastValueStream.listen((data) {
+    // onValueReceived：仅接收新帧，防止缓存重放（同 _subscribeData）
+    _statusSubscription = _statusCharacteristic!.onValueReceived.listen((data) {
       final event = FtmsStatusParser.parse(Uint8List.fromList(data));
       debugPrint('[FTMS] 🔔 status: ${event.runtimeType}');
       if (!_statusController.isClosed) _statusController.add(event);
@@ -328,7 +331,8 @@ abstract class FtmsServiceBase {
     }
 
     debugPrint('[FTMS] subscribing control response: ${FtmsUuids.controlPoint}');
-    _responseSubscription = _controlCharacteristic!.lastValueStream.listen((data) {
+    // onValueReceived：仅接收新帧，防止缓存重放（同 _subscribeData）
+    _responseSubscription = _controlCharacteristic!.onValueReceived.listen((data) {
       final response = FtmsControlResponse.tryParse(Uint8List.fromList(data));
       if (response == null) return;
       debugPrint('[FTMS] 📩 control response: request=0x${response.requestOpCode.toRadixString(16)}, result=${response.resultCode}');

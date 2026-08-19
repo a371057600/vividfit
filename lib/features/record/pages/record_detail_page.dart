@@ -11,7 +11,7 @@ import '../notifiers/record_detail_notifier.dart';
 /// 记录详情页（单次运动数据详情 + 上一次记录对比）。
 ///
 /// 对应旧项目 new_record_interface_second_level_screen.dart。
-/// 当前阶段：Mock 数据驱动，数据来自路由参数 + RecordDetailNotifier。
+/// 数据来自路由参数 + RecordDetailNotifier（真实数据源）。
 class RecordDetailPage extends ConsumerStatefulWidget {
   final RecordEquipmentType equipmentType;
   final SportHistory? record;

@@ -63,7 +63,7 @@ class AboutInfoPage extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          "v1.0.1",
+                          "v1.0.2",
                           style: TextStyle(color: FitTheme.textColor),
                         ),
                         SizedBox(height: 40),

@@ -118,18 +118,28 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     }
   }
 
+  /// 提前缓存 Notifier 引用，避免 dispose 阶段 ref 失效
+  late final GymCoursePlayNotifier _coursePlayNotifier;
+
   @override
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+    // 缓存 Notifier 引用
+    _coursePlayNotifier = ref.read(gymCoursePlayProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final notifier = ref.read(gymCoursePlayProvider.notifier);
-      notifier.resetToLoading();
-      notifier.initCourseContext(
+      _coursePlayNotifier.resetToLoading();
+      _coursePlayNotifier.initCourseContext(
         courseId: widget.courseId,
         deviceType: widget.deviceType,
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _coursePlayNotifier.cleanupOnExit();
+    super.dispose();
   }
 
   final List<String> _stageIcons = const [
@@ -156,6 +166,17 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     final size = MediaQuery.of(context).size;
     final sw = size.width;
     final sh = size.height;
+
+    // 🔴 R5：蓝牙断链 → 立即退出课程流程，回到主界面（不做任何重连/结算）
+    ref.listen<bool>(
+      gymCoursePlayProvider.select((s) => s.isDeviceConnectionLost),
+      (previous, next) {
+        if (next && previous != next) {
+          debugPrint('❌ [PlayScreen] 检测到蓝牙断链标记 → 导航退出到主界面 /home-shell');
+          context.go('/home-shell');
+        }
+      },
+    );
 
     return PopScope(
       canPop: state.screenStatus != GymPlayScreenStatus.playing,
@@ -276,10 +297,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
 
     final bgMargin = sh * 0.12;
 
-    debugPrint(
-      '🌅 [Background] rest=$isRest, frame=$frameIdx, '
-      'img=${cur.imageName}, rootPath=${state.rootImagePath}',
-    );
+    // 观测日志：仅在 debug 模式下打印
 
     if (isRest) {
       return Positioned(
@@ -431,6 +449,13 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   Widget _buildTopDataBar(GymCoursePlayState state, double sw, double sh) {
     final deviceType = state.deviceType;
 
+    // 🔴 距离单位修正：state.sportDistance 已是 km（Notifier _onDataReceived
+    // 已做 m→km 换算），但 SportDataDisplay 组件契约是"接收原始米"，
+    // 内部会再 ÷1000 换算 km——直接传 km 会被双重换算缩小 1000 倍。
+    // 此处 ×1000 还原成米，由组件统一换算展示。
+    final distanceMeters =
+        (double.tryParse(state.sportDistance) ?? 0.0) * 1000.0;
+
     // 按设备类型精确构建数据模型（只传对应5个字段，其余置 null）
     SportDataModel buildDataModel() {
       switch (deviceType) {
@@ -438,7 +463,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           // 单车: 时间 / 距离 / 卡路里 / 速度 / 踏频
           return SportDataModel(
             elapsedSeconds: _parseTimeToSeconds(state.sportTime),
-            distance: double.tryParse(state.sportDistance),
+            distance: distanceMeters,
             energy: double.tryParse(state.sportCalories)?.round(),
             speed: state.sportDeviceSpeed,
             cadence: int.tryParse(state.sportCadence),
@@ -447,7 +472,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           // 跑步机: 时间 / 距离 / 卡路里 / 速度 / 心率
           return SportDataModel(
             elapsedSeconds: _parseTimeToSeconds(state.sportTime),
-            distance: double.tryParse(state.sportDistance),
+            distance: distanceMeters,
             energy: double.tryParse(state.sportCalories)?.round(),
             speed: state.sportDeviceSpeed,
             heartRate: int.tryParse(state.sportHeartRate),
@@ -456,7 +481,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           // 椭圆机: 时间 / 距离 / 卡路里 / 速度 / 踏频
           return SportDataModel(
             elapsedSeconds: _parseTimeToSeconds(state.sportTime),
-            distance: double.tryParse(state.sportDistance),
+            distance: distanceMeters,
             energy: double.tryParse(state.sportCalories)?.round(),
             speed: state.sportDeviceSpeed,
             cadence: int.tryParse(state.sportCadence),
@@ -465,7 +490,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           // 划船机: 时间 / 距离 / 卡路里 / 桨数 / 桨频
           return SportDataModel(
             elapsedSeconds: _parseTimeToSeconds(state.sportTime),
-            distance: double.tryParse(state.sportDistance),
+            distance: distanceMeters,
             energy: double.tryParse(state.sportCalories)?.round(),
             strokeCount: int.tryParse(state.sportStrokeCount),
             strokeRate: int.tryParse(state.sportStrokeRate),
@@ -730,7 +755,8 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
 
     switch (deviceType) {
       case FtmsDeviceType.treadmill:
-        // 跑步机：坡度（若支持）+ 速度，竖排叠加
+        // 跑步机：坡度（若支持）+ 速度（若支持），竖排叠加
+        // 支持判定来自 0x2AD4/0x2AD5 设备能力上报（max<=min 视为不支持）
         var top = firstTop;
         if (state.hasInclinationSupport) {
           result.add(
@@ -747,40 +773,44 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
           );
           top += gap;
         }
-        result.add(
-          Positioned(
-            right: sw * 0.02,
-            top: top,
-            child: PillControlButton(
-              title: '速度',
-              value: state.sportSpeedButton.toStringAsFixed(1),
-              onAdd: notifier.speedAdd,
-              onDown: notifier.speedDown,
-              onLongPressAdd: notifier.speedAddLongPress,
-              onLongPressDown: notifier.speedDownLongPress,
-              onLongPressEnd: notifier.longPressEnd,
+        if (state.hasSpeedSupport) {
+          result.add(
+            Positioned(
+              right: sw * 0.02,
+              top: top,
+              child: PillControlButton(
+                title: '速度',
+                value: state.sportSpeedButton.toStringAsFixed(1),
+                onAdd: notifier.speedAdd,
+                onDown: notifier.speedDown,
+                onLongPressAdd: notifier.speedAddLongPress,
+                onLongPressDown: notifier.speedDownLongPress,
+                onLongPressEnd: notifier.longPressEnd,
+              ),
             ),
-          ),
-        );
+          );
+        }
         break;
 
       case FtmsDeviceType.indoorBike:
       case FtmsDeviceType.crossTrainer:
       case FtmsDeviceType.rower:
       case FtmsDeviceType.strengthStation:
-        // 单车/椭圆机/划船机/力量站：仅阻力按钮
-        result.add(
-          Positioned(
-            right: sw * 0.02,
-            top: firstTop,
-            child: PillControlButton(
-              title: '阻力',
-              value: state.sportResistanceButton.toStringAsFixed(1),
-              onAdd: notifier.resistanceAdd,
-              onDown: notifier.resistanceDown,
+        // 单车/椭圆机/划船机/力量站：仅阻力按钮（0x2AD6 max<=min 时隐藏）
+        if (state.hasResistanceSupport) {
+          result.add(
+            Positioned(
+              right: sw * 0.02,
+              top: firstTop,
+              child: PillControlButton(
+                title: '阻力',
+                value: state.sportResistanceButton.toStringAsFixed(1),
+                onAdd: notifier.resistanceAdd,
+                onDown: notifier.resistanceDown,
+              ),
             ),
-          ),
-        );
+          );
+        }
         break;
     }
 
@@ -992,37 +1022,29 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
     final ringWidth = step * 0.7;
     final ringGap = step * 0.35;
 
-    // ⚠️ 临时模拟数据用于本地调试三环显示效果
-    // 外圈=0.5 / 中圈=0.8 / 内圈=0.3
-    // 调试完成后请删除此 block，恢复下方真实数据计算
-    const outerProgress = 0.5;
-    const middleProgress = 0.8;
-    const innerProgress = 0.3;
+    // ─── G9 修正：三环公式还原旧版（big_device_play_screen.dart L495-533） ───
+    // 旧版 CircularStepProgressIndicator：currentStep ∈ [0,100]（%101），
+    // 满进度比例 = 100/totalSteps；本组件 progress = currentStep / 100 等价还原。
+    // 外圈（时间）：(saveSportTime × 0.1).round() % 101，约 1010 秒转满一圈
+    final outerStep = (state.deviceSportSeconds * 0.1).round() % 101;
+    final outerProgress = outerStep / 100;
 
-    // // 外圈：时间进度
-    // final totalDuration = state.totalPlayProgressDuration > 0
-    //     ? state.totalPlayProgressDuration
-    //     : 525;
-    // final outerProgress = (state.playTotalDuration / totalDuration).clamp(
-    //   0.0,
-    //   1.0,
-    // );
-    //
-    // // 中圈：距离（划船机用桨频）
-    // final middleProgressRaw = state.deviceType == FtmsDeviceType.rower
-    //     ? (double.tryParse(state.sportStrokeRate) ?? 0) / 100.0
-    //     : (double.tryParse(state.sportDistance) ?? 0) / 10.0;
-    // final middleProgress = middleProgressRaw.clamp(0.0, 1.0);
-    //
-    // // 内圈：卡路里
-    // final innerProgressRaw =
-    //     (double.tryParse(state.sportCalories) ?? 0) / 500.0;
-    // final innerProgress = innerProgressRaw.clamp(0.0, 1.0);
+    // 中圈（距离/桨数）：划船机用总桨数，其他用距离(km 取整)
+    final middleSource = state.deviceType == FtmsDeviceType.rower
+        ? (double.tryParse(state.sportStrokeCount) ?? 0).round()
+        : (double.tryParse(state.sportDistance) ?? 0).round();
+    final middleProgress = (middleSource % 101) / 100;
+
+    // 内圈（卡路里）：卡路里取整 % 101
+    final innerProgress =
+        ((double.tryParse(state.sportCalories) ?? 0).round() % 101) / 100;
 
     debugPrint(
-      '🎯 [TripleRing-MOCK] outer=${outerProgress.toStringAsFixed(2)} '
-      'middle=${middleProgress.toStringAsFixed(2)} '
-      'inner=${innerProgress.toStringAsFixed(2)}',
+      '🎯 [TripleRing] outer=$outerStep middle=$middleSource '
+      'calories=${(double.tryParse(state.sportCalories) ?? 0).round()} '
+      'outer%=${outerProgress.toStringAsFixed(2)} '
+      'middle%=${middleProgress.toStringAsFixed(2)} '
+      'inner%=${innerProgress.toStringAsFixed(2)}',
     );
 
     return TripleRingProgress(
@@ -1199,26 +1221,7 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
   }
 
   Widget _buildSpeedChartPanel(GymCoursePlayState state, double sw, double sh) {
-    // ⚠️ 临时模拟数据用于查看速度图表组件
-    final data = state.speedChartData.isNotEmpty
-        ? state.speedChartData
-        : const [
-            5.0,
-            8.0,
-            12.0,
-            15.0,
-            18.0,
-            20.0,
-            22.0,
-            25.0,
-            23.0,
-            20.0,
-            18.0,
-            15.0,
-            12.0,
-            8.0,
-            5.0,
-          ];
+    final data = state.speedChartData;
     final isRower = state.deviceType == FtmsDeviceType.rower;
     final pad = sh * 0.025;
     return Expanded(
@@ -1245,43 +1248,53 @@ class _GymDevicePlayScreenState extends ConsumerState<GymDevicePlayScreen> {
               ),
             ),
             Expanded(
-              child: BarChart(
-                BarChartData(
-                  titlesData: const FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  minY: 0,
-                  maxY: 40,
-                  gridData: const FlGridData(show: false),
-                  borderData: FlBorderData(show: false),
-                  barGroups: List.generate(data.length, (i) {
-                    return BarChartGroupData(
-                      x: i,
-                      barRods: [
-                        BarChartRodData(
-                          toY: data[i],
-                          width: 2,
-                          color: Colors.yellow,
-                          borderRadius: BorderRadius.circular(2),
+              child: data.isEmpty
+                  ? Center(
+                      child: Text(
+                        '—',
+                        style: TextStyle(
+                          color: Colors.white24,
+                          fontSize: sh * 0.04,
                         ),
-                      ],
-                    );
-                  }),
-                ),
-                duration: const Duration(milliseconds: 150),
-                curve: Curves.linear,
-              ),
+                      ),
+                    )
+                  : BarChart(
+                      BarChartData(
+                        titlesData: const FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                        ),
+                        minY: 0,
+                        maxY: 40,
+                        gridData: const FlGridData(show: false),
+                        borderData: FlBorderData(show: false),
+                        barGroups: List.generate(data.length, (i) {
+                          return BarChartGroupData(
+                            x: i,
+                            barRods: [
+                              BarChartRodData(
+                                toY: data[i],
+                                width: 2,
+                                color: Colors.yellow,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ],
+                          );
+                        }),
+                      ),
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.linear,
+                    ),
             ),
             Text(
               isRower ? 'spm/group' : 'km/h',
@@ -1552,10 +1565,7 @@ class _WavePositionProgressBar extends StatelessWidget {
     // 当前 barH ≈ sh*0.055，unitHeight 约为 barH * 0.1
     final unitHeight = barHeight * 0.1;
 
-    debugPrint(
-      '📊 [ProgressBar] segments=$count, barW=$barWidth, barH=$barHeight, '
-      'waveRange=$waveRange, unitHeight=$unitHeight',
-    );
+    // 观测日志：仅在 debug 模式下打印
 
     return SizedBox(
       width: barWidth,
@@ -1573,11 +1583,6 @@ class _WavePositionProgressBar extends StatelessWidget {
           // 允许负值（由 Stack 自动裁剪，高踏频时条块钉在顶部）
           final rawTop = waveRange - positionHeight * unitHeight;
           final top = rawTop;
-
-          debugPrint(
-            '📊 [ProgressBar] #$i posture=${seg.posture} color=$color '
-            'heightFactor=$positionHeight top=$top width=${w.toStringAsFixed(1)}',
-          );
 
           return SizedBox(
             width: w,

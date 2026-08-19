@@ -25,6 +25,12 @@ class DeviceControlData {
   /// 设备是否支持坡度（用于控制坡度相关 UI 是否展示）。
   final bool hasInclinationSupport;
 
+  /// 设备是否支持速度调节（0x2AD4 上报 max<=min 时为 false，隐藏速度按钮组）。
+  final bool hasSpeedSupport;
+
+  /// 设备是否支持阻力调节（0x2AD6 上报 max<=min 时为 false，隐藏阻力按钮组）。
+  final bool hasResistanceSupport;
+
   /// 速度上限。
   final int? maxSpeed;
 
@@ -61,6 +67,8 @@ class DeviceControlData {
     required this.inclinePresets,
     required this.resistancePresets,
     required this.hasInclinationSupport,
+    this.hasSpeedSupport = true,
+    this.hasResistanceSupport = true,
     this.maxSpeed,
     this.minSpeed,
     this.speedStep,
@@ -81,6 +89,8 @@ class DeviceControlData {
     List<double>? inclinePresets,
     List<double>? resistancePresets,
     bool? hasInclinationSupport,
+    bool? hasSpeedSupport,
+    bool? hasResistanceSupport,
     int? maxSpeed,
     int? minSpeed,
     int? speedStep,
@@ -100,6 +110,8 @@ class DeviceControlData {
       resistancePresets: resistancePresets ?? this.resistancePresets,
       hasInclinationSupport:
           hasInclinationSupport ?? this.hasInclinationSupport,
+      hasSpeedSupport: hasSpeedSupport ?? this.hasSpeedSupport,
+      hasResistanceSupport: hasResistanceSupport ?? this.hasResistanceSupport,
       maxSpeed: maxSpeed ?? this.maxSpeed,
       minSpeed: minSpeed ?? this.minSpeed,
       speedStep: speedStep ?? this.speedStep,

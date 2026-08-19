@@ -64,16 +64,19 @@ class LevelControlButton extends StatelessWidget {
     final d = data;
     if (cb == null || d == null) return const SizedBox.shrink();
 
-    // —— 根据回调非空 + 设备能力，决定展示哪些按钮组 ——
+    // —— 根据回调非空 + 设备能力（0x2AD4/0x2AD5/0x2AD6），决定展示哪些按钮组 ——
+    // 设备上报范围无效（max<=min）时对应 support 标记为 false，隐藏按钮组
     final groups = <_ControlGroupType>[];
-    if (cb.onResistanceAdd != null || cb.onResistanceDown != null) {
+    if (d.hasResistanceSupport &&
+        (cb.onResistanceAdd != null || cb.onResistanceDown != null)) {
       groups.add(_ControlGroupType.resistance);
     }
     if (d.hasInclinationSupport &&
         (cb.onInclineAdd != null || cb.onInclineDown != null)) {
       groups.add(_ControlGroupType.inclination);
     }
-    if (cb.onSpeedAdd != null || cb.onSpeedDown != null) {
+    if (d.hasSpeedSupport &&
+        (cb.onSpeedAdd != null || cb.onSpeedDown != null)) {
       groups.add(_ControlGroupType.speed);
     }
 

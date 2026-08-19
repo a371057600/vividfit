@@ -42,7 +42,7 @@ final class RecordMainNotifierProvider
 }
 
 String _$recordMainNotifierHash() =>
-    r'43d083a0509441d0643bbec1348e7b29b9c3e680';
+    r'88e962e0652eb9dac9022fa150b2c944010e1d3b';
 
 abstract class _$RecordMainNotifier extends $Notifier<RecordMainState> {
   RecordMainState build();

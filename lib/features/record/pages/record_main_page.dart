@@ -16,7 +16,7 @@ import '../widgets/record_three_rings.dart';
 /// 记录主页（三环进度 + 图表数据展示）。
 ///
 /// 对应旧项目 new_top_record_screen.dart。
-/// 当前阶段：Mock 数据驱动，所有展示数据来自 RecordMainNotifier。
+/// 数据来自 RecordMainNotifier（SportRecordLocalRepository 真实数据源）。
 class RecordMainPage extends ConsumerStatefulWidget {
   const RecordMainPage({super.key});
 

@@ -94,6 +94,9 @@ abstract class GymCoursePlayState with _$GymCoursePlayState {
     /// 是否在结束页（对应旧 isStopScreen）
     @Default(false) bool isStopScreen,
 
+    /// 蓝牙断链标记（R5：断链即退出课程到主界面，页面层监听此字段导航）
+    @Default(false) bool isDeviceConnectionLost,
+
     // ─── 课程元数据 ───
 
     /// 课程标题(大标题)，对应旧 titleProperties.bigTitle
@@ -112,6 +115,11 @@ abstract class GymCoursePlayState with _$GymCoursePlayState {
 
     /// 运动时间 (mm:ss 格式)
     @Default('00:00') String sportTime,
+
+    /// 设备运动时间（秒，数值形式，对应旧 saveSportTime / realSportTime）
+    /// 蓝牙模式由设备数据流更新；mock 模式随播放秒数更新。
+    /// 结算页三环外圈与 Time 文本以此为准。
+    @Default(0) int deviceSportSeconds,
 
     /// 运动距离 (km 字符串)
     @Default('0.00') String sportDistance,
@@ -157,6 +165,12 @@ abstract class GymCoursePlayState with _$GymCoursePlayState {
     /// 是否支持坡度(跑步机)
     @Default(true) bool hasInclinationSupport,
 
+    /// 是否支持速度调节（0x2AD4 上报 max<=min 视为不支持）。
+    @Default(true) bool hasSpeedSupport,
+
+    /// 是否支持阻力调节（0x2AD6 上报 max<=min 视为不支持）。
+    @Default(true) bool hasResistanceSupport,
+
     /// 速度范围
     @Default(0) int minSpeed,
     @Default(50) int maxSpeed,
@@ -168,6 +182,38 @@ abstract class GymCoursePlayState with _$GymCoursePlayState {
     /// 阻力范围
     @Default(1) int minResistance,
     @Default(10) int maxResistance,
+
+    // ─── 设备能力动态范围（0x2AD4/0x2AD5/0x2AD6 读取，0 表示未上报） ───
+
+    /// 速度动态范围：最小值（km/h）
+    @Default(0.0) double speedRangeMin,
+
+    /// 速度动态范围：最大值（km/h）
+    @Default(0.0) double speedRangeMax,
+
+    /// 速度动态范围：步进值（km/h）
+    @Default(0.0) double speedRangeStep,
+
+    /// 坡度动态范围：最小值（%）
+    @Default(0.0) double inclinationRangeMin,
+
+    /// 坡度动态范围：最大值（%）
+    @Default(0.0) double inclinationRangeMax,
+
+    /// 坡度动态范围：步进值（%）
+    @Default(0.0) double inclinationRangeStep,
+
+    /// 阻力动态范围：最小值
+    @Default(0.0) double resistanceRangeMin,
+
+    /// 阻力动态范围：最大值
+    @Default(0.0) double resistanceRangeMax,
+
+    /// 阻力动态范围：步进值
+    @Default(0.0) double resistanceRangeStep,
+
+    /// 设备能力配置是否已成功读取（true 表示来自设备上报）
+    @Default(false) bool isConfigFromDevice,
 
     // ─── 课程播放进度 ───
 

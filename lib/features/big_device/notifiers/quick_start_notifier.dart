@@ -106,6 +106,14 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   /// 参数同步引擎（命令锁窗口 + 匹配式同步 + 防超调，防弹跳核心）
   final FtmsParamSyncEngine _syncEngine = FtmsParamSyncEngine();
 
+  /// 🔧 GATT 串行链：能力范围读取（含就绪等待）排队的 Future 链。
+  ///
+  /// 目的：
+  /// 1. 多次 setDeviceType（入口页 + 训练页）触发的读取严格串行，避免并发 GATT 读；
+  /// 2. sendResetToDevice 的 0x00 写入 await 本链后再发，避免「读范围 + 写指令」并发
+  ///    打到设备（部分健身器材固件不支持并发 GATT 事务，会导致写入失败）。
+  Future<void> _paramRangesChain = Future.value();
+
   /// 实时数据流订阅
   StreamSubscription<FtmsDeviceData>? _dataSubscription;
 
@@ -234,6 +242,8 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           buttonSpeedList: [0.0, 0.0, 0.0, 0.0],
           buttonInclinationList: [0.0, 0.0, 0.0, 0.0],
           hasInclinationSupport: false,
+          hasSpeedSupport: false,
+          hasResistanceSupport: true,
         );
       case FtmsDeviceType.treadmill:
         // 跑步机：速度 + 坡度各 4 档预设，支持坡度
@@ -242,6 +252,8 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           buttonSpeedList: [4.0, 6.0, 10.0, 12.0],
           buttonInclinationList: [0.0, 1.0, 5.0, 7.0],
           hasInclinationSupport: true,
+          hasSpeedSupport: true,
+          hasResistanceSupport: false,
         );
       case FtmsDeviceType.crossTrainer:
         // 椭圆机：仅阻力 4 档预设，无坡度（设备特性：只有阻力调节）
@@ -250,6 +262,8 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           buttonSpeedList: [0.0, 0.0, 0.0, 0.0],
           buttonInclinationList: [0.0, 0.0, 0.0, 0.0],
           hasInclinationSupport: false,
+          hasSpeedSupport: false,
+          hasResistanceSupport: true,
         );
       case FtmsDeviceType.rower:
         // 划船机：阻力预设 4 档，不支持坡度
@@ -258,6 +272,8 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
           buttonSpeedList: [0.0, 0.0, 0.0, 0.0],
           buttonInclinationList: [0.0, 0.0, 0.0, 0.0],
           hasInclinationSupport: false,
+          hasSpeedSupport: false,
+          hasResistanceSupport: true,
         );
       case FtmsDeviceType.strengthStation:
         return state;
@@ -349,17 +365,22 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
     state = state.copyWith(lastParamSyncFailed: false);
   }
 
-  /// 蓝牙指令下发失败统一处理。
+  /// 蓝牙指令下发失败统一处理（按失败类型分类）。
   ///
-  /// 触发场景：服务未就绪 / 写入特征值异常（如 `primary service not found '1826'`）。
-  /// 处理：
-  /// - 记录失败日志
-  /// - 防抖（3 秒内仅弹一次 Toast），避免长按连续失败反复弹窗
-  /// - 提示用户重启蓝牙后重新连接
+  /// - [FtmsCommandFailure.serviceUnavailable] / [FtmsCommandFailure.serviceNotReady]:
+  ///   连接建立期的正常现象（服务发现中 / 实例重建中），
+  ///   有「就绪等待 + 0x00 串行链」兜底 → **仅记日志，不弹 Toast**。
+  /// - [FtmsCommandFailure.writeError]: 真实写入异常（GATT 错误等），
+  ///   防抖（3 秒内仅弹一次）后提示用户重启蓝牙重连。
   DateTime? _lastBluetoothErrorToastTime;
 
-  void _handleCommandFailed(String error) {
-    print('[Notifier] ⚠️ 指令下发失败: $error');
+  void _handleCommandFailed(FtmsCommandFailure type, String error) {
+    // 服务不可用 / 未就绪：静默（连接建立期正常现象，避免误报骚扰用户）
+    if (type != FtmsCommandFailure.writeError) {
+      print('[Notifier] ⏳ 指令跳过(type=$type): $error（服务建立期，静默）');
+      return;
+    }
+    print('[Notifier] ⚠️ 指令下发失败(type=$type): $error');
     final now = DateTime.now();
     if (_lastBluetoothErrorToastTime != null &&
         now.difference(_lastBluetoothErrorToastTime!) <
@@ -413,8 +434,59 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       '[Notifier] _setupStreams: dataStream / statusStream / responseStream / connectionStateStream 已订阅',
     );
 
-    // 读取设备能力范围（0x2AD4/0x2AD5/0x2AD6），用于按钮加减的动态上下限
-    _loadDeviceParamRanges(ftmsService);
+    // 读取设备能力范围（0x2AD4/0x2AD5/0x2AD6），用于按钮加减的动态上下限。
+    // 🔧 GATT 串行化：排队到 _paramRangesChain（等上一个读取链完成 → 等服务就绪 → 按能力读取），
+    // 保证多次 setDeviceType 触发的读取严格串行，且与 0x00 控制写入不并发。
+    _paramRangesChain = _paramRangesChain.then((_) async {
+      final svc = await _waitForServiceReady();
+      if (svc != null) {
+        await _loadDeviceParamRanges(svc);
+      } else {
+        print('[Range] ⚠️ 等待服务就绪超时，本次跳过能力范围读取（保持回退默认值）');
+      }
+    });
+  }
+
+  /// 等待 FTMS 服务就绪（实例存在且 isReady=true）。
+  ///
+  /// 轮询间隔 300ms，最长 [timeout]；超时返回 null（调用方回退默认范围常量）。
+  /// 场景：页面进入时蓝牙刚连上、服务发现仍在进行中（connect() 异步），
+  /// 若不等待，能力读取与控制写入都会因 isReady=false 失败。
+  Future<FtmsServiceBase?> _waitForServiceReady({
+    Duration timeout = const Duration(seconds: 6),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      final svc = _getFtmsService();
+      if (svc != null && svc.isReady) return svc;
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+    return null;
+  }
+
+  /// 🔴 模块分离：暂停监听设备流（课程播放页接管设备时调用）。
+  ///
+  /// 本 Notifier 是 keepAlive，页面退出后订阅仍存活；
+  /// 若不暂停，快速开始与课程播放会同时监听同一设备流、
+  /// 同时响应同一事件（双重 confirmReceipt / 双重状态更新 / 互相干扰）。
+  ///
+  /// 行为：仅取消 4 个流订阅 + 停止本地计时器 + 丢弃 debounce 待发指令，
+  /// **不 dispose、不清 state**——用户回到快速开始页时，
+  /// 页面 initState → setDeviceType() → _setupStreams() 自动重新订阅。
+  void pauseListening() {
+    print('[Notifier] pauseListening: 快速开始暂停设备流监听（课程页接管设备）');
+    _dataSubscription?.cancel();
+    _dataSubscription = null;
+    _statusSubscription?.cancel();
+    _statusSubscription = null;
+    _responseSubscription?.cancel();
+    _responseSubscription = null;
+    _connectionStateSubscription?.cancel();
+    _connectionStateSubscription = null;
+    _sportTimer?.stop();
+    _longPressTimer?.cancel();
+    _longPressTimer = null;
+    _dispatcher?.cancelPending();
   }
 
   /// 读取设备能力范围特征值并写入 state（按钮加减动态上限的数据源）。
@@ -425,69 +497,190 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
   ///
   /// 各维度 [min, max, step]；特征值不存在（设备不支持）时跳过该维度，
   /// 按钮回退默认常量上下限。
+  ///
+  /// 🔧 按设备能力过滤读取维度（与 FtmsDeviceTypeConfig 对齐）：
+  /// - 速度：仅跑步机读取（supportsSpeedControl）
+  /// - 坡度：跑步机 / 椭圆机读取（supportsInclinationControl）
+  /// - 阻力：非跑步机读取（supportsResistanceControl）
+  ///
+  /// 跑步机**禁止读取 0x2AD6**：跑步机固件返回的原始值（如 max=2550）被 ÷10
+  /// 换算成 0~255 后会污染阻力预设档位（[0,85,170,255]），
+  /// 造成「跑步机页面出现阻力 0-255」的错误数据源。
   Future<void> _loadDeviceParamRanges(FtmsServiceBase ftmsService) async {
-    // —— 速度范围（跑步机） ——
-    try {
-      final data = await ftmsService.readSpeedRange();
-      if (data != null && data.length >= 6) {
-        final min = _readUint16LE(data, 0);
-        final max = _readUint16LE(data, 2);
-        final step = _readUint16LE(data, 4);
-        state = state.copyWith(
-          speedRangeMin: min / 100,
-          speedRangeMax: max / 100,
-          speedRangeStep: step / 100,
-        );
-        print(
-          '[Range] 📏 速度范围(0x2AD4): min=${min / 100}km/h, '
-          'max=${max / 100}km/h, step=${step / 100}km/h（原始 $min/$max/$step）',
-        );
+    // —— 速度范围（仅跑步机） ——
+    if (!_deviceType.supportsSpeedControl) {
+      print('[Range] ⏭️ 速度范围(0x2AD4)：$_deviceType 不支持速度控制，跳过读取');
+    } else {
+      try {
+        final data = await ftmsService.readSpeedRange();
+        if (data != null && data.length >= 6) {
+          final min = _readUint16LE(data, 0);
+          final max = _readUint16LE(data, 2);
+          final step = _readUint16LE(data, 4);
+          // 设备上报范围无效（max <= min，如 0/0）→ 设备实际不支持速度调节
+          // → 隐藏速度按钮组并清空速度预设，避免出现无效调节
+          final speedUsable = max > min;
+          state = state.copyWith(
+            speedRangeMin: min / 100,
+            speedRangeMax: max / 100,
+            speedRangeStep: step / 100,
+            hasSpeedSupport: speedUsable,
+            buttonSpeedList: speedUsable
+                ? state.buttonSpeedList
+                : [0.0, 0.0, 0.0, 0.0],
+          );
+          print(
+            '[Range] 📏 速度范围(0x2AD4): min=${min / 100}km/h, '
+            'max=${max / 100}km/h, step=${step / 100}km/h（原始 $min/$max/$step）'
+            '${speedUsable ? '' : ' → 设备不支持速度调节，已隐藏速度按钮组'}',
+          );
+        }
+      } catch (e) {
+        print('[Range] ⚠️ 速度范围读取失败（设备不支持）: $e');
       }
-    } catch (e) {
-      print('[Range] ⚠️ 速度范围读取失败（设备不支持）: $e');
     }
 
-    // —— 坡度范围（跑步机） ——
-    try {
-      final data = await ftmsService.readInclinationRange();
-      if (data != null && data.length >= 6) {
-        final min = _readSint16LE(data, 0);
-        final max = _readSint16LE(data, 2);
-        final step = _readUint16LE(data, 4);
-        state = state.copyWith(
-          inclinationRangeMin: min / 10,
-          inclinationRangeMax: max / 10,
-          inclinationRangeStep: step / 10,
-        );
-        print(
-          '[Range] 📏 坡度范围(0x2AD5): min=${min / 10}%, '
-          'max=${max / 10}%, step=${step / 10}%（原始 $min/$max/$step）',
-        );
+    // —— 坡度范围（跑步机 / 椭圆机） ——
+    if (!_deviceType.supportsInclinationControl) {
+      print('[Range] ⏭️ 坡度范围(0x2AD5)：$_deviceType 不支持坡度控制，跳过读取');
+    } else {
+      try {
+        final data = await ftmsService.readInclinationRange();
+        if (data != null && data.length >= 6) {
+          final min = _readSint16LE(data, 0);
+          final max = _readSint16LE(data, 2);
+          final step = _readUint16LE(data, 4);
+          // 设备上报范围无效（max <= min，如 0/0）→ 设备实际不支持坡度调节
+          // → 隐藏坡度按钮组并清空坡度预设，避免出现无效调节
+          final inclinationUsable = max > min;
+          state = state.copyWith(
+            inclinationRangeMin: min / 10,
+            inclinationRangeMax: max / 10,
+            inclinationRangeStep: step / 10,
+            hasInclinationSupport: inclinationUsable,
+            buttonInclinationList: inclinationUsable
+                ? state.buttonInclinationList
+                : [0.0, 0.0, 0.0, 0.0],
+          );
+          print(
+            '[Range] 📏 坡度范围(0x2AD5): min=${min / 10}%, '
+            'max=${max / 10}%, step=${step / 10}%（原始 $min/$max/$step）'
+            '${inclinationUsable ? '' : ' → 设备不支持坡度，已隐藏坡度按钮组'}',
+          );
+        }
+      } catch (e) {
+        print('[Range] ⚠️ 坡度范围读取失败（设备不支持）: $e');
       }
-    } catch (e) {
-      print('[Range] ⚠️ 坡度范围读取失败（设备不支持）: $e');
     }
 
-    // —— 阻力范围（单车/椭圆机/划船机） ——
-    try {
-      final data = await ftmsService.readResistanceRange();
-      if (data != null && data.length >= 6) {
-        final min = _readSint16LE(data, 0);
-        final max = _readSint16LE(data, 2);
-        final step = _readUint16LE(data, 4);
-        state = state.copyWith(
-          resistanceRangeMin: min / 10,
-          resistanceRangeMax: max / 10,
-          resistanceRangeStep: step / 10,
-        );
-        print(
-          '[Range] 📏 阻力范围(0x2AD6): min=${min / 10}, '
-          'max=${max / 10}, step=${step / 10}（原始 $min/$max/$step）',
-        );
+    // —— 阻力范围（非跑步机：单车/椭圆机/划船机） ——
+    if (!_deviceType.supportsResistanceControl) {
+      print(
+        '[Range] ⏭️ 阻力范围(0x2AD6)：$_deviceType 不支持阻力控制，跳过读取（防止跑步机 0-255 污染）',
+      );
+    } else {
+      try {
+        final data = await ftmsService.readResistanceRange();
+        if (data != null && data.length >= 6) {
+          final min = _readSint16LE(data, 0);
+          final max = _readSint16LE(data, 2);
+          final step = _readUint16LE(data, 4);
+          // 设备上报范围无效（max <= min，如 0/0）→ 设备实际不支持阻力调节
+          // → 隐藏阻力按钮组并清空阻力预设，避免出现无效调节
+          final resistanceUsable = max > min;
+          state = state.copyWith(
+            resistanceRangeMin: min / 10,
+            resistanceRangeMax: max / 10,
+            resistanceRangeStep: step / 10,
+            hasResistanceSupport: resistanceUsable,
+            buttonResistanceList: resistanceUsable
+                ? state.buttonResistanceList
+                : [0.0, 0.0, 0.0, 0.0],
+          );
+          print(
+            '[Range] 📏 阻力范围(0x2AD6): min=${min / 10}, '
+            'max=${max / 10}, step=${step / 10}（原始 $min/$max/$step）'
+            '${resistanceUsable ? '' : ' → 设备不支持阻力调节，已隐藏阻力按钮组'}',
+          );
+        }
+      } catch (e) {
+        print('[Range] ⚠️ 阻力范围读取失败（设备不支持）: $e');
       }
-    } catch (e) {
-      print('[Range] ⚠️ 阻力范围读取失败（设备不支持）: $e');
     }
+
+    // 根据设备实际能力范围，动态更新预设按钮值
+    _updatePresetButtonsByDeviceRange();
+  }
+
+  /// 根据设备实际读取的范围，动态计算 4 档预设按钮值。
+  ///
+  /// 规则：将 [min, max] 区间均匀分成 4 档，端点取 min 和 max。
+  /// 设备返回了有效范围（max > min）时才更新，否则保持原有硬编码值。
+  void _updatePresetButtonsByDeviceRange() {
+    List<double>? newSpeedList;
+    List<double>? newInclinationList;
+    List<double>? newResistanceList;
+
+    // —— 速度预设 ——
+    // 使用 max > min 判断设备是否返回了有效范围（而非 max > 0）
+    // 因为速度 min 可能是 0，max 一定 > 0；坡度 max 可能为 0（如 -10%~0%）
+    if (state.speedRangeMax > state.speedRangeMin) {
+      newSpeedList = _calcPresetButtons(
+        state.speedRangeMin,
+        state.speedRangeMax,
+      );
+      print('[Preset] 🚀 速度预设: ${newSpeedList.join(', ')}');
+    }
+
+    // —— 坡度预设 ——
+    // 坡度可能有负值，且 max 可能为 0（如 -10%~0%），所以用 max > min 判断
+    if (state.inclinationRangeMax > state.inclinationRangeMin) {
+      newInclinationList = _calcPresetButtons(
+        state.inclinationRangeMin,
+        state.inclinationRangeMax,
+      );
+      print('[Preset] ⛰️ 坡度预设: ${newInclinationList.join(', ')}');
+    }
+
+    // —— 阻力预设 ——
+    if (state.resistanceRangeMax > state.resistanceRangeMin) {
+      newResistanceList = _calcPresetButtons(
+        state.resistanceRangeMin,
+        state.resistanceRangeMax,
+      );
+      print('[Preset] 💪 阻力预设: ${newResistanceList.join(', ')}');
+    }
+
+    // 仅更新有效维度，保持其他维度原有值
+    if (newSpeedList != null ||
+        newInclinationList != null ||
+        newResistanceList != null) {
+      state = state.copyWith(
+        buttonSpeedList: newSpeedList ?? state.buttonSpeedList,
+        buttonInclinationList:
+            newInclinationList ?? state.buttonInclinationList,
+        buttonResistanceList: newResistanceList ?? state.buttonResistanceList,
+      );
+      print(
+        '[Preset] ✅ 预设按钮已更新: speed=${newSpeedList ?? "保持"}, '
+        'inclination=${newInclinationList ?? "保持"}, '
+        'resistance=${newResistanceList ?? "保持"}',
+      );
+    }
+  }
+
+  /// 将 [min, max] 区间均匀分成 4 档，返回 4 个预设值。
+  ///
+  /// 示例：min=0, max=12 → [0, 4, 8, 12]
+  List<double> _calcPresetButtons(double min, double max) {
+    if (max <= min) return [min, min, min, min];
+    final step = (max - min) / 3;
+    return [
+      double.parse((min).toStringAsFixed(1)),
+      double.parse((min + step).toStringAsFixed(1)),
+      double.parse((min + step * 2).toStringAsFixed(1)),
+      double.parse((max).toStringAsFixed(1)),
+    ];
   }
 
   /// 小端 uint16 解析。
@@ -1392,11 +1585,60 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
 
   // ==================== 业务方法（FTMS 蓝牙指令下发） ====================
 
-  /// 发送重置指令到设备（对应旧 cnfbd.sendResetToDevice）。
-  /// 使用 dispatchImmediate 立即下发，OpCode 0x00。
-  void sendResetToDevice() {
-    _dispatcher?.dispatchImmediate(FtmsCommand(0x00, []));
-    print('[Notifier] sendResetToDevice: sending 0x00');
+  /// 进入快速启动页的设备参数复位（对应旧 cnfbd.sendResetToDevice）。
+  ///
+  /// 旧版实际行为（controller_new_four_big_device_sprot.dart:1181）：
+  /// 1. 发送阻力=1 指令（0x04 + 小端 sint16 "0100"）
+  /// 2. 同步本地按钮状态（阻力=1）
+  /// 3. 等待 500ms（设备处理第一条指令的响应）
+  /// 4. 发送坡度=0 指令（0x03 + 小端 sint16 "0000"）
+  /// 5. 同步本地按钮状态（坡度=0）
+  ///
+  /// ⚠️ 历史偏差修正：迁移初期误发 OpCode 0x00（协议保留值，设备不识别、
+  /// 静默丢弃），导致进入页面时「阻力归 1、坡度归 0」的复位功能实际丢失。
+  /// 本次已按旧版指令序列等价还原。
+  ///
+  /// 🔧 GATT 串行化：先 await 能力范围读取链（_paramRangesChain）完成，
+  /// 确保写入不与 0x2AD4/0x2AD5/0x2AD6 的特征读取并发——
+  /// 部分健身器材固件不支持并发 GATT 事务，并发会导致写入失败。
+  /// 指令走 dispatchTracked（与 numberButton 等参数指令一致，4s 超时重发上限 3 次）。
+  Future<void> sendResetToDevice() async {
+    await _paramRangesChain;
+
+    // —— 第 1 条：阻力 = 1（0x04 Set Target Resistance Level） ——
+    _syncEngine.lock(
+      ParamDimension.resistance,
+      1.0,
+      state.sportResistanceButton,
+    );
+    _dispatcher?.dispatchTracked(
+      FtmsCommand(0x04, _buildValueBytes(0x04, 1.0)),
+    );
+    // 乐观更新按钮（对应旧 sportResistanceButton.value = 1）
+    state = state.copyWith(
+      sportResistanceButton: 1.0,
+      isResistanceLocked: true,
+    );
+    print('[Notifier] sendResetToDevice: 阻力复位 → 1（0x04）');
+
+    // 等待设备处理阻力指令（旧版 500ms 间隔，避免设备来不及响应）
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // —— 第 2 条：坡度 = 0（0x03 Set Target Inclination） ——
+    _syncEngine.lock(
+      ParamDimension.inclination,
+      0.0,
+      state.sportInclinationButton,
+    );
+    _dispatcher?.dispatchTracked(
+      FtmsCommand(0x03, _buildValueBytes(0x03, 0.0)),
+    );
+    // 乐观更新按钮（对应旧 sportInclinationButton.value = 0）
+    state = state.copyWith(
+      sportInclinationButton: 0.0,
+      isInclinationLocked: true,
+    );
+    print('[Notifier] sendResetToDevice: 坡度复位 → 0（0x03）完成');
   }
 
   /// 开始运动（对应旧 cnfbd.startSport）。
@@ -1516,6 +1758,11 @@ class QuickStartNotifier extends _$QuickStartNotifier with DeviceControlMixin {
       resistanceRangeMin: s.resistanceRangeMin,
       resistanceRangeMax: s.resistanceRangeMax,
       resistanceRangeStep: s.resistanceRangeStep,
+      // 同步保留三维度支持判定（与 0x2AD4/0x2AD5/0x2AD6 读取结果一致），
+      // 避免停止/重置后按钮组显示状态回退
+      hasInclinationSupport: s.hasInclinationSupport,
+      hasSpeedSupport: s.hasSpeedSupport,
+      hasResistanceSupport: s.hasResistanceSupport,
     );
   }
 
