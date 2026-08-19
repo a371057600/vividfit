@@ -89,3 +89,51 @@ class MedalImageCache {
     print('⬇️ [MedalImage] prefetch done: $ok/${list.length} success');
   }
 }
+
+/// 勋章本地图片展示组件：一律从本地缓存文件渲染（新规则禁止网络直连展示）。
+///
+/// 文件未就绪时显示加载动画，下载失败显示 [errorWidget]（调用方区分场景：
+/// 轮播空文本 / 网格默认头像图）。
+class LocalMedalImage extends StatelessWidget {
+  const LocalMedalImage({
+    super.key,
+    required this.url,
+    this.width,
+    this.height,
+    this.fit = BoxFit.fitWidth,
+    this.errorWidget,
+  });
+
+  final String? url;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Widget? errorWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<File?>(
+      future: MedalImageCache.instance.getFile(url),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Center(
+            child: LoadingAnimationWidget.waveDots(
+              color: const Color.fromARGB(255, 217, 217, 229),
+              size: 50,
+            ),
+          );
+        }
+        final file = snapshot.data;
+        if (file == null) {
+          return Center(child: errorWidget ?? const Text(''));
+        }
+        return ExtendedImage.file(
+          file,
+          fit: fit,
+          width: width,
+          height: height,
+        );
+      },
+    );
+  }
+}

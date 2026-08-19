@@ -41,7 +41,7 @@ final class RecordRepositoryProvider
   }
 }
 
-String _$recordRepositoryHash() => r'aa624f08b64b112405a1c363e03a0156dca659d4';
+String _$recordRepositoryHash() => r'09f778f135a89c07477a9548edc6f9360d6a8273';
 
 abstract class _$RecordRepository extends $Notifier<RecordRepository> {
   RecordRepository build();

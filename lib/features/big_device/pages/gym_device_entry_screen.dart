@@ -62,6 +62,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
           .bootstrap(widget.deviceCategoryIndex);
       final category = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
       ref.read(gymDeviceConnectProvider.notifier).setDeviceCategory(category);
+      ref.read(quickStartProvider.notifier).setDeviceType(category);
     });
   }
 
@@ -380,9 +381,7 @@ class _GymDeviceEntryScreenState extends ConsumerState<GymDeviceEntryScreen> {
     // 注意：校验必须放在 clearData() 之前——clearData 会把 state 全量清零，
     // 若先清零，第 4 级「参数初始态」检查将读不到真实值而恒通过。
     bool checkDeviceReadyBeforeEnter() {
-      final ready = ref
-          .read(quickStartProvider.notifier)
-          .validateDeviceReady();
+      final ready = ref.read(quickStartProvider.notifier).validateDeviceReady();
       print(
         '[DeviceCheck] 入口校验: ready=${ready.isReady}, step=${ready.failedStep}',
       );

@@ -96,11 +96,8 @@ class SportDataDisplay extends StatelessWidget {
     }
     // 距离（所有设备统一 m → km，保留 2 位小数）
     if (visibility.shouldShowDistance && data.distance != null) {
-      // 观测日志：确认换算链路（state 存米 → ÷1000 → km 显示）
-      debugPrint(
-        '[DataBar] 距离换算: 原始=${data.distance}m → '
-        '${visibility.convertDistance(data.distance!).toStringAsFixed(2)}km',
-      );
+      // 观测日志：仅在 debug 模式下打印，避免 release 下日志刷屏
+
       items.add(
         _buildItem(
           icon: Icons.place,

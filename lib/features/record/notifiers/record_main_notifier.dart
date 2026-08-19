@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../core/services/storage_service_provider.dart';
 import '../repositories/record_repository.dart';
 import '../states/record_main_state.dart';
 import '../utils/list_extension.dart';
@@ -16,11 +17,12 @@ class RecordMainNotifier extends _$RecordMainNotifier {
   Future<void> _initData() async {
     final repo = ref.read(recordRepositoryProvider);
     final response = await repo.fetchWeekStats();
+    final storage = ref.read(storageServiceProvider);
 
     int goalCalorie = 300;
     int goalDuration = 45;
     double goalStrength = 5.0;
-    double bodyWeight = 70.0;
+    final bodyWeight = storage.userWeight.toDouble();
 
     for (final item in response.data) {
       if (item.calorie > goalCalorie) goalCalorie = item.calorie.toInt() + 50;

@@ -1,13 +1,12 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../../core/constants/them_change.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/medal_display_notifier.dart';
+import '../utils/medal_image_cache.dart';
 
 /// 详情页跳转参数。
 ///
@@ -94,37 +93,16 @@ class MedalDetailPage extends ConsumerWidget {
                 alignment: Alignment.topCenter,
                 child: Opacity(
                   opacity: (medal.have ?? false) ? 1 : 0.1,
-                  child: ExtendedImage.network(
-                    // 服务端返回完整 OSS URL，直接加载
-                    medal.image ?? '',
-                    fit: BoxFit.fitWidth,
-                    loadStateChanged: (ExtendedImageState state) {
-                      switch (state.extendedImageLoadState) {
-                        case LoadState.loading:
-                          return Center(
-                            child: LoadingAnimationWidget.waveDots(
-                              color: FitTheme.textColor,
-                              size: 50,
-                            ),
-                          );
-                        case LoadState.failed:
-                          // 旧版网格详情显示默认头像图，轮播详情显示空文本
-                          return Center(
-                            child: args.fromTop
-                                ? const Text('')
-                                : Image.asset(
-                                    'images/newUIScreen/defaultheadimages/deheadImage8.jpg',
-                                  ),
-                          );
-                        case LoadState.completed:
-                          return ExtendedRawImage(
-                            image: state.extendedImageInfo?.image,
-                            width: MediaQuery.of(context).size.width - 10,
-                            fit: BoxFit.fill,
-                          );
-                      }
-                    },
-                  ),
+                child: LocalMedalImage(
+                  // 新规则：一律本地文件渲染，禁止网络直连展示
+                  url: medal.image,
+                  // 旧版失败占位差异：网格来源默认头像图 / 轮播来源空文本
+                  errorWidget: args.fromTop
+                      ? const Text('')
+                      : Image.asset(
+                          'images/newUIScreen/defaultheadimages/deheadImage8.jpg',
+                        ),
+                ),
                 ),
               ),
             ),

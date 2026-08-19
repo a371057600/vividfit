@@ -54,7 +54,7 @@ final class MedalDisplayNotifierProvider
 }
 
 String _$medalDisplayNotifierHash() =>
-    r'6766ee41015cbef42c979c98ad8a4822bc2f5570';
+    r'87ecdeb2eba17eea9329d0460485d38f01c8fabc';
 
 /// 勋章面板状态管理（迁移自旧项目 NewMedalController，移除 GetX）。
 ///

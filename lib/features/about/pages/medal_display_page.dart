@@ -1,5 +1,4 @@
 import 'package:carousel_slider_plus/carousel_slider_plus.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,6 +11,7 @@ import '../../../data/models/network/medal.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notifiers/medal_display_notifier.dart';
 import '../states/medal_display_state.dart';
+import '../utils/medal_image_cache.dart';
 import 'medal_detail_page.dart';
 
 /// 勋章主页面（迁移自旧项目 NewMedalScreen，移除 GetX/Obx，改用 Riverpod）。
@@ -206,31 +206,12 @@ class MedalDisplayPage extends ConsumerWidget {
                       decoration: const BoxDecoration(
                         color: Colors.transparent,
                       ),
-                      child: ExtendedImage.network(
-                        // 服务端返回完整 OSS URL，直接加载
-                        medal.image ?? '',
-                        fit: BoxFit.fitWidth,
+                      child: LocalMedalImage(
+                        // 新规则：一律本地文件渲染，禁止网络直连展示
+                        url: medal.image,
                         width: 300.r,
                         height: 300.r,
-                        loadStateChanged: (ExtendedImageState state) {
-                          switch (state.extendedImageLoadState) {
-                            case LoadState.loading:
-                              return Center(
-                                child: LoadingAnimationWidget.waveDots(
-                                  color: FitTheme.textColor,
-                                  size: 50,
-                                ),
-                              );
-                            case LoadState.failed:
-                              return const Center(child: Text(''));
-                            case LoadState.completed:
-                              return ExtendedRawImage(
-                                image: state.extendedImageInfo?.image,
-                                width: MediaQuery.of(context).size.width - 10,
-                                fit: BoxFit.fill,
-                              );
-                          }
-                        },
+                        errorWidget: const Text(''),
                       ),
                     ),
                   );
@@ -319,7 +300,6 @@ class MedalDisplayPage extends ConsumerWidget {
   ) {
     final l10n = AppLocalizations.of(context)!;
     final medal = group.medals![index];
-    final size = MediaQuery.of(context).size;
     return Container(
       padding: EdgeInsets.zero,
       child: Column(
@@ -343,34 +323,13 @@ class MedalDisplayPage extends ConsumerWidget {
               alignment: Alignment.center,
               child: Opacity(
                 opacity: (medal.have ?? false) ? 1 : 0.1,
-                child: ExtendedImage.network(
-                  // 服务端返回完整 OSS URL，直接加载
-                  medal.image ?? '',
-                  fit: BoxFit.fitWidth,
+                child: LocalMedalImage(
+                  // 新规则：一律本地文件渲染，禁止网络直连展示
+                  url: medal.image,
                   width: 200.sp,
-                  loadStateChanged: (ExtendedImageState state) {
-                    switch (state.extendedImageLoadState) {
-                      case LoadState.loading:
-                        return Center(
-                          child: LoadingAnimationWidget.waveDots(
-                            color: FitTheme.textColor,
-                            size: 50,
-                          ),
-                        );
-                      case LoadState.failed:
-                        return Center(
-                          child: Image.asset(
-                            'images/newUIScreen/defaultheadimages/deheadImage8.jpg',
-                          ),
-                        );
-                      case LoadState.completed:
-                        return ExtendedRawImage(
-                          image: state.extendedImageInfo?.image,
-                          width: size.width - 10,
-                          fit: BoxFit.fill,
-                        );
-                    }
-                  },
+                  errorWidget: Image.asset(
+                    'images/newUIScreen/defaultheadimages/deheadImage8.jpg',
+                  ),
                 ),
               ),
             ),

@@ -60,17 +60,20 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
     // 强制横屏(与入口页保持一致,避免竖屏导致布局崩溃)
     SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
 
-    // 进入快速开始界面后，设置设备类型 + 发送指令让设备阻力设置为初始值（业务留白）
+    // 进入快速开始界面后，设置设备类型 + 发送指令让设备参数复位（业务留白）
+    //
+    // 🔧 移除原 500ms 延迟：就绪等待已内置到 Notifier 的 GATT 串行链
+    // （_waitForServiceReady → 能力读取 → 0x00 写入），首帧后立即初始化，
+    // 消除「首帧使用上一会话残留 state」的 500ms 窗口。
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          final notifier = _quickStartNotifier;
-          notifier.setDeviceType(widget.deviceType);
-          notifier.sendResetToDevice();
-          // 任务5：进入界面后检测设备是否正在运行
-          notifier.checkDeviceRunningOnEntry();
-        }
-      });
+      if (mounted) {
+        final notifier = _quickStartNotifier;
+        notifier.setDeviceType(widget.deviceType);
+        // fire-and-forget：内部等待服务就绪 + 范围读取完成后才真正下发 0x00
+        notifier.sendResetToDevice();
+        // 任务5：进入界面后检测设备是否正在运行
+        notifier.checkDeviceRunningOnEntry();
+      }
     });
 
     // 任务8.2：首帧后执行四级启动验证（避免在 build 周期内修改 provider state）
@@ -569,6 +572,9 @@ class _QuickStartTrainingPageState extends ConsumerState<QuickStartTrainingPage>
           inclinePresets: state.buttonInclinationList,
           resistancePresets: state.buttonResistanceList,
           hasInclinationSupport: state.hasInclinationSupport,
+          // 三维度设备能力判定（0x2AD4/0x2AD5/0x2AD6，max<=min 时隐藏按钮组）
+          hasSpeedSupport: state.hasSpeedSupport,
+          hasResistanceSupport: state.hasResistanceSupport,
         ),
         callbacks: DeviceControlCallbacks(
           // ===== 速度回调（跑步机） =====

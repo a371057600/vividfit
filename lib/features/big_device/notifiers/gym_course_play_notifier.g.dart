@@ -60,7 +60,7 @@ final class GymCoursePlayNotifierProvider
 }
 
 String _$gymCoursePlayNotifierHash() =>
-    r'26ca43f3b2d9f8d420a413eff053d641ffeef090';
+    r'2426557e284f27e56ec06471df2c78e5eaffdf9b';
 
 /// 课程播放页 Notifier（对应旧 ControllerBigDeviceCoursePlay + ControllerNewFourBigDeviceSprot）
 ///

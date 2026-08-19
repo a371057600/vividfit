@@ -14,7 +14,7 @@ import 'widgets/empty_data_widget.dart';
 /// 记录列表页（年度运动总览 + 历史记录列表）。
 ///
 /// 对应旧项目 new_record_list_screen.dart。
-/// 当前阶段：Mock 数据驱动，所有展示数据来自 RecordListNotifier。
+/// 数据来自 RecordListNotifier（SportRecordLocalRepository 真实数据源）。
 class RecordListPage extends ConsumerStatefulWidget {
   const RecordListPage({super.key});
 

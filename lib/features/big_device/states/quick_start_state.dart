@@ -128,6 +128,12 @@ abstract class QuickStartState with _$QuickStartState {
     /// 是否支持坡度。
     @Default(false) bool hasInclinationSupport,
 
+    /// 是否支持速度调节（0x2AD4 上报 max<=min 视为不支持）。
+    @Default(true) bool hasSpeedSupport,
+
+    /// 是否支持阻力调节（0x2AD6 上报 max<=min 视为不支持）。
+    @Default(true) bool hasResistanceSupport,
+
     /// 设备运行状态检测：进入界面时设备是否正在被动运行
     /// （速度/踏频/桨频任一 > 0 且用户未主动开始），用于触发阻塞层。
     @Default(false) bool isDeviceRunningDetected,

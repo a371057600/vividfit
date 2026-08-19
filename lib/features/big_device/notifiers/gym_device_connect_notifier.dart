@@ -11,6 +11,7 @@ import '../../../core/services/bluetooth_connection_service.dart';
 import '../../../core/services/bluetooth_connection_service_provider.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/storage_service_provider.dart';
+import 'gym_course_home_notifier.dart';
 import '../states/gym_device_connect_state.dart';
 
 part 'gym_device_connect_notifier.g.dart';
@@ -22,7 +23,12 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
     final service = ref.watch(bluetoothConnectionServiceProvider);
     _storage = ref.watch(storageServiceProvider);
     _service = service;
-    _deviceCategory = FtmsDeviceType.indoorBike;
+    // 🔧 设备类型从单一事实源恢复（gymCourseHomeProvider.selectedDeviceCategory），
+    // 不再硬编码回退单车：Notifier 实例重建（依赖变化触发 rebuild）时，
+    // 若用户当前选中的是跑步机，旧逻辑会把 _deviceCategory 重置为单车，
+    // 导致后续 invalidate(ftmsServiceProvider(indoorBike)) 目标错误，
+    // 真正的跑步机 FTMS 实例变成持有失效特征值的孤儿。
+    _deviceCategory = ref.read(gymCourseHomeProvider).selectedDeviceCategory;
     _setupServiceCallbacks();
     return const GymDeviceConnectState();
   }
@@ -59,6 +65,17 @@ class GymDeviceConnectNotifier extends _$GymDeviceConnectNotifier {
   void _handleConnectionEvent(BluetoothConnectionEvent event) {
     switch (event) {
       case BluetoothConnectionEvent.bluetoothConnected:
+        // 🔧 重复 connected 事件去重：
+        // iOS/Android 蓝牙栈在服务发现期间可能重复发出 connected（未经 disconnected），
+        // 若不去重，每次重复事件都会 invalidate + 重建 FtmsService，
+        // 正在使用中的实例被销毁（特征值引用失效）→ 页面指令写入失败。
+        // 真实「断开→重连」不受影响：disconnected 已先将标志置 false。
+        if (state.isBluetoothConnected) {
+          debugPrint(
+            '[Notifier] ⏭️ duplicate connected event (already connected), skip FTMS re-init',
+          );
+          return;
+        }
         debugPrint('[Notifier] === Layer 1: BLUETOOTH CONNECTED ===');
         state = state.copyWith(isBluetoothConnected: true, isConnecting: false);
         // 记录已连接(用于断连 Toast 防护)
